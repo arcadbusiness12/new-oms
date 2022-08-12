@@ -1,0 +1,30 @@
+.card-body {
+    /* font-size: 22px !important; */
+}
+.sidebar .menu .sidebar-menu .treeview a {
+    font-size: 14px;
+}
+.sidebar .menu .sidebar-menu li.active>:first-child {
+    color: #2196f3;
+}
+.treeview ul li {
+    padding-left: 6px;
+}
+.treeview ul li a i{
+    padding-right: 0px !important;
+}
+.sidebar-menu>li>a {
+    color: #090909;
+}
+.sidebar-menu .treeview-menu>li>a {
+    color: #090909;
+}
+.navbar-nav>.user-menu>.dropdown-menu {
+    width: 174px !important;
+}
+.invalid-feedback {
+    /* color: red; */
+    display: block !important;
+    margin-top: 0px;
+    font-size: 100%;
+}
