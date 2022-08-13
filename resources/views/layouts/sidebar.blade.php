@@ -32,7 +32,7 @@
                     </div>
                     <ul class="sidebar-menu">
                         <li class="treeview">
-                            <a href="index.html">
+                            <a href="{{url('/home')}}">
                             <i class="icon icon-sailing-boat-water s-24"></i> <span>Dashboard</span>
                             </a>
                         </li>

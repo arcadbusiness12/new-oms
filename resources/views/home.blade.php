@@ -79,17 +79,17 @@
                                     data-chart="chartJs"
                                     data-chart-type="doughnut"
                                     data-dataset="[
-                                                    [75, 25,25],
+                                                    [{{$pendding_orders}}, {{$shipped_orders}}, {{$delived_orders}}],
 
                                                 ]"
-                                    data-labels="[['Disk'],['Database'],['Disk2'],['Database2']]"
+                                    data-labels="[['Pending Orders'],['Shipped Orders'],['Delivered Orders']]"
                                     data-dataset-options="[
                                                 {
                                                     label: 'Disk',
                                                     backgroundColor: [
-                                                        '#03a9f4',
-                                                        '#8f5caf',
-                                                        '#3f51b5'
+                                                        '#FFBF00',
+                                                        '#0BDA51',
+                                                        '#03a9f4'
                                                     ],
 
                                                 },
