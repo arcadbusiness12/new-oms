@@ -8,7 +8,7 @@
               @foreach($staffOperationRecords['duties'] as $duty)
                 <div class="col-md-3 col-sm-3">
                    
-                    <div class="card no-b mb-3 bg-danger text-white">
+                    <div class="card no-b mb-3 bg-danger text-white staff-duty-box">
                         <div class="card-body duties-section">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div><span>{{$duty['name']}}</span></div>

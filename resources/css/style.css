@@ -34,3 +34,7 @@
 .duties-section hr {
     border-top: 1px solid white !important;
 }
+
+.staff-duty-box {
+    box-shadow: 5px 5px 7px 0px gray;
+}

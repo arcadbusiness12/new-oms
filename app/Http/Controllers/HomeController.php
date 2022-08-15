@@ -59,7 +59,6 @@ class HomeController extends Controller
     }
 
     public function employeeOperationRecords($user_id, $filter) {
-        // dd($filter);
         $performance_sales = OmsUserModel::with(['activities' => function($q) {
           $q->where('duration', '!=', 0);
       }])->find($user_id);
@@ -72,7 +71,7 @@ class HomeController extends Controller
                 ->where('opo.user_id',session('user_id'))
                 // ->where('ord.oms_order_status','!=',5)
                 ->where(function ($query) {
-                  $query->where('ord.oms_order_status','!=',5)
+                  $query->where('ord.oms_order_status','!=',5) 
                       ->orWhereNull('ord.oms_order_status');
                 })
                 ->whereDate('opo.created_at',date('Y-m-d'))
