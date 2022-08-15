@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/theme.css',
                 'resources/css/style.css',
                 'resources/js/app.js',
+                'resources/js/jquery.main',
                 'resources/js/theme.js',
             ],
             refresh: true,

@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/css/theme.css', 'resources/css/style.css', 'resources/js/app.js', 'resources/js/app.js'])
+    @vite(['resources/sass/app.scss', 'resources/css/theme.css', 'resources/css/style.css', 'resources/js/app.js'])
 </head>
 <body class="light sidebar-mini loaded">
     <div id="loader" class="loader">
@@ -74,5 +74,8 @@
         </div>
         <div class="control-sidebar-bg shadow white fixed"></div>
     </div>
+    <script src="{{ URL::asset('assets/js/jquery.main.js')}}"></script>
+    @stack('scripts')
+   
 </body>
 </html>
