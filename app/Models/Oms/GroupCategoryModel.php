@@ -8,7 +8,7 @@ class GroupCategoryModel extends Model
 {
     public $timestamps = false;
     protected $table = 'group_main_categories';
-    protected $fillable = ['group', 'name', 'sub_category'];
+    protected $fillable = ['group', 'name', 'code', 'sub_category'];
 
     public function subCategories() {
         return $this->hasMany(GroupSubCategoryModel::class, 'group_main_category_id');

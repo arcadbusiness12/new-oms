@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <ul class="sidebar-menu">
-                        <li class="treeview">
+                        <li class="treeview @if(strpos(Request::url(), 'home') !== false) active @endif">
                             <a href="{{url('/home')}}">
                             <i class="icon icon-sailing-boat-water s-24"></i> <span>Dashboard</span>
                             </a>
@@ -189,12 +189,12 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
+                        <li class="treeview @if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false || strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
                             class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-add"></i>Add Inventory</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false) active @endif"><a href="{{route('add.inventory')}}"><i class="icon icon-add"></i>Add Inventory</a>
                                 </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-dashboard"></i>Dashboard</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif"><a href="{{route('inventory.dashboard')}}"><i class="icon icon-dashboard"></i>Dashboard</a>
                                 </li>
                                 <li><a href="panel-page-users.html"><i class="icon icon-line-chart"></i>Stock Level</a>
                                 </li>
@@ -264,19 +264,6 @@
                                            
                                     </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-perm_data_setting"></i>Promotion Setting<i
-                                        class=" icon-angle-left  pull-right"></i></a>
-                                    <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html"><i class="icon icon-settings_applications"></i>Organic Setting</a>
-                                        </li>
-                                        <li><a href="panel-page-users.html"><i class="icon icon-settings_applications"></i>Paid Setting</a>
-                                        </li>  
-                                        <li><a href="panel-page-users.html"><i class="icon icon-settings_applications"></i>Main Category Setting</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                
-                               
                             </ul>
                         </li>
                         <li class="treeview"><a href="#"><i class="icon icon-all_out s-24"></i>Leavs<i
@@ -286,7 +273,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
+                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li><a href="panel-page-users.html"><i class="icon icon-vcard"></i>Supplier</a>
@@ -299,6 +286,18 @@
                                 </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-user"></i>Shipping Provider </a>
                                 </li>
+                                <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-perm_data_setting"></i>Promotion Setting<i
+                                    class=" icon-angle-left  pull-right"></i></a>
+                                <ul class="treeview-menu">
+                                    <li><a href="panel-page-users.html">Organic Setting</a>
+                                    </li>
+                                    <li><a href="panel-page-users.html">Paid Setting</a>
+                                    </li>  
+                                    <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif">
+                                        <a href="{{route('category.name')}}">Main Category Setting</a>
+                                    </li>
+                                </ul>
+                            </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-attach_money"></i>Salaries </a>
                                 </li>
                                 <li>

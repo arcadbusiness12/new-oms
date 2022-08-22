@@ -5,7 +5,8 @@
     font-size: 14px;
 }
 .sidebar .menu .sidebar-menu li.active>:first-child {
-    color: #2196f3;
+    /* color: #2196f3; */
+    color: #25bd1f;
 }
 .treeview ul li {
     padding-left: 6px;
@@ -37,4 +38,38 @@
 
 .staff-duty-box {
     box-shadow: 5px 5px 7px 0px gray;
+}
+form button .icon {
+    padding-right: 1px !important;
+}
+
+.sweet-alert button {
+    font-size: 15px !important;
+    padding: 5px 20px !important;
+}
+.card>.panel-heading {
+    color: #333;
+    background-color: #dddddda1;
+    border-color: #ddd;
+}
+
+.img-td {
+    vertical-align: top !important;
+}
+span>a>svg {
+    max-width: 32px !important;
+}
+span>svg {
+    max-width: 32px !important;
+}
+/* tr, td {
+    padding: 5px !important;
+} */
+.table table tbody tr td{
+    padding: 4px;
+    /* border-top: 1px solid #eee; */
+    background-color: white;
+}
+.table td, .table th {
+    /* vertical-align: unset; */
 }

@@ -14,7 +14,11 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/css/theme.css', 'resources/css/style.css', 'resources/js/app.js'])
+    @vite(['resources/sass/app.scss', 'resources/css/theme.css', 'resources/css/style.css', 'resources/css/sweetalert.css', 'resources/js/app.js'])
+
+    <script type="text/javascript">
+        var APP_URL = {!! json_encode(url('/')) !!}
+      </script>
 </head>
 <body class="light sidebar-mini loaded">
     <div id="loader" class="loader">
