@@ -351,7 +351,7 @@ use Illuminate\Http\Request;
       $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
       $placeholder = $this->opencart_image_url.'no_image.png';
       $edit = '';
-    }
+    }  
  }
  
 
