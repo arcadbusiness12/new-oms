@@ -101,7 +101,7 @@
                             </div>
                           </form>
                         </div>
-                    </div>
+                    </div> {{--  end class card no-b  --}}
                 </div>
             </div>
         </div>

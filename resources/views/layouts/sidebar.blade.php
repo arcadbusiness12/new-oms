@@ -189,8 +189,10 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false || strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
-                            class=" icon-angle-left  pull-right"></i></a>
+                        {{--  <li class="treeview @if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false || strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
+                            class=" icon-angle-left  pull-right"></i></a>  --}}
+                        <li class="treeview @if( str_contains(Request::url(), 'inventoryManagement/') ) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
+                              class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false) active @endif"><a href="{{route('add.inventory')}}"><i class="icon icon-add"></i>Add Inventory</a>
                                 </li>
@@ -198,7 +200,7 @@
                                 </li>
                                 <li><a href="panel-page-users.html"><i class="icon icon-line-chart"></i>Stock Level</a>
                                 </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-add"></i>Add Stock</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/add/stock') !== false) active @endif" ><a href="{{route('inventory.add.stock')}}"><i class="icon icon-add"></i>Add Stock</a>
                                 </li>
                                 <li><a href="panel-page-users.html"><i class="icon icon-file-o"></i>Reports</a>
                                 </li>
