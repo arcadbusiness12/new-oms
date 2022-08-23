@@ -339,11 +339,10 @@ use Illuminate\Http\Request;
       }else {
         $option_value = OmsDetails::select('options','value')->where('options', 1)->get();
         $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
-        // $inventory_product = OmsInventoryProductModel::where()->where('product_id', $id)->get();
-        $optionDetail = OmsOptions::with(['omsOptionsDetails.productOption' => function($q) use($id) {
-          $q->where('omsOptionsDetails.options', $id);
-        }])->get();
-        dd($optionDetail);
+        $inventory_product = OmsInventoryProductModel::where('product_id', $id)->get();
+        
+        return view(self::VIEW_DIR. '.editInventory')->with(compact('inventory_product','option_detail','option_value'))->render();
+        
       }
     }
  }
