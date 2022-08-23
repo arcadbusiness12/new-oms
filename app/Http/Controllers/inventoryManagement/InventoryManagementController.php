@@ -12,7 +12,6 @@ use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
-use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
@@ -289,101 +288,6 @@ use Illuminate\Http\Request;
                             ->get();
         return view(self::VIEW_DIR. '.viewInventory')->with(compact('product_options','product'))->render();
     }
-    public function addStock(Request $request, $id=null)
-    { 
-      $q = $request->input('a');
-      $stocks = DB::table('oms_inventory_product_option')
-      ->select('oms_inventory_product_option.product_option_id','oms_inventory_product_option.available_quantity','oms_inventory_product_option.onhold_quantity','oms_inventory_product_option.product_id','oms_options_details.value','oms_inventory_product.sku','oms_inventory_product.option_name','oms_inventory_product.image','oms_inventory_product.print_label','oms_inventory_product_option.option_id','oms_inventory_product_option.option_value_id')
-      ->join('oms_options_details', 'oms_options_details.id', '=','oms_inventory_product_option.option_value_id')
-      ->join('oms_inventory_product', 'oms_inventory_product.product_id', '=','oms_inventory_product_option.product_id')
-      ->where('oms_inventory_product.sku',$q)
-      ->get();
-      // echo '<pre>'; print_r($stocks->toArray()); die;
-      $proid = OmsInventoryProductOptionModel::select('product_option_id','available_quantity')->where('product_id', $id)->get();
-      $quantity         = $request->option_quantity;
-      $option_reason  = $request->option_reason;
-      $option_id = $request->option_id;
-      $option_value_id = $request->option_value_id;
-      $option_value = $request->option_value;
-        // echo "<pre>"; print_r($quantity); die;
-      if($request->isMethod('post')){
-        $comment = "";
-        foreach($option_value as $key=>$value){
-          $qty = $quantity[$key];
-          if( abs($qty) > 0 ){
-            $comment .= $value."-(".$qty."), ";
-          }
-        }
-        $comment = "Added Stock by Admin (".session('username').").Quantity: ".$comment;
-        $username = session('username');
-        $user_id = session('user_id');
-        $insertdata = new OmsInventoryAddStockHistoryModel;
-        $insertdata->product_id = $id;
-        $insertdata->comment =$comment;
-        $insertdata->reason =$option_reason;
-        $insertdata->user_id = $user_id;
-        //bussniss arcade quantity updation.
-        $ba_product = ProductsModel::where('sku',$request->sku)->first();
-        // $ba_product_option = ProductOptionValueModel::where("product_id",$ba_product->product_id)->get();
-        // dd($ba_product_option->toArray());
-        DB::beginTransaction();
-        OmsInventoryProductModel::where('product_id',$id)->update(['print_label' =>$request->print_label]);
-        // dd(DB::connection('opencart')->select("select * from oc_product where product_id < 200")); die;
-        try{
-          $insertdata->save();
-          // die("sdf");
-          $current_total = 0;
-          foreach($proid as $key=> $pro){
-            $current_quantity = $quantity[$key];
-            if(abs($current_quantity) < 1) continue;
-            $current_total += $current_quantity;
-            $qty = $pro->available_quantity += $current_quantity;
-            OmsInventoryProductOptionModel::where('product_option_id',$pro->product_option_id)->update(['available_quantity' =>$qty]);
-            //get ba option detials to update values
-            if( !empty($ba_product) ){
-              $baOptionData = OmsInventoryOptionValueModel::BaOptionsFromOms($option_id[$key],$option_value_id[$key]);
-              if( !empty($baOptionData) ){
-                ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::raw( 'quantity +'.$current_quantity)]);
-              }
-            }
-            // echo "<pre>"; print_r($baOptionData->toArray());
-            $OmsInventoryAddStockOptionModelObj = new OmsInventoryAddStockOptionModel;
-            $OmsInventoryAddStockOptionModelObj->history_id=$insertdata->history_id;
-            $OmsInventoryAddStockOptionModelObj->product_id=$id;
-            $OmsInventoryAddStockOptionModelObj->option_id=$option_id[$key];
-            $OmsInventoryAddStockOptionModelObj->option_value_id=$option_value_id[$key];
-            $OmsInventoryAddStockOptionModelObj->quantity=$current_quantity;
-            $OmsInventoryAddStockOptionModelObj->save();
-
-          }
-          //finally update color entry quantity and main product table quantity.
-          $OmsColorOptionId =OmsOptions::colorOptionId();
-          $OmsColorValueId = OmsDetails::colorId($request->color);
-          $baOptionData = OmsInventoryOptionValueModel::BaOptionsFromOms($OmsColorOptionId,$OmsColorValueId);
-          if( !empty($baOptionData) && !empty($baOptionData) && !empty($ba_product) ){
-            $color_entry_upd = ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            if($color_entry_upd){
-              ProductsModel::where('sku',$request->sku)->where("product_id",$ba_product->product_id)->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            }  
-          }   
-          // die("test twelve".$key);
-          DB::commit();
-          $this->updateSitesStock($request->sku);
-          Session::flash('message','Stock updated successfully.');
-        } catch (\Exception $e) {
-        DB::rollback();
-        Session::flash('message','Somthing wrong, stock not updated.'.$e);
-      }
-    }
-    $product_id = DB::table('oms_inventory_product')->select('product_id')->where('sku',$q)->get();
-    foreach($product_id as $prod){
-      $product = $prod->product_id;
-      $id = $prod->product_id;
-    }
-    $user_update = OmsInventoryAddStockHistoryModel::select('comment','updated_at')->orderBy('history_id','DESC')->where('product_id',$id)->limit(15)->get();
-    // echo "<pre>"; print_r($user_update->toArray()); die;
-    return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update')); 
-  }
 
     public function inventoryProductHistory($id) {
       $history = OmsInventoryAddStockHistoryModel::with('user')->where('product_id', $id)->orderBy('history_id', 'DESC')->get();
@@ -441,5 +345,13 @@ use Illuminate\Http\Request;
         
       }
     }
+
+    public function EditInventoryProductOptionDetails() {
+      $option_value = OmsDetails::select('value')->where('options','==', 1)->get();
+      $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
+      $placeholder = $this->opencart_image_url.'no_image.png';
+      $edit = '';
+    }
  }
+ 
 
