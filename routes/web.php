@@ -45,7 +45,9 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::get('/inventory/product/history/{id}', 'inventoryProductHistory')->name('inventory.product.history');
         Route::any('/inventory/edit/location/{id}', 'inventoryEditProductLocation')->name('inventory.edit.product.location');
         Route::any('/inventory/edit/product/{id}', 'EditInventoryProduct')->name('edit.inventory.product');
-        // Route::any('/inventory/edit/product/options/details/{id}', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
+        Route::post('/inventory/edit/product/options/details', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
+        Route::get('/inventory/destroy/product/{id}', 'destoryInventoryProduct')->name('inventory.destroy.product');
+        Route::post('/inventory/print/pending/stock/label/{id?}', 'printPendingStockLabel')->name('inventory.print.pending.stock.label');
         
     });
 });

@@ -8,16 +8,21 @@ use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
+use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Session;
+use App\Platform\Helpers\ToolImage;
 
 /**
  * Description of PurchaseController
@@ -29,9 +34,13 @@ use Illuminate\Http\Request;
     const VIEW_DIR = 'inventoryManagement';
     const PER_PAGE = 20;
     private $opencart_image_url = '';
+    private $oms_inventory_product_image_source_path = '';
+    private $oms_inventory_product_image_source_url = '';
     
     function __construct() {
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
+        $this->oms_inventory_product_image_source_path = public_path('uploads/inventory_products/');
+        $this->oms_inventory_product_image_source_url = url('public/uploads/inventory_products/');
     }
 
     public function addInventory() {
@@ -333,9 +342,37 @@ use Illuminate\Http\Request;
     }
 
     public function EditInventoryProduct($id, Request $request) {
-      // dd($id);
       if($request->isMethod('post')) {
+        // dd($request->all());
+        if($request->hasFile('image')) {
+          $file = $request->image;
+          $extension = $request->image->getClientOriginalExtension();
+          $filename = md5(uniqid(rand(), true)).'.'.$extension;
+          $file->move(base_path('public/uploads/inventory_products/'), $filename);
+          $image = $filename;
+          OmsInventoryProductModel::where('product_id', $id)->update(['image' => $image]);
+        }
+        OmsInventoryProductModel::where('product_id', $id)->update(['sku' => $request->sku]);
+        $quantity = $request->quantity;
+        $value = $request->value;
+        $idxx = $request->idxx;
 
+        foreach($idxx as $key=>$options){
+          $var = @$quantity[$key];
+          $var1 = $value[$key];
+          if( $var1 < 1 ) continue;
+          $exists = OmsInventoryProductOptionModel::where("product_id",$id)->where('option_value_id',$value[$key])->exists();
+          if($exists){
+            OmsInventoryProductOptionModel::where('product_option_id', $options)->update(['option_value_id'=>$var1]);
+          }else{
+            $prod_option_insert =  new OmsInventoryProductOptionModel();
+            $prod_option_insert->product_id = $id;
+            $prod_option_insert->option_id = $request->option_name;
+            $prod_option_insert->option_value_id = $var1;
+            $prod_option_insert->save();
+          }
+        }
+        return redirect()->back()->with('success', 'Product updates successfully.');
       }else {
         $option_value = OmsDetails::select('options','value')->where('options', 1)->get();
         $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
@@ -346,11 +383,48 @@ use Illuminate\Http\Request;
       }
     }
 
-    public function EditInventoryProductOptionDetails() {
-      $option_value = OmsDetails::select('value')->where('options','==', 1)->get();
-      $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
+    public function EditInventoryProductOptionDetails(Request $request) {
+      $id = $request->taken_id;
       $placeholder = $this->opencart_image_url.'no_image.png';
-      $edit = '';
+      $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
+      $option_detail = OmsOptions::where('id','!=',$ba_color_option_id)->orderBy('option_name')->get();
+      $option_value = OmsDetails::select('value')->where(['options'=>$ba_color_option_id])->orderBy('value')->get();
+      $option_color = $request->option_color;
+
+      $optionProWhereCl = [];
+      $detailWhereCl = [];
+      if($request->product_id > 0){
+        $optionProWhereCl = ['oms_inventory_product_option.product_id' => $request->product_id];
+      }else{
+        $detailWhereCl = ['oms_options_details.options' => $id,'option_name'=>$request->option_color];
+      }
+      $pid = $request->product_id;
+      $option_value_detail = OmsDetails::with(['productOption', 'productOption.product' => function($q1) use($detailWhereCl) {
+        $q1->where($detailWhereCl);
+      }])->whereHas('productOption', function($q) use($optionProWhereCl) {
+        $q->where($optionProWhereCl);
+      })->get();
+      if($request->ajax()) {
+            $data['placeholder'] = $placeholder;
+            $data['option_detail'] = $option_detail;
+            $data['option_value_detail'] = $option_value_detail;
+            if( !empty($option_value_detail) ){
+              $ids_arr = [];
+              foreach ($option_value_detail as $key=>$val) {
+                $current_opton_id = $val->options;
+                $ids_arr[] = $val->id;
+                $opt_idx = OmsInventoryProductOptionModel::where('option_value_id',$val->id)->first();
+                if($opt_idx) {
+                  $val['product_option_id'] = $opt_idx->product_option_id;
+                }else{
+                  $val['product_option_id'] = 0;
+                }
+                
+              }
+              $remaining_option_data = OmsDetails::whereNotIn('id', $ids_arr)->where('options',$current_opton_id)->get();
+            }
+      }
+      return view(self::VIEW_DIR.".editInventoryOptionDetails")->with(compact('option_detail','placeholder','option_value_detail','remaining_option_data','option_value'))->render();
     } 
     
     public function addStock(Request $request, $id=null)
@@ -411,7 +485,7 @@ use Illuminate\Http\Request;
               }
             }
             // echo "<pre>"; print_r($baOptionData->toArray());
-            $OmsInventoryAddStockOptionModelObj = new OmsInventoryAddStockOptionModel;
+            $OmsInventoryAddStockOptionModelObj = new OmsInventoryAddStockOptionModel();
             $OmsInventoryAddStockOptionModelObj->history_id=$insertdata->history_id;
             $OmsInventoryAddStockOptionModelObj->product_id=$id;
             $OmsInventoryAddStockOptionModelObj->option_id=$option_id[$key];
@@ -448,6 +522,88 @@ use Illuminate\Http\Request;
     // echo "<pre>"; print_r($user_update->toArray()); die;
     return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update')); 
   }
+
+  public function destoryInventoryProduct($id) {
+    $deletedProduct = OmsInventoryProductModel::where(['product_id' => $id])->delete();
+    if($deletedProduct) {
+      OmsInventoryProductModel::where('product_id', $id)->delete();
+    }
+    return redirect()->back()->with('success', 'Product Successfully Deleted');
+  }
+
+  public function printPendingStockLabel($product_id = null, Request $request) {
+    // dd($request->all());
+    $print_quant = $request->print_quant[$product_id];
+        // echo "<pre>"; print_r($print_quant); die;
+        $print_label = '';
+        $label_details = OmsInventoryProductOptionModel::select('*')->where('product_id', $product_id)->get();
+        $label_array = array();
+        if ($label_details->count()) {
+            $label_details = $label_details->toArray();
+            $color = "";
+            foreach ($label_details as $option) {
+                $product = OmsInventoryProductModel::select('image', 'sku', 'print_label','option_name','option_value')->where(
+                    'product_id',
+                    $option['product_id']
+                )->first();
+                if( $product &&  $product->option_value > 0 ){
+                  $size = OmsDetails::where('options',$product->option_value)->where('id',$option['option_value_id'])->first()->value;
+                }else{
+                  $size = "";
+                }
+                $color  = $product->option_name;
+                $barcode = $option['product_id'];
+                $barcode .= $option['option_value_id'];
+                $option_array = array(
+                  'color'=>$color,
+                  'size'=>$size
+                );
+                $print_label = $product['print_label'];
+                $print_quant[$option['option_value_id']];
+                $print_label = $request->label_type;
+                for ($i = 0; $i < $print_quant[$option['option_value_id']]; $i++) {
+                    if ($print_label === 'big') {
+                        $label_array['big'][] = array(
+                            'product_image' => $this->get_oms_product_image($product['image']),
+                            'product_sku' => $product['sku'],
+                            'option' => $option_array,
+                            'barcode' => $barcode,
+                        );
+                    } else {
+                        $label_array['small'][] = array(
+                            'product_image' => $this->get_oms_product_image($product['image']),
+                            'product_sku' => $product['sku'],
+                            'option' => $option_array,
+                            'barcode' => $barcode,
+                        );
+                    }
+                }
+            }
+        }
+        // echo $print_label;
+        // dd($label_array);
+        return view(self::VIEW_DIR.'.printLabelPending', ["labels" => $label_array, "label_type" => $print_label]);
+  }
+
+  protected function get_oms_product_image($image = '', $width = 0, $height = 0)
+        {
+          if (file_exists($this->oms_inventory_product_image_source_path.$image)) {
+            if (!empty($width) && !empty($height)) {
+              $ToolImage = new ToolImage();
+              return $ToolImage->resize(
+                $this->oms_inventory_product_image_source_path,
+                $this->oms_inventory_product_image_source_url,
+                $image,
+                $width,
+                $height
+              );
+            } else {
+              return url('/uploads/inventory_products/'.$image);
+            }
+          } else {
+            return $this->opencart_image_url.'placeholder.png';
+          }
+        }
  }
  
 
