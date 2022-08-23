@@ -71,7 +71,7 @@ class OmsInventoryProductModel extends Model
   public function productOptions(){
 
     return $this->hasMany(OmsInventoryProductOptionModel::class, 'product_id');
-}
+  }
     // public function omsOptionDetails()
     // {
     //     return $this->hasOneThrough(

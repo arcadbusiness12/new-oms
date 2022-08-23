@@ -19,5 +19,9 @@ class OmsDetails extends Model
 		}else{
 			return 0;
 		}
-	} 
+	}
+	
+	public function productOption() {
+		return $this->hasOne(OmsInventoryProductOptionModel::class, 'option_value_id', 'id');
+	}
 }

@@ -253,53 +253,7 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-<!-- product view modal start -->
-<div class="modal fade porduct_view_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-content" >
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalCenterTitle">Product details</h5>
-          <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button> -->
-        </div>
-        <div class="modal-body" id="porduct_view_content">
-          ...
-        </div>
-        <div class="modal-footer">
-                  <button type="button" class="btn btn-warning history-btn">History</button>
-          <button type="button" class="btn btn-danger dismiss-btn" data-dismiss="modal">Close</button>
-          {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
-        </div>
-        <div class="table-responsive" id="product_option_orders"></div>
-        <div class="table-responsive" id="history-tbl" style="max-height: 300px;display: none;">
-              <table class="table table-bordered table-hover">
-                  <thead style="background-color: #eee;">
-                      <tr>
-                          <th class="text-center">User Name</th>
-                          <th class="text-center">History</th>
-                          <th class="text-center">Reason</th>
-                          <th class="text-center">Date</th>
-                      </tr>
-                  </thead>
-                  <tbody class="history">
-                  <tr class="loaderr">
-                    
-                  </tr>
-                  </tbody>
-              </table>
-              
-          </div>
-          <div class="msge text-center" style="display: none;">
-              <p class="spinner-border text-muted" >No history found..</p>
-           </div>
-           <div class="history-load text-center" style="display: none;">
-              <p class="spinner-border text-muted" >history loadding..</p>
-           </div>
-      </div>
-    </div>
-  </div>
-  <!-- product view modal end -->
+@include('inventoryManagement.dashboardModals')
 @endsection
 
 @push('scripts')
@@ -327,6 +281,8 @@
   }
 
   function viewInventory(sku){
+
+    $('#history-tbl').css('display', 'none');
       var url = "{{ route('view.inventory.product.details', ':sku') }}";
       url     = url.replace(':sku', sku);
       console.log(url);
@@ -337,6 +293,71 @@
       cache: false,
       success: function (data) {
         $('#porduct_view_content').html(data);
+      }
+    });
+  }
+
+  $('.history-btn').on('click', function() {
+    // console.log($("input[name=product_id]").val());
+    $('table .history').html('');
+    $('.history-load').css('display', 'block');
+    var id = $("input[name=product_id]").val();
+    // $('.history').html("<b><center>Loaidng...</center></b>");
+    console.log(id);
+    var url = "{{route('inventory.product.history', ':id')}}";
+    url = url.replace(':id', id);
+    $.ajax({
+      url: url,
+      type: 'GET',
+      headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+      cache: false,
+      success: function(history) {
+      $('.history-load').css('display', 'none');
+        if(history.status){
+          var html = '';
+          $('#history-tbl').css('display', 'block');
+            history.history.forEach(function(v) {
+              var full_name = "";
+              if( v.user ){
+                full_name = v.user.firstname+" "+v.user.lastname;
+              }
+            html += '<tr><td class="text-center">'+full_name+'</td><td class="text-center">'+v.comment+'</td><td class="text-center">'+v.reason+'</td><td class="text-center">'+v.created_at+'</td></tr>';
+          })
+          $('table .history').html(html);
+        }else{
+          console.log("Notat");
+          $('.msge').css('display', 'block');
+        }
+        
+      }
+    })
+  });
+  function editLocation(product_id){
+    var url = "{{route('inventory.edit.product.location', ':id')}}";
+    url = url.replace(':id', product_id);
+    $.ajax({
+      url: url,
+      type: 'GET',
+      cache: false,
+      headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+      // data: 'product_id='+product_id+'&status='+status,
+      success: function (data) {
+        $('#porduct_location_content').html(data);
+      }
+    });
+  }
+  
+  function editInventory(product_id){
+    var url = "{{route('edit.inventory.product', ':id')}}";
+        url = url.replace(":id", product_id);
+    $.ajax({
+      url: url,
+      type: 'GET',
+      cache: false,
+      headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+      // data: 'product_id='+product_id+'&status='+status,
+      success: function (data) {
+        $('#edit_inventory_content').html(data);
       }
     });
   }

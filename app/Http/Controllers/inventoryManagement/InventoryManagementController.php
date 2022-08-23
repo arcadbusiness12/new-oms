@@ -7,11 +7,11 @@ use App\Models\DressFairOpenCart\Products\DressFairProductsModel;
 use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
+use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
-use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ProductGroupModel;
@@ -384,5 +384,63 @@ use Illuminate\Http\Request;
     // echo "<pre>"; print_r($user_update->toArray()); die;
     return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update')); 
   }
+
+    public function inventoryProductHistory($id) {
+      $history = OmsInventoryAddStockHistoryModel::with('user')->where('product_id', $id)->orderBy('history_id', 'DESC')->get();
+      if(count($history) > 0) {
+        return response()->json([
+          'status' => true,
+          'history' => $history
+        ]);
+      }else {
+        return response()->json([
+          'status' => false
+        ]);
+      }
+    }
+
+    public function inventoryEditProductLocation($id= null, Request $request) {
+      if($request->isMethod('post')) {
+        OmsInventoryProductModel::where('product_id', $request->product_id)->update(['row' => $request->row]);
+        $product_option_id_ar = $request->product_option_id;
+        $option_value_id_ar = $request->option_value_id;
+        $rake_arr = $request->product_rakk;
+        $shelf = $request->product_shelf;
+        if(count($product_option_id_ar) > 0) {
+          foreach ($product_option_id_ar as $key => $product_option) {
+            $where = ['product_option_id'=>$product_option,'product_id'=>$request->product_id,'option_id'=>$request->option_id,'option_value_id'=>$option_value_id_ar[$key]];
+            $data = ['rack' => $rake_arr[$key], 'shelf' => $shelf[$key]];
+            $update_loc = OmsInventoryProductOptionModel::where($where)->update($data);
+          }
+        }
+        if($update_loc){
+          return response([
+            'mesge' => 'Location updated successfully.'
+          ]);
+        }else{
+          return response([
+            'mesge' => 'Error,While updating location.'
+          ]);
+        }
+      }else {
+        $product = OmsInventoryProductModel::with('ProductsSizes.omsOptionDetails')->where('product_id', $id)->get();
+        return view(self::VIEW_DIR. ".editLocation")->with(compact('product'));
+      }
+    }
+
+    public function EditInventoryProduct($id, Request $request) {
+      // dd($id);
+      if($request->isMethod('post')) {
+
+      }else {
+        $option_value = OmsDetails::select('options','value')->where('options', 1)->get();
+        $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
+        // $inventory_product = OmsInventoryProductModel::where()->where('product_id', $id)->get();
+        $optionDetail = OmsOptions::with(['omsOptionsDetails.productOption' => function($q) use($id) {
+          $q->where('omsOptionsDetails.options', $id);
+        }])->get();
+        dd($optionDetail);
+      }
+    }
  }
 

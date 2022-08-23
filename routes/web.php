@@ -42,7 +42,9 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/inventory/change/product/status', 'changeProductStatus')->name('change.product.status');
         Route::get('/view/inventory/product/detail/{id}', 'viewInventory')->name('view.inventory.product.details');
         Route::any('/add/stock/{id?}', 'addStock')->name('inventory.add.stock');
-
+        Route::get('/inventory/product/history/{id}', 'inventoryProductHistory')->name('inventory.product.history');
+        Route::any('/inventory/edit/location/{id}', 'inventoryEditProductLocation')->name('inventory.edit.product.location');
+        Route::any('/inventory/edit/product/{id}', 'EditInventoryProduct')->name('edit.inventory.product');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
