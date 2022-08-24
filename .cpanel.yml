@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/eskdxbco/public_html/oms
+    - /bin/cp -r * $DEPLOYPATH

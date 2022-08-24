@@ -744,6 +744,26 @@ use Carbon\Carbon;
     }
     return response()->json(array('success' => 1, 'quantity' => $quantities));
   }
-}
+
+  public function updateStockLevel(Request $request) {
+    dd($request->product);
+    foreach($request->product as $product_id => $options) {
+      foreach($options as $option) {
+        $stockExist = OmsInventoryStockModel::where('product_id', $product_id)->where('option_id',$option['option_id'])->where('option_value_id', $option['option_value_id'])->exists();
+        if ($stockExist) {
+          OmsInventoryStockModel::where('product_id', $product_id)
+                                  ->where('option_id', $option['option_id'])
+                                  ->where('option_value_id', $option['option_value_id'])
+                                  ->update(
+                                    array(
+                                      'minimum_quantity' => $option['min_quantity'],
+                                      'average_quantity' => $option['average_quantity'],
+                                      'duration' => $request->duration,
+                                    ));
+        }
+      }
+    }
+  }
+ }
  
 

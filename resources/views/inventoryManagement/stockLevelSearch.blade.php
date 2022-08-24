@@ -13,7 +13,7 @@
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                            <?php if($product) { ?>
-                            <form action="<?php echo URL::to('/inventory_manage/update_stock_level') ?>" method="post" name="update_quantity">
+                            <form action="<?php echo route('update.stock.level') ?>" method="post" name="update_quantity">
                             {{ csrf_field() }}
                                 <table class="table" width="100%" style="border: 1px solid #3f51b5">
                         
