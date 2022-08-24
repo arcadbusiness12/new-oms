@@ -746,7 +746,7 @@ use Carbon\Carbon;
   }
 
   public function updateStockLevel(Request $request) {
-    dd($request->product);
+    // dd($request->product);
     foreach($request->product as $product_id => $options) {
       foreach($options as $option) {
         $stockExist = OmsInventoryStockModel::where('product_id', $product_id)->where('option_id',$option['option_id'])->where('option_value_id', $option['option_value_id'])->exists();
@@ -760,9 +760,21 @@ use Carbon\Carbon;
                                       'average_quantity' => $option['average_quantity'],
                                       'duration' => $request->duration,
                                     ));
+        }else {
+          $OmsInventoryStockModel = new OmsInventoryStockModel();
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_PRODUCT_ID} = $product_id;
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_OPTION_ID} = $option['option_id'];
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_OPTION_VALUE_ID} = $option['option_value_id'];
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_MINIMUM_QUANTITY} = $option['min_quantity'];
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_AVERAGE_QUANTITY} = (int)$option['average_quantity'];
+          $OmsInventoryStockModel->{OmsInventoryStockModel::FIELD_DURATION} = $request->duration;
+          $OmsInventoryStockModel->save();
         }
       }
     }
+    Session::flash('message', 'Product stock level updated successfully.');
+    Session::flash('alert-class', 'alert-success');
+    return redirect()->back()->with('success', 'Product updates successfully.');
   }
  }
  

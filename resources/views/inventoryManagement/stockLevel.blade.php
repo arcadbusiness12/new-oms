@@ -8,6 +8,12 @@
             <div class="row mb-4">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
+                        <?php if(Session::has('message')) { ?>
+                            <div class="alert <?php echo Session::get('alert-class', 'alert-info') ?> alert-dismissible">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <?php echo Session::get('message') ?>
+                            </div>
+                            <?php } ?>
                         <div class="card-header white">
                             <form name="form_stock_level" id="form_stock_level" action="{{route('get.inventory.stock.level.product')}}" method="get">
                                 {{ csrf_field() }}
