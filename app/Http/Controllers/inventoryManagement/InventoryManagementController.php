@@ -9,20 +9,25 @@ use App\Models\Oms\GroupSubCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryDeliveredQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryStockModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
+use App\Models\OpenCart\Products\OptionDescriptionModel;
+use App\Models\OpenCart\Products\OptionValueDescriptionModel;
 use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Session;
 use App\Platform\Helpers\ToolImage;
+use Carbon\Carbon;
 
 /**
  * Description of PurchaseController
@@ -532,9 +537,7 @@ use App\Platform\Helpers\ToolImage;
   }
 
   public function printPendingStockLabel($product_id = null, Request $request) {
-    // dd($request->all());
     $print_quant = $request->print_quant[$product_id];
-        // echo "<pre>"; print_r($print_quant); die;
         $print_label = '';
         $label_details = OmsInventoryProductOptionModel::select('*')->where('product_id', $product_id)->get();
         $label_array = array();
@@ -580,8 +583,6 @@ use App\Platform\Helpers\ToolImage;
                 }
             }
         }
-        // echo $print_label;
-        // dd($label_array);
         return view(self::VIEW_DIR.'.printLabelPending', ["labels" => $label_array, "label_type" => $print_label]);
   }
 
@@ -604,6 +605,145 @@ use App\Platform\Helpers\ToolImage;
             return $this->opencart_image_url.'placeholder.png';
           }
         }
- }
+
+  public function stockLevel() {
+    return view(self::VIEW_DIR. '.stockLevel');
+  }
+
+  public function getProductSku(Request $request) {
+    $skus = array();
+      $product_skus = collect();
+      if($request->product_sku) {
+        $field = 'sku';
+        $product_sku = $request->product_sku;
+        $product_skus = OmsInventoryProductModel::select('sku')->where('sku', 'LIKE', "%{$product_sku}%")->limit(
+              10
+            )->get();
+      }
+      if($request->product_model) {
+        $field = 'model';
+        $product_model = $request->product_model;
+        $product_skus = ProductsModel::select('model', 'sku')->where('model','LIKE',"%{$product_model}%")->limit(10)->get();
+        
+      }
+      if ($product_skus->count() >0) {
+        foreach ($product_skus as $product) {
+          $skus[] = $product->$field;
+        }
+      }
+   return response()->json(array('skus' => $skus));
+  }
+
+  public function getInventoryStockLevelProduct(Request $request) {
+    // dd($request->all());
+    $duration = OmsSettingsModel::getByKey('duration');
+    $product_array = [];
+    if($request->product_sku) {
+      $product_sku = htmlentities($request->product_sku);
+      $product = OmsInventoryProductModel::with('ProductsSizes')->where('sku', 'LIKE', "{$product_sku}%")->first();
+      if($product) {
+        $option_id = OmsSettingsModel::get('product_option', 'color');
+        $options = OmsInventoryProductOptionModel::select('option_id','option_value_id','available_quantity','onhold_quantity')
+                                            ->where('product_id', $product->product_id)->get()->toArray();
+        $product_options = [];
+        $now = Carbon::now();
+        $last = $now->subDays(30);
+        $last_date = Carbon::createFromFormat('Y-m-d H:i:s', $last)->toDateTimeString();
+        foreach($options as $option) {
+          $stock_level = OmsInventoryStockModel::select('minimum_quantity', 'average_quantity')->where('product_id',$product->product_id)
+                                                ->where('option_id', $option['option_id'])->where('option_value_id',$option['option_value_id'])->get()->first();
+          $name = OptionDescriptionModel::select('name')->where('option_id', $option['option_id'])->first();
+          $value = OptionValueDescriptionModel::select('name')->where('option_value_id',$option['option_value_id'])->first();
+          // average quantity
+          $quantity = OmsInventoryDeliveredQuantityModel::where('product_id', $product->product_id)->where('option_id', $option['option_id'])
+                                                          ->where('option_value_id', $option['option_value_id'])
+                                                          ->where('created_at', '>=', $last_date)->get();
+         
+          if($option['option_id'] == $option_id) {
+            $product_options['static'] = array(
+              'option_id' => $option['option_id'],
+              'option_value_id' => $option['option_value_id'],
+              'name' => $name ? $name->name : '',
+              'value' => $value ? $value->name : '',
+              'quantity' => $option['available_quantity'],
+              'minimum_quantity' => $stock_level ? $stock_level->minimum_quantity : '',
+              'average_quantity' => count($quantity),
+            );
+          } else {
+            $product_options[] = array(
+              'option_id' => $option['option_id'],
+              'option_value_id' => $option['option_value_id'],
+              'name' => $name ? $name->name : '',
+              'value' => $value ? $value->name : '',
+              'quantity' => $option['available_quantity'],
+              'minimum_quantity' => $stock_level ? $stock_level->minimum_quantity : '',
+              'average_quantity' => count($quantity),
+            );
+          }
+        }
+        $stock_level = OmsInventoryStockModel::select('minimum_quantity', 'average_quantity')->where('product_id',$product->product_id)->get()->first();
+        $product_array = array(
+          'product_id' => $product->product_id,
+          'image' => $this->get_oms_product_image($product->image, 100, 100),
+          'model' => $product->model,
+          'name' => $product->name,
+          'sku' => $product->sku,
+          'quantity' => $product->available_quantity,
+          'minimum_quantity' => $stock_level ? $stock_level->minimum_quantity : '',
+          'average_quantity' => $stock_level ? $stock_level->average_quantity : '',
+          'cost' => $product->price,
+          'options' => $product_options,
+        );
+      }
+    }
+
+    return view(self::VIEW_DIR. '.stockLevelSearch', ["duration" => $duration, "product" => $product_array, "old_input" => $request->all()]);
+  }
+
+  public function checkStockLevelDurationQuantity(Request $request) {
+    // dd($request->all());
+    $duration = $request->duration;
+    $product_sku = $request->product_sku;
+    $options = json_decode($request->options, true);
+    $today = Carbon::now();
+    $today_date = Carbon::createFromFormat('Y-m-d H:i:s', $today)->toDateTimeString();
+    $now = Carbon::now();
+    $last = $now->subDays($duration);
+    $last_date = Carbon::createFromFormat('Y-m-d H:i:s', $last)->toDateTimeString();
+    $opencartProduct = OmsInventoryProductModel::select('product_id')->where('sku', $product_sku)->first();
+    $product_id = 0;
+    // dd($last_date);
+    if ($opencartProduct) {
+      $product_id = $opencartProduct->product_id;
+    }
+    $quantities = array();
+    if ($options) {
+      foreach ($options as $key => $value) {
+        $product_options = OmsInventoryProductOptionModel::select(
+          'option_value_id',
+          'option_id'
+        )->where('product_id', $product_id)->where('option_id', $value['option_id'])->where(
+          'option_value_id',
+          $value['option_value_id']
+        )->first();
+        if ($product_options) {
+          $product_options = $product_options->toArray();
+          $quantity = OmsInventoryDeliveredQuantityModel::where('product_id', $product_id)->where('option_id', $product_options['option_id'])
+                                                        ->where('option_value_id', $product_options['option_value_id'])
+                                                        ->where('created_at', '>=', $last_date)->get();
+          $quantities[] = array(
+            'option_id' => $value['option_id'],
+            'option_value_id' => $value['option_value_id'],
+            'quantity' => count($quantity),
+          );
+        }
+      }
+    } else {
+      $quantity = OmsInventoryDeliveredQuantityModel::where('product_id', $product_id)->where('created_at', '>=', $last_date)->first();
+      $quantities = $quantity->total;
+    }
+    return response()->json(array('success' => 1, 'quantity' => $quantities));
+  }
+}
  
 

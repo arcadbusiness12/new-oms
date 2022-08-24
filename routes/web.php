@@ -48,6 +48,10 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/inventory/edit/product/options/details', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
         Route::get('/inventory/destroy/product/{id}', 'destoryInventoryProduct')->name('inventory.destroy.product');
         Route::post('/inventory/print/pending/stock/label/{id?}', 'printPendingStockLabel')->name('inventory.print.pending.stock.label');
+        Route::get('/inventory/stock/level', 'stockLevel')->name('inventory.stock.level');
+        Route::post('/inventory/get/product/sku', 'getProductSku')->name('inventory.get.product.sku');
+        Route::post('/get/inventory/stock/level/product', 'getInventoryStockLevelProduct')->name('get.inventory.stock.level.product');
+        Route::post('/check/stock/level/duration/quantity', 'checkStockLevelDurationQuantity')->name('check.stock.level.duration.quantity');
         
     });
 });
