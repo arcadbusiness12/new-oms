@@ -53,6 +53,7 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/get/inventory/stock/level/product', 'getInventoryStockLevelProduct')->name('get.inventory.stock.level.product');
         Route::post('/check/stock/level/duration/quantity', 'checkStockLevelDurationQuantity')->name('check.stock.level.duration.quantity');
         Route::post('/update/stock/level', 'updateStockLevel')->name('update.stock.level');
+        Route::get('/stock/report', 'stockReport')->name('stock.report');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);

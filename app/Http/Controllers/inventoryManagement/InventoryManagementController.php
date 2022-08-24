@@ -746,7 +746,6 @@ use Carbon\Carbon;
   }
 
   public function updateStockLevel(Request $request) {
-    // dd($request->product);
     foreach($request->product as $product_id => $options) {
       foreach($options as $option) {
         $stockExist = OmsInventoryStockModel::where('product_id', $product_id)->where('option_id',$option['option_id'])->where('option_value_id', $option['option_value_id'])->exists();
@@ -775,6 +774,12 @@ use Carbon\Carbon;
     Session::flash('message', 'Product stock level updated successfully.');
     Session::flash('alert-class', 'alert-success');
     return redirect()->back()->with('success', 'Product updates successfully.');
+  }
+
+  public function stockReport(Request $request) {
+    $whereClause = [];
+    
+    return view(self::VIEW_DIR. '.stockReport')->with(compact('products'));
   }
  }
  

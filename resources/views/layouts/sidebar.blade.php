@@ -202,7 +202,7 @@
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/add/stock') !== false) active @endif" ><a href="{{route('inventory.add.stock')}}"><i class="icon icon-add"></i>Add Stock</a>
                                 </li>
-                                <li><a href="panel-page-users.html"><i class="icon icon-file-o"></i>Reports</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/stock/report') !== false) active @endif"><a href="{{route('stock.report')}}"><i class="icon icon-file-o"></i>Reports</a>
                                 </li>
                                 <li><a href="panel-page-users-create.html"><i class="icon icon-alarm"></i>Inventory Alarm</a>
                                 </li>
