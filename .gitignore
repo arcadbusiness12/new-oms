@@ -20,3 +20,4 @@ yarn-error.log
 /.vscode
 inventory_stock_manage.txt
 **/.DS_Store
+node_modules

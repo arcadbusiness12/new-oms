@@ -22,6 +22,6 @@ class OmsDetails extends Model
 	}
 	
 	public function productOption() {
-		return $this->hasOne(OmsInventoryProductOptionModel::class, 'option_value_id', 'id');
+		return $this->hasMany(OmsInventoryProductOptionModel::class, 'option_value_id', 'id');
 	}
 }

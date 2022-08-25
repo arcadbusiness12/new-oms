@@ -222,7 +222,7 @@
                             </a><br>
                               <?php } ?>
                               <?php if(session('role') == 'ADMIN' || (array_key_exists('inventory_manage/dashboard/delete', json_decode(session('access'), true)))) {?>
-                              <a href="{{url('/inventory_manage/dashboard/'.$product->product_id)}}" title="Delete" class="btn btn-sm" onclick="return confirm('Are you sure, you want to delete this product from Inventory.')">
+                              <a href="{{route('inventory.destroy.product', $product->product_id)}}" title="Delete" class="btn btn-sm" onclick="return confirm('Are you sure, you want to delete this product from Inventory.')">
                                 <i class="icon icon-trash-o fa-2x" aria-hidden="true" title="Delete" data-toggle="tooltip"></i>
                             </a><br>
                               
@@ -361,5 +361,39 @@
       }
     });
   }
+
+  function processPopupData(data,product_id){
+    var count_obj =  Object.keys(data).length;
+    var url = "{{route('inventory.print.pending.stock.label', ':id')}}";
+    url = url.replace(':id', product_id);
+    // var url = $('#frm_print').attr('data-url')+"/"+product_id
+    $('#frm_print').attr('action',url);
+    var content = "";
+    var size_det = data.products_sizes;
+    Object.keys(size_det).forEach(function(key) {
+      console.log(key, size_det[key]);
+      let row = size_det[key];
+      let type = "";
+      let size = "";
+      if( data.option_value > 0 ){
+        type = data.oms_options.option_name;
+        size = row.oms_option_details.value;
+      }else{
+        type = "Color";
+        size = data.option_name;
+      }
+      let style_center = 'align="center"';
+      let text_box = '<input type="text" name="print_quant['+product_id+']['+row.option_value_id+']" size="3" placeholder="Enter value to print" class="form-control">';
+      content += "<tr><td "+style_center+">"+type+"</td><td "+style_center+">"+size+"</td><td "+style_center+">"+row.available_quantity+"</td><td "+style_center+">"+text_box+"</td></tr>";
+
+      
+    });
+    $('#printModal_content').html( content );
+
+  }
+  $('#frm_print').on('submit',function(){
+    $('#printModal').modal('toggle');
+  });
+
 </script>
 @endpush

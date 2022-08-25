@@ -1,7 +1,7 @@
 
 @foreach($inventory_product as $prod)
 
-<form method="post" action="{{url('/inventory_manage/edit_inventory/'.$prod->product_id)}}" enctype="multipart/form-data">
+<form method="post" action="{{route('edit.inventory.product', $prod->product_id)}}" enctype="multipart/form-data">
 
   @endforeach
 
@@ -240,16 +240,18 @@
     if(flag){
       product_id = {{ $prod->product_id }};
     }
+    
     $.ajax({
       method: "POST",
-      url:"{{url('inventory_manage/add_inventory')}}/"+taken_id,
-      data:"product_id="+product_id+"&option_color="+option_color,
+      url:"{{route('edit.inventory.product.option.details')}}",
+      data:"product_id="+product_id+"&option_color="+option_color+"&taken_id="+taken_id,
       cache: false,
       headers: {
        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
      },
      success:function(response){
-      $('#htmlpart').html(response.vw);
+       console.log(response);
+      $('#htmlpart').html(response);
     }
 
   });

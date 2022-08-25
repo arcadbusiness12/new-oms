@@ -196,11 +196,11 @@
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif"><a href="{{route('inventory.dashboard')}}"><i class="icon icon-dashboard"></i>Dashboard</a>
                                 </li>
-                                <li><a href="panel-page-users.html"><i class="icon icon-line-chart"></i>Stock Level</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/stock/level') !== false) active @endif"><a href="{{route('inventory.stock.level')}}"><i class="icon icon-line-chart"></i>Stock Level</a>
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/add/stock') !== false) active @endif" ><a href="{{route('inventory.add.stock')}}"><i class="icon icon-add"></i>Add Stock</a>
                                 </li>
-                                <li><a href="panel-page-users.html"><i class="icon icon-file-o"></i>Reports</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/stock/report') !== false) active @endif"><a href="{{route('stock.report')}}"><i class="icon icon-file-o"></i>Reports</a>
                                 </li>
                                 <li><a href="panel-page-users-create.html"><i class="icon icon-alarm"></i>Inventory Alarm</a>
                                 </li>

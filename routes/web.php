@@ -3,7 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
-use App\Http\Controllers\Orders\OrdersController;
+use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,20 +25,13 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-// routes for orders strats
-Route::prefix('orders')->middleware('auth')->group(function(){
-    Route::controller(OrdersController::class)->group(function() {
-      Route::get("/normal","index")->name('orders');
-    });
-});
-// routes for orders end
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
     Route::controller(categorySettingController::class)->group(function() {
         route::get('/category/setting', 'categorySetting')->name('category.name');
         route::post('/save/group/main/category', 'saveMainCategory')->name('save.main.category');
         route::post('/save/sub/category', 'saveSubCategory')->name('save.sub.category');
     });
-
+    
 });
 Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
     Route::controller(InventoryManagementController::class)->group(function() {
@@ -53,8 +46,21 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::get('/inventory/product/history/{id}', 'inventoryProductHistory')->name('inventory.product.history');
         Route::any('/inventory/edit/location/{id}', 'inventoryEditProductLocation')->name('inventory.edit.product.location');
         Route::any('/inventory/edit/product/{id}', 'EditInventoryProduct')->name('edit.inventory.product');
-        // Route::any('/inventory/edit/product/options/details/{id}', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
-
+        Route::post('/inventory/edit/product/options/details', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
+        Route::get('/inventory/destroy/product/{id}', 'destoryInventoryProduct')->name('inventory.destroy.product');
+        Route::post('/inventory/print/pending/stock/label/{id?}', 'printPendingStockLabel')->name('inventory.print.pending.stock.label');
+        Route::get('/inventory/stock/level', 'stockLevel')->name('inventory.stock.level');
+        Route::post('/inventory/get/product/sku', 'getProductSku')->name('inventory.get.product.sku');
+        Route::post('/get/inventory/stock/level/product', 'getInventoryStockLevelProduct')->name('get.inventory.stock.level.product');
+        Route::post('/check/stock/level/duration/quantity', 'checkStockLevelDurationQuantity')->name('check.stock.level.duration.quantity');
+        Route::post('/update/stock/level', 'updateStockLevel')->name('update.stock.level');
+        Route::get('/stock/report', 'stockReport')->name('stock.report');
+        Route::get('/inventory/alarm', 'inventoryAlarm')->name('inventory.alarm');
+    });
+});
+Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
+    Route::controller(PurchaseManagementController::class) ->group(function() {
+        Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
