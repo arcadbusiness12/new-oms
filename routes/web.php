@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
+use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +55,12 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/check/stock/level/duration/quantity', 'checkStockLevelDurationQuantity')->name('check.stock.level.duration.quantity');
         Route::post('/update/stock/level', 'updateStockLevel')->name('update.stock.level');
         Route::get('/stock/report', 'stockReport')->name('stock.report');
+        Route::get('/inventory/alarm', 'inventoryAlarm')->name('inventory.alarm');
+    });
+});
+Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
+    Route::controller(PurchaseManagementController::class) ->group(function() {
+        Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);

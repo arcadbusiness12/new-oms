@@ -73,3 +73,12 @@ span>svg {
 .table td, .table th {
     /* vertical-align: unset; */
 }
+.out-stock {
+    background-color: #ff4900 !important;
+}
+.card-head {
+    float: left;
+}
+.btn-card-head {
+    float: left;
+}
