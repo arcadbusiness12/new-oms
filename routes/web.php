@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
+use App\Http\Controllers\Orders\OrdersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,13 +25,20 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// routes for orders strats
+Route::prefix('orders')->middleware('auth')->group(function(){
+    Route::controller(OrdersController::class)->group(function() {
+      Route::get("/normal","index")->name('orders');
+    });
+});
+// routes for orders end
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
     Route::controller(categorySettingController::class)->group(function() {
         route::get('/category/setting', 'categorySetting')->name('category.name');
         route::post('/save/group/main/category', 'saveMainCategory')->name('save.main.category');
         route::post('/save/sub/category', 'saveSubCategory')->name('save.sub.category');
     });
-    
+
 });
 Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
     Route::controller(InventoryManagementController::class)->group(function() {
@@ -46,7 +54,7 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::any('/inventory/edit/location/{id}', 'inventoryEditProductLocation')->name('inventory.edit.product.location');
         Route::any('/inventory/edit/product/{id}', 'EditInventoryProduct')->name('edit.inventory.product');
         // Route::any('/inventory/edit/product/options/details/{id}', 'EditInventoryProductOptionDetails')->name('edit.inventory.product.option.details');
-        
+
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);

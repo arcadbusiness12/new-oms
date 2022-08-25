@@ -45,8 +45,8 @@
                                 </li>
                             </ul>
                         </li>
-                        
-                        <li class="treeview">
+
+                        <li class="treeview @if( str_contains(Request::url(), '/orders') ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -55,9 +55,7 @@
                                 <li><a href="#"><i class="icon icon-shopping-cart"></i>Normal<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li>
-                                            <a href="panel-page-blank-tabs.html">All Orders </a>
-                                        </li>
+                                        <li><a href="{{ route('orders') }}">All Orders </a></li>
                                         <li><a href="panel-page-blank-tabs.html">Customer Return Request </a>
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Online Orders </a>
@@ -79,10 +77,10 @@
                                         <li><a href="panel-page-blank-tabs.html">Reshipment Approval </a>
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Return Orders  </a>
-                                        </li> 
+                                        </li>
                                         <li><a href="panel-page-blank-tabs.html">Airway Bill History  </a>
-                                        </li>    
-                                           
+                                        </li>
+
                                     </ul>
                                 </li>
                                 <li><a href="#"><i class="icon icon-fingerprint text-green"></i>Reseller Orders<i
@@ -213,7 +211,7 @@
                                 <li><a href="panel-page-users.html"><i class="icon icon-link"></i>Options Connection</a>
                                 </li>
                             </ul>
-                        </li> 
+                        </li>
 
                         <li class="treeview">
                             <a href="#">
@@ -243,8 +241,8 @@
                                                 <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
                                                 </li>
                                             </ul>
-                                        </li> 
-                                           
+                                        </li>
+
                                     </ul>
                                 </li>
 
@@ -263,7 +261,7 @@
                                                 </li>
                                             </ul>
                                         </li>
-                                           
+
                                     </ul>
                                 </li>
                             </ul>
@@ -294,7 +292,7 @@
                                     <li><a href="panel-page-users.html">Organic Setting</a>
                                     </li>
                                     <li><a href="panel-page-users.html">Paid Setting</a>
-                                    </li>  
+                                    </li>
                                     <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif">
                                         <a href="{{route('category.name')}}">Main Category Setting</a>
                                     </li>
@@ -339,7 +337,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                
+
                             </ul>
                         </li>
                         <li class="treeview ">
@@ -384,7 +382,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                
+
                                 <li><a href="panel-page-users.html"><i class="icon icon-credit-card"></i>Earning</a>
                                 </li>
                             </ul>

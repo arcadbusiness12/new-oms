@@ -8,17 +8,20 @@ use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
+use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-
+use Session;
 /**
  * Description of PurchaseController
  *
@@ -29,7 +32,7 @@ use Illuminate\Http\Request;
     const VIEW_DIR = 'inventoryManagement';
     const PER_PAGE = 20;
     private $opencart_image_url = '';
-    
+
     function __construct() {
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
     }
@@ -115,7 +118,7 @@ use Illuminate\Http\Request;
         $product->option_name = $request->options;
         $product->option_value = $request->title;
         $product->save();
-        
+
         if($request->value) {
             foreach($request->value as $key => $value) {
                 $productOption = new OmsInventoryProductOptionModel();
@@ -143,7 +146,7 @@ use Illuminate\Http\Request;
               $query->where('product_type_id',$request->by_type);
             });
           }
-          $products->orderByRaw('SUBSTRING_INDEX(sku,"-",1),CAST(SUBSTRING_INDEX(sku,"-",-1) AS SIGNED INTEGER)'); 
+          $products->orderByRaw('SUBSTRING_INDEX(sku,"-",1),CAST(SUBSTRING_INDEX(sku,"-",-1) AS SIGNED INTEGER)');
           if( $request->product_sku !="" ){
             $products=$products->where('sku',"LIKE",$request->product_sku."%");
           }
@@ -179,7 +182,7 @@ use Illuminate\Http\Request;
           }
           $old_input = $request->all();
           $product_types = PromotionTypeModel::where('product_status',1)->get();
-          
+
         return view(self::VIEW_DIR. ".dashboard")->with(compact('products','old_input','product_types'));
     }
 
@@ -217,11 +220,11 @@ use Illuminate\Http\Request;
           fputcsv($fp, $row);
           fputcsv($fp, ['']);
         }
-        
+
         fclose($fp);
         exit();
       }
-    
+
       public function changeProductStatus(Request $request) {
         $update = OmsInventoryProductModel::where('product_id', $request->product_id)->update(['status' => $request->status]);
         if($update) {
@@ -235,7 +238,7 @@ use Illuminate\Http\Request;
                 $df_product_status_update = false;
                 $ba_exist = ProductsModel::where('sku',$omsProduct->sku)->exists();
                 $dr_exist = DressFairProductsModel::where('sku', $omsProduct->sku)->exists();
-                if($ba_exist){ 
+                if($ba_exist){
                     $ba_product_status_update  = ProductsModel::where('sku',$omsProduct->sku)->update(['status'=>$request->status]);
                     if($ba_product_status_update){
                     $msg = "Products updated successfully in Business Arcade.";
@@ -340,9 +343,9 @@ use Illuminate\Http\Request;
         $option_value = OmsDetails::select('options','value')->where('options', 1)->get();
         $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
         $inventory_product = OmsInventoryProductModel::where('product_id', $id)->get();
-        
+
         return view(self::VIEW_DIR. '.editInventory')->with(compact('inventory_product','option_detail','option_value'))->render();
-        
+
       }
     }
 
@@ -351,10 +354,10 @@ use Illuminate\Http\Request;
       $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
       $placeholder = $this->opencart_image_url.'no_image.png';
       $edit = '';
-    } 
-    
+    }
+
     public function addStock(Request $request, $id=null)
-    { 
+    {
       $q = $request->input('a');
       $stocks = DB::table('oms_inventory_product_option')
       ->select('oms_inventory_product_option.product_option_id','oms_inventory_product_option.available_quantity','oms_inventory_product_option.onhold_quantity','oms_inventory_product_option.product_id','oms_options_details.value','oms_inventory_product.sku','oms_inventory_product.option_name','oms_inventory_product.image','oms_inventory_product.print_label','oms_inventory_product_option.option_id','oms_inventory_product_option.option_value_id')
@@ -411,7 +414,7 @@ use Illuminate\Http\Request;
               }
             }
             // echo "<pre>"; print_r($baOptionData->toArray());
-            $OmsInventoryAddStockOptionModelObj = new OmsInventoryAddStockOptionModel;
+            $OmsInventoryAddStockOptionModelObj = new OmsInventoryAddStockOptionModel();
             $OmsInventoryAddStockOptionModelObj->history_id=$insertdata->history_id;
             $OmsInventoryAddStockOptionModelObj->product_id=$id;
             $OmsInventoryAddStockOptionModelObj->option_id=$option_id[$key];
@@ -428,8 +431,8 @@ use Illuminate\Http\Request;
             $color_entry_upd = ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
             if($color_entry_upd){
               ProductsModel::where('sku',$request->sku)->where("product_id",$ba_product->product_id)->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            }  
-          }   
+            }
+          }
           // die("test twelve".$key);
           DB::commit();
           $this->updateSitesStock($request->sku);
@@ -446,8 +449,8 @@ use Illuminate\Http\Request;
     }
     $user_update = OmsInventoryAddStockHistoryModel::select('comment','updated_at')->orderBy('history_id','DESC')->where('product_id',$id)->limit(15)->get();
     // echo "<pre>"; print_r($user_update->toArray()); die;
-    return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update')); 
+    return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update'));
   }
  }
- 
+
 
