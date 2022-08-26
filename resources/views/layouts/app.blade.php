@@ -19,6 +19,7 @@
     <script type="text/javascript">
         var APP_URL = {!! json_encode(url('/')) !!}
       </script>
+    @stack('style')
 </head>
 <body class="light sidebar-mini loaded">
     <div id="loader" class="loader">
