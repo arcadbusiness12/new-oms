@@ -132,7 +132,7 @@
                 <!-- User Account-->
                 <li class="dropdown custom-dropdown user user-menu ">
                     <a href="#" class="nav-link" data-toggle="dropdown">
-                        <img src="assets/img/dummy/u8.png" class="user-image" alt="User Image">
+                        <img src="{{ url('assets/img/dummy/u8.png')  }}" class="user-image" alt="User Image">
                         <i class="icon-more_vert "></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
@@ -143,7 +143,7 @@
                             </a></div>
                             <div class="col">
                                 <a href="#">
-                                   
+
                                      <form method="POST" action="{{ route('logout') }}" x-data>
                                         @csrf
 
