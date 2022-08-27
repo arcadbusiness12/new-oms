@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/sass/app.scss',
                 'resources/css/theme.css',
                 'resources/css/style.css',
+                'resources/css/sweetalert.css',
                 'resources/js/app.js',
                 'resources/js/jquery.main',
                 'resources/js/theme.js',
