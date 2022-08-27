@@ -1009,7 +1009,7 @@ use Carbon\Carbon;
     $baOption = OptionDescriptionModel::where('language_id', 1)->orderBy('name')->get();
     $dfOption = DressFairOptionDescriptionModel::groupBy('option_id')->where('language_id', 1)->orderBy('name')->get();
     $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->orderBy('option_name')->get();
-    dd($dfOption->toArray());                   
+    // dd($dfOption->toArray());                   
     if($request->isMethod('post')) {
 
 
