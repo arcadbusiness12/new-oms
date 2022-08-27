@@ -3,7 +3,7 @@
         <div class="relative">
             <div class="d-flex">
                 <div class="d-none d-md-block">
-                    <h1 class="nav-title">Dashboard</h1>
+                    <h1 class="nav-title">Order Management System</h1>
                 </div>
             </div>
         </div>

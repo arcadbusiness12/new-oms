@@ -3,15 +3,25 @@
 namespace App\Http\Controllers\PurchaseManagement;
 
 use App\Http\Controllers\Controller;
+use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryShippedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryStockModel;
+use App\Models\Oms\InventoryManagement\OmsOptions;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
+use App\Models\Oms\ProductGroupModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersHistoryModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductOptionModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Session;
 
 class PurchaseManagementController extends Controller
 { 
@@ -58,7 +68,7 @@ class PurchaseManagementController extends Controller
                         'sku'           =>  $product['sku'],
                     );
         
-                    $options = $this->get_inventory_product_options_format($product['product_id']);
+                    $options = get_inventory_product_options_format($product['product_id']);
                     if($options){
                         $product_array['options'] = array();
                         // dd($options);
@@ -105,50 +115,7 @@ class PurchaseManagementController extends Controller
             return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
     }
 
-    protected function get_inventory_product_options_format($product_id){
-        $inventory_options = OmsInventoryProductModel::select("option_name as color","option_value as size")->where('product_id', $product_id)->first();
-        
-        if($inventory_options['color']){
-            $option_data = DB::table("oms_options_details")->where("value",$inventory_options['color'])->first();
-            $option_value_data = OmsInventoryProductOptionModel::select('oms_inventory_product_option.option_id','oms_inventory_product_option.option_value_id','oms_inventory_product_option.available_quantity','oms_options_details.value as name')
-            ->where('product_id', $product_id)
-            ->join('oms_options_details', 'oms_options_details.id', '=', 'oms_inventory_product_option.option_value_id')
-            ->where('oms_inventory_product_option.option_id', $option_data->options)
-            ->get()
-            ->toArray();
-            if( empty($option_value_data ) ){
-              $option_value_data[] = array(
-              "option_id" => $option_data->options,
-              "option_value_id" => $option_data->id,
-              "available_quantity" => 0,
-              "name" => $option_data->value 
-              );
-            }
-            $options[] = array(
-                'option_id' =>  $option_data->options,
-                'name'      =>  'Color',
-                'type'      =>  "radio",
-                'option_values' =>  $option_value_data,
-            );
-        }
-        if($inventory_options['size']){
-            $option_data = DB::table("oms_options")->where("id",$inventory_options['size'])->first();
-            $option_value_data = OmsInventoryProductOptionModel::select('oms_inventory_product_option.option_id','oms_inventory_product_option.option_value_id','oms_inventory_product_option.available_quantity','oms_options_details.value as name')
-            ->where('product_id', $product_id)
-            ->join('oms_options_details', 'oms_options_details.id', '=', 'oms_inventory_product_option.option_value_id')
-            ->where('oms_inventory_product_option.option_id', $inventory_options['size'])
-            ->orderBy('oms_options_details.sort')
-            ->get()
-            ->toArray();
-            $options[] = array(
-                'option_id' =>  $option_data->id,
-                'name'      =>  $option_data->option_name,
-                'type'      =>  "radio",
-                'option_values' =>  $option_value_data,
-            );
-        }
-        return $options;
-    }
+    
 
     protected function getLastSaleQtyWithOptionShipped($product_id, $options){
         $today = Carbon::now();
@@ -162,5 +129,269 @@ class PurchaseManagementController extends Controller
         ->where('option_value_id', $options['option_value_id'])
         ->where('updated_at', '>=', $last_date)
         ->first();
+    }
+
+    public function addOrder(Request $request) {
+        // dd($request->all());
+        if(count($request->all()) > 0){
+            $option_id = OmsSettingsModel::get('product_option','color');
+            // die($option_id);
+            // dd($request->all());
+            $same_option = false;
+            if($request->purchase){
+	            foreach ($request->purchase as $product_id => $op_code_arr) {
+	                $p_o_id[$product_id] = array();
+	                if($product_id == 'product'){
+                      // die("if");
+	                    foreach ($op_code_arr as $product_kk => $product_option_arr) {
+	                        $p_o_id_color[$product_kk] = array();
+	                        if(isset($product_option_arr['options']) && !empty($product_option_arr['options'])){
+	                            foreach ($product_option_arr['options'] as $product_keys => $product_values) {
+	                                if(in_array($product_values['option'], $p_o_id_color[$product_kk])){
+	                                //if($p_o_id_color == $product_values['option']){
+	                                    $same_option = true;
+	                                }else{
+	                                    array_push($p_o_id_color[$product_kk], $product_values['option']);
+	                                    //$p_o_id_color = $product_values['option'];
+	                                }
+                                    
+	                            }
+	                        }else{
+	                        	return response()->json(array('error' => 'Options must be selected!'));
+	                        	die;
+	                        }
+	                    }
+	                }else{
+                    // die("else");
+	                    foreach ($op_code_arr as $option_arr) {
+	                        if(isset($option_arr['option']) && !empty($option_arr['option'])){
+	                            foreach ($option_arr['option'] as $o_id => $o_v_id) {
+	                                if($o_id != $option_id){
+	                                    if(in_array($o_v_id, $p_o_id[$product_id])){
+	                                        $same_option = true;
+	                                    }else{
+	                                        array_push($p_o_id[$product_id], $o_v_id);
+	                                    }
+	                                }
+	                            }
+	                        }else{
+	                        	return response()->json(array('error' => 'Options must be selected!'));
+	                        	die;
+	                        }
+	                    }
+	                }
+	            }
+            }else{
+            	return response()->json(array('error' => 'Product and option must be selected!'));
+            	die;
+            }
+            if($same_option){
+                return response()->json(array('error' => 'Same option in multiple time not allowed!'));
+                die;
+            }
+            if($request->purchase){
+	            foreach ($request->purchase as $product_id => $op_code_arr) {
+	                $p_o_id[$product_id] = array();
+	                if($product_id == 'product'){
+	                    foreach ($op_code_arr as $product_kk => $product_option_arr) {
+                            dd($product_option_arr);
+				            if(isset($product_option_arr['add_to_inventory']) && $product_option_arr['add_to_inventory'] == 'on'){
+				            	$skuExists = OmsInventoryProductModel::where('sku', $product_option_arr['name'])->exists();
+				            	if($skuExists){
+				            		return response()->json(array('error' => 'Product SKU with name <b>'.$product_option_arr['name'].'</b> already exists!'));
+				            		die;
+				            	}
+				            }
+				          }
+				          }
+            }
+          }
+            if($request->urgent) $urgent = 1;
+            else $urgent = 0;
+
+            $OmsPurchaseOrdersModel = new OmsPurchaseOrdersModel();
+            $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_TOTAL} = 0;
+            $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_ORDER_STATUS_ID} = 0;
+            $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_LINK} = '';
+            $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_URGENT} = $urgent;
+            $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_SUPPLIER} = $request->supplier;
+            $OmsPurchaseOrdersModel->save();
+
+            $order_id = $OmsPurchaseOrdersModel->order_id;
+            
+            $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Admin';
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
+            $OmsPurchaseOrdersHistoryModel->save();
+            
+            foreach ($request->purchase as $product_id => $value) {
+                if($product_id == 'product'){
+                    foreach ($value as $key => $manual_product) {
+                        $file = $request->file('image')[$key];
+                        $extension = $request->file('image')[$key]->getClientOriginalExtension();
+                        $filename = md5(uniqid(rand(), true)) . '.' .$extension;
+                        $file->move(base_path('public/uploads/products/'), $filename);
+                        if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
+                        	copy(base_path('public/uploads/products/') . $filename, base_path('public/uploads/inventory_products/') . $filename);
+                        }
+                        $name = $manual_product['name'];
+                        $image = $filename;
+
+                        $OmsPurchaseProductModel = new OmsPurchaseProductModel();
+                        $OmsPurchaseProductModel->{OmsPurchaseProductModel::FIELD_NAME} = $name;
+                        $OmsPurchaseProductModel->{OmsPurchaseProductModel::FIELD_IMAGE} = $image;
+                        $OmsPurchaseProductModel->save();
+                        $product_id = $OmsPurchaseProductModel->product_id;
+                        $sku_to_model = "";
+                        if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
+                          $sku_to_model = $name;
+                          $name = "";
+                        }
+                        $OmsPurchaseOrdersProductModel = new OmsPurchaseOrdersProductModel();
+                        $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_ORDER_ID} = $order_id;
+                        $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_PRODUCT_ID} = $product_id;
+                        $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_NAME} = $name;
+                        $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_MODEL} = $sku_to_model;
+                        $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_TYPE} = 'manual';
+                        $OmsPurchaseOrdersProductModel->save();
+                        foreach ($manual_product['options'] as $optionKey => $product) {
+                            $OmsPurchaseOrdersProductQuantityModel = new OmsPurchaseOrdersProductQuantityModel();
+                            $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_ORDER_ID} = $order_id;
+                            $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                            $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_QUANTITY} = $product['quantity'];
+                            $OmsPurchaseOrdersProductQuantityModel->save();
+
+                            if(isset($product['option']) && is_array($product['option'])){
+                                $quantity_id = $OmsPurchaseOrdersProductQuantityModel->order_product_quantity_id;
+                                foreach ($product['option'] as $option_id => $option_value_id) {
+                                    $option_name = OmsOptions::select('option_name')->where('id', $option_id)->first()->option_name;
+                                    $option_value = OmsDetails::select('value')->where('id', $option_value_id)->first()->value;
+
+                                    $OmsPurchaseOrdersProductOptionModel = new OmsPurchaseOrdersProductOptionModel();
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_PRODUCT_QUANTITY_ID} = $quantity_id;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_ID} = $order_id;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_PRODUCT_OPTION_ID} = $option_id;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_PRODUCT_OPTION_VALUE_ID} = $option_value_id;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_NAME} = $option_name;
+                                    $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_VALUE} = $option_value;
+                                    $OmsPurchaseOrdersProductOptionModel->save();
+                                }
+                            }
+                        }
+
+                        if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
+                            $product_options = $manual_product['options'];
+                            
+                            $groupName = $this->getGroupName($manual_product['name']);
+                            $group_exist = ProductGroupModel::where('name', $groupName)->first();
+                            if(!$group_exist) {
+                                $group = new ProductGroupModel();
+                                $group->name = $groupName;
+                                if($group->save()) {
+                                    $group_id = $group->id;
+                                }
+                            }else {
+                                $group_id = $group_exist->id;
+                            }
+                            $color_name = OmsDetails::where("id",$manual_product['manually_option_color'])->first();
+                            if( $color_name ){
+                              $color_name = $color_name->value;
+                            }
+                            $OmsInventoryProductModel = new OmsInventoryProductModel();
+                            $OmsInventoryProductModel->{OmsInventoryProductModel::FIELD_SKU} = $manual_product['name'];
+                            $OmsInventoryProductModel->{OmsInventoryProductModel::FIELD_IMAGE} = $image;
+                            $OmsInventoryProductModel->option_name = $color_name;
+                            $OmsInventoryProductModel->option_value = $manual_product['manually_option_size'];
+                            $OmsInventoryProductModel->group_id = $group_id;
+                            $OmsInventoryProductModel->save();
+
+                            $total_quantity = 0;
+                            foreach ($product_options as $key => $options) {
+                                    foreach ($options['option'] as $option_id => $option_value_id) {
+                                        if(  $option_id != $this->static_option_id || count($options['option']) == 1 ){
+                                            $OmsInventoryProductOptionModel = new OmsInventoryProductOptionModel();
+                                            $OmsInventoryProductOptionModel->{OmsInventoryProductOptionModel::FIELD_PRODUCT_ID} = $OmsInventoryProductModel->product_id;
+                                            $OmsInventoryProductOptionModel->{OmsInventoryProductOptionModel::FIELD_OPTION_ID} = $option_id;
+                                            $OmsInventoryProductOptionModel->{OmsInventoryProductOptionModel::FIELD_OPTION_VALUE_ID} = $option_value_id;
+                                            $OmsInventoryProductOptionModel->{OmsInventoryProductOptionModel::FIELD_AVAILABLE_QUANTITY} = 0;
+                                            $OmsInventoryProductOptionModel->save();
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                }else{
+                    $product_data = OmsInventoryProductModel::where('product_id',$product_id)->first();
+                    $OmsPurchaseOrdersProductModel = new OmsPurchaseOrdersProductModel();
+                    $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_ORDER_ID} = $order_id;
+                    $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_PRODUCT_ID} = $product_id;
+                    $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_NAME} = '';
+                    $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_MODEL} = $product_data->sku;
+                    $OmsPurchaseOrdersProductModel->{OmsPurchaseOrdersProductModel::FIELD_TYPE} = 'opencart';
+                    $OmsPurchaseOrdersProductModel->save();
+                    // dd($value);
+                    foreach ($value as $product) {
+                        $OmsPurchaseOrdersProductQuantityModel = new OmsPurchaseOrdersProductQuantityModel();
+                        $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_ORDER_ID} = $order_id;
+                        $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                        $OmsPurchaseOrdersProductQuantityModel->{OmsPurchaseOrdersProductQuantityModel::FIELD_QUANTITY} = $product['quantity'] ? $product['quantity'] : 0;
+                        $OmsPurchaseOrdersProductQuantityModel->save();
+
+                        if(isset($product['option']) && is_array($product['option'])){
+                            $quantity_id = $OmsPurchaseOrdersProductQuantityModel->order_product_quantity_id;
+                            foreach ($product['option'] as $option_id => $option_value_id) {
+                                $option_name  = OmsOptions::where('id',$option_id)->first()->option_name;
+                                $option_value  = OmsDetails::where('id',$option_value_id)->first()->value;
+                                $OmsPurchaseOrdersProductOptionModel = new OmsPurchaseOrdersProductOptionModel();
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_PRODUCT_QUANTITY_ID} = $quantity_id;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_ID} = $order_id;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_PRODUCT_OPTION_ID} = $option_id;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_PRODUCT_OPTION_VALUE_ID} = $option_value_id;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_NAME} = $option_name;
+                                $OmsPurchaseOrdersProductOptionModel->{OmsPurchaseOrdersProductOptionModel::FIELD_VALUE} = $option_value;
+                                $OmsPurchaseOrdersProductOptionModel->save();
+                            }
+                        }
+                    }
+                }
+            }
+
+            Session::flash('message', 'Purchase order added successfully.');
+            Session::flash('alert-class', 'alert-success');
+            return redirect()->route('inventory.alarm')->with('message', 'Purchase order added successfully.');
+        }else{
+            Session::flash('message', 'Something went wrong, please try again!');
+            Session::flash('alert-class', 'alert-warning');
+            return redirect()->route('inventory.alarm')->with('message', 'Something went wrong, please try again!');
+        }
+    }
+
+    public function getGroupName($sku) {
+        
+        if(strpos($sku,"-") !== false) {
+            $pieces = explode("-", $sku);
+            $first_piece = $pieces[0].'-';
+            if(preg_replace('/[^0-9]/','', $pieces[1])) {
+                $second_piece = preg_replace('/[^0-9]/','', $pieces[1]);
+            }else{
+                $second_piece = $pieces[1];
+            }
+        }else {
+            if(preg_replace('/[^0-9]/','', $sku)) {
+                $pieces = explode(preg_replace('/[^0-9]/','', $sku), $sku);
+                $first_piece = $pieces[0];
+                $second_piece = preg_replace('/[^0-9]/','', $sku);
+            }else {
+                $first_piece = substr($sku, 0, 1);
+                $second_piece = substr("sku",1);
+            }
+           
+        }
+        
+        $group = $first_piece.$second_piece;
+        return $group;
     }
 }

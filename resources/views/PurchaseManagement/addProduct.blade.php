@@ -9,6 +9,9 @@
         .fa-2x {font-size: 2em;}
         .td-head {vertical-align: top !important;}
         .product_list {padding: 12px;}
+        .supplier-box {
+            float: left;
+        }
     </style>
 @endpush
 <div class="container-fluid relative animatedParent animateOnce my-3">
@@ -72,7 +75,7 @@
                             </div>
                           @endif
                           
-                          <form action="<?php echo URL::to('/purchase_manage/add_order') ?>" method="post" id="form-add-order" enctype="multipart/form-data">
+                          <form action="<?php echo route('add.purchase.order') ?>" method="post" id="form-add-order" enctype="multipart/form-data">
                             {{csrf_field()}}
                                 <?php if(is_array($products) && !empty($products)) {?>
                                 <div class="card product_list">
@@ -217,10 +220,25 @@
                                                     <?php for ($i=0; $i < $colspan; $i++) { ?>
                                                     <td class="col-xs-2"></td>
                                                     <?php } ?>
-                                                    <td class="col-xs-2">
+                                                    <div class="loader-box text-center" style="display:none;">
+                                                        <div class="preloader-wrapper small active text-center">
+                                                            <div class="spinner-layer spinner-green-only">
+                                                                <div class="circle-clipper left">
+                                                                    <div class="circle"></div>
+                                                                </div><div class="gap-patch">
+                                                                <div class="circle"></div>
+                                                            </div><div class="circle-clipper right">
+                                                                <div class="circle"></div>
+                                                            </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <td class="col-xs-2" style="text-align: right;">
                                                         <?php if(isset($product['options']) && is_array($product['options']) && count($product['options']) > 1) { ?>
                                                         <div>
-                                                            <button type="button" name="add_option" class="btn btn-suceess btn-block add_more_option" value="<?php echo $product['product_id'] ?>">Add More</button>
+                                                            
+                                                            <button type="button" name="add_option" class="btn btn-primary btn-sm add_more_option" value="<?php echo $product['product_id'] ?>">Add More</button>
+                                                            
                                                         </div>
                                                         <?php } ?>
                                                     </td>
@@ -237,20 +255,22 @@
             
                                     <?php } ?>
                                     <div class="row instruction_row" style="display: initial!important">
-                                        <div class="col-xs-12 col-sm-8">
+                                        <div class="col-xs-12 col-sm-8 supplier-box">
                                             <textarea name="instruction" class="form-control special_instruction" rows="3" placeholder="Special Instruction" required></textarea>
                                         </div>
-                                        <div class="col-xs-7 col-sm-2 text-center">
-                                            <label class="control-label">Supplier</label>
+                                        <div class="col-xs-7 col-sm-2 supplier-box text-center">
+                                            <label class="control-label heading-box"><strong> Supplier </strong></label>
                                             <select name="supplier" class="form-control">
                                                 <?php foreach ($suppliers as $supplier) { ?>
                                                     <option value="<?php echo $supplier['user_id'] ?>"><?php echo $supplier['firstname'] .' '. $supplier['lastname'] ?></option>
                                                 <?php } ?>
                                             </select>
                                         </div>
-                                        <div class="col-xs-5 col-sm-2">
+                                        <div class="col-xs-5 col-sm-2 supplier-box">
                                             <div>
-                                              <label for="urgent"><input type="checkbox" name="urgent" id="urgent">Urgent</label>
+                                              <label for="urgent" class="heading-box">
+                                                  <input type="checkbox" name="urgent" style="width: 20px;
+                                                height: 20px;" id="urgent"><strong> Urgent </strong></label>
                                             </div>
                                             <div>
                                                 <button type="submit" name="submit" value="add_purchase_order" id="submit-add-order" class="btn btn-success">Add Order</button>
@@ -261,20 +281,21 @@
                                 <?php } else { ?>
                                     <div class="card product_list" style="display: none;">
                                         <div class="row instruction_row">
-                                            <div class="col-xs-12 col-sm-8" style="float: left !important;">
+                                            <div class="col-xs-12 col-sm-8 supplier-box">
                                                 <textarea name="instruction" class="form-control special_instruction" rows="3" placeholder="Special Instruction" required></textarea>
                                             </div>
-                                            <div class="col-xs-7 col-sm-2 text-center" style="float: left !important;">
-                                                <label class="control-label">Supplier</label>
+                                            <div class="col-xs-7 col-sm-2 supplier-box text-center">
+                                                <label class="control-label heading-box"><strong> Supplier </strong></label>
                                                 <select name="supplier" class="form-control">
                                                     <?php foreach ($suppliers as $supplier) { ?>
                                                         <option value="<?php echo $supplier['user_id'] ?>"><?php echo $supplier['firstname'] .' '. $supplier['lastname'] ?></option>
                                                     <?php } ?>
                                                 </select>
                                             </div>
-                                            <div class="col-xs-5 col-sm-2" style="float: left !important;">
+                                            <div class="col-xs-5 col-sm-2 supplier-box">
                                                 <div>
-                                                  <label for="urgent"><input type="checkbox" name="urgent" id="urgent" class="chk-col-green"> Urgent</label>
+                                                  <label for="urgent" class="heading-box"><input type="checkbox" name="urgent" id="urgent" style="width: 20px;
+                                                    height: 20px;" class="chk-col-green"><strong> Urgent </strong></label>
                                                 </div>
                                                 <div>
                                                     <button type="submit" name="submit" value="add_purchase_order" id="submit-add-order" class="btn btn-success">Add Order</button>
@@ -304,6 +325,33 @@
             $($this).parents('.product_list_row').remove();
             $('.instruction_row').hide();
         }
+    });
+
+    $(document).delegate('.add_more_option', 'click', function() {
+        _this = $(this);
+        _this_parent = $(this).parents('.product_list_row').find('.option_list_row');
+        var product_id = $(this).val();
+        $.ajax({
+            method: "POST",
+            url: "{{route('get.purchase.product.order.option')}}",
+            data: {
+                product_id: $(this).val()
+            },
+            headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+            beforeSend: function() {
+                $('.loader-box').css('display', 'block');
+                $(_this).prop('disabled', true);
+            },
+            complete: function() {
+                // $(_this).html('Add More');
+                $('.loader-box').css('display', 'none');
+                $(_this).prop('disabled', false);
+            },
+        }).done(function(html) {
+            if (html != "") {
+                $(_this_parent).find('table').append(html);
+            }
+        });
     });
     </script>
 @endpush

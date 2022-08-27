@@ -206,7 +206,7 @@
                                 </li>
                                 <li><a href="panel-page-users.html"><i class="icon icon-settings_applications"></i>Settings</a>
                                 </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-server"></i>Inventory Options</a>
+                                <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/options') !== false) active @endif"><a href="{{route('inventory.options')}}"><i class="icon icon-server"></i>Inventory Options</a>
                                 </li>
                                 <li><a href="panel-page-users.html"><i class="icon icon-link"></i>Options Connection</a>
                                 </li>
