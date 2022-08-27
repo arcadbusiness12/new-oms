@@ -1009,6 +1009,7 @@ use Carbon\Carbon;
     $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->groupBy('option_name')->orderBy('option_name')->get();
     dd($oms_options);
     if($request->isMethod('post')) {
+      
 
     }
     return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
