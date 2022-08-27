@@ -24,7 +24,14 @@
        <td><a class="btn-danger btn" href = "javascript:;"  onclick="destroyOptionValue({{$value->id}})"><i class="icon-close"></i></a></td>
      </tr>
      @endforeach
-     
+     @if(count($option_values) < 1)
+     <tr>
+      <td>
+        <input type="text" name="title[]" value="" autocomplete="off" class="form-control">
+      </td>
+      <td><button id="removeRow" type="button" class="btn btn-danger"><i class="icon-close"></i></button></td>
+    </tr>
+    @endif
    </tbody>
  </table>
  <div class="form-group">

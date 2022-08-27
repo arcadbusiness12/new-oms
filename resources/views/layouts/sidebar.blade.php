@@ -208,7 +208,7 @@
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/options') !== false) active @endif"><a href="{{route('inventory.options')}}"><i class="icon icon-server"></i>Inventory Options</a>
                                 </li>
-                                <li><a href="panel-page-users.html"><i class="icon icon-link"></i>Options Connection</a>
+                                <li class="@if(strpos(Request::url(), 'option/connection') !== false) active @endif"><a href="{{route('option.connection')}}"><i class="icon icon-link"></i>Options Connection</a>
                                 </li>
                             </ul>
                         </li>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\inventoryManagement;
 
 use App\Http\Controllers\Controller;
+use App\Models\DressFairOpenCart\Products\DressFairOptionDescriptionModel;
 use App\Models\DressFairOpenCart\Products\DressFairProductsModel;
 use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
@@ -1000,6 +1001,16 @@ use Carbon\Carbon;
         'message' => 'Something went wrong.'
       ]);
     }
+  }
+
+  public function optionConnection(Request $request) {
+    $baOption = OptionDescriptionModel::groupBy('option_id')->where('language_id', 1)->orderBy('name')->get();
+    $dfOption = DressFairOptionDescriptionModel::groupBy('option_id')->where('language_id', 1)->orderBy('name')->get();
+    $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->orderBy('option_name')->get();
+    if($request->isMethod('post')) {
+
+    }
+    return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
   }
  }
  

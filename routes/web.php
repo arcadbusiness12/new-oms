@@ -69,6 +69,7 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/add/option/details/{id}', 'addOptionDetails')->name('add.option.details');
         Route::get('/destroy/option/{id}', 'destroyOption')->name('destroy.option');
         Route::get('/destroy/option/value/{id}', 'destroyOptionValue')->name('destroy.option.value');
+        Route::any('/option/connection', 'optionConnection')->name('option.connection');
     });
 });
 Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
