@@ -99,10 +99,6 @@
                              @foreach($products as $key=>$product)
                              <tr id="tr_{{$product->id}}" style="border-top: 1px solid gray">
                    
-                              {{-- <td class="td-valign"><div> <input type="checkbox" class="sub_chk" data-id="{{$product->product_id}}"></div></td> --}}
-                              <!--<td class="td-valign"><input type="text" size="8" value="{{ $product->product_id }}"></td>
-                                <td class="td-valign"><center><b>{{$product->sku}}<br>{{$product->option_name}}</b></center></td>-->
-                   
                                 <td class="col-sm-2" style="vertical-align: text-top;">
                                  <table class="table table-hover">
                                    <thead style="background-color: {{ $tab_bg_color }}">
@@ -117,17 +113,10 @@
                                  </table> 
                                  
                                  <img src="{{URL::asset('uploads/inventory_products/'.$product->image)}}" class="img-responsive img-thumbnail" />
-                                 {{-- <center><select class="form-control" id="product_change_status" onchange="changeProductStatusAjax(this.value,{{ $product->product_id }})">
-                                 <option value="0" {{ ($product->status==0) ? "selected" : "" }}>Disable</option>
-                                 <option value="1" {{ ($product->status==1) ? "selected" : "" }}>Enable</option>
-                                 @if( $sum == 0 )
-                                 <option value="2" {{ ($product->status==2) ? "selected" : "" }}>Finished</option>
-                                 @endif
-                               </select></center> --}}
+                                
                              </td>
                    
-                                {{-- <td class="col-sm-1 td-valign"><center><b>{{$product->sku}}<br><br></b>{{$product->option_name}}</center></td> --}}
-                   
+                               
                                 <td class="column col-sm-6">
                                  <center>
                                    <table class="table table-hover">
@@ -160,8 +149,6 @@
                                    <td class="{{$bColor}}" style="font-weight: bold;font-size: 14px;"><center>{{$val->minimum_quantity}}</center></td>
                                        <td class="{{$bColor}}"><center>{{$val->onhold_quantity}}</center></td>
                                        <td class="{{$bColor}}"><center>{{$val->pack_quantity}}</center></td>
-                                       {{-- <td><center>{{$val->shipped_quantity}}</center></td>
-                                       <td><center>{{$val->delivered_quantity}}</center></td> --}}
                                      </tr>
                                      @php 
                                      @$sum_available_quantity += $val->available_quantity;
@@ -178,31 +165,10 @@
                                        <td><center><strong>{{ $minimum_quantity }}</strong></center></td>
                                        <td><center><strong>{{ $sum_onhold_quantity }}</strong></center></td>
                                        <td><center><strong>{{ $sum_pack_quantity }}</strong></center></td>
-                                       {{-- <td><center><strong>{{ $sum_shipped_quantity }}</strong></center></td>
-                                       <td><center><strong>{{ $sum_delivered_quantity }}</strong></center></td> --}}
-                                       {{-- <td  colspan="2"><center><strong>{{ $product->row }}</strong></center></td> --}}
                                      </tr>
                                    </table>
                                  </center>
                                </td>
-                           <!--<td  class="td-valign"><center><b>{{$sum}}</b></center></td>
-                           <td  class="td-valign">
-                             <table class="table">
-                               <thead>
-                                 <th>Rack</th>
-                                 <th>Shelf</th>
-                               </thead>
-                               @forelse($product->ProductsSizes as $key=>$loc)
-                               <tr>
-                                 <td>{{ $loc->rack }}</td>
-                                 <td>{{  $loc->shelf }}</td>
-                               </tr>
-                               @empty
-                               <small>location not found.</small>
-                               @endforelse
-                             </table>
-                             <center><b>{{ $product->row }}</b></center>
-                           </td>-->
                            <td class="column col-sm-1 td-valign"><center>
                            @if( session('user_group_id') == 1 )
                            <select class="form-control" id="product_change_status" disabled onchange="changeProductStatusAjax(this.value,{{ $product->product_id }})">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\inventoryManagement;
 
 use App\Http\Controllers\Controller;
+use App\Models\DressFairOpenCart\Products\DressFairOptionDescriptionModel;
 use App\Models\DressFairOpenCart\Products\DressFairProductsModel;
 use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
@@ -938,8 +939,81 @@ use Carbon\Carbon;
     }
   }
 
-  public function orderOutStockProduct(Request $request) {
-    dd($request->all());
+  public function inventoryOptions(Request $request) {
+    if($request->isMethod('post')) {
+
+    }
+    $colors = DB::table('colors')->get();
+    $option_detail = OmsOptions::select('option_name', 'id')->get();
+    $option_value  = OmsDetails::all();
+    return view(self::VIEW_DIR. '.inventoryOption')->with(compact('colors','option_detail','option_value'));
+  }
+  
+  public function addOptionName(Request $request) {
+    foreach($request->value as $dat){
+      $value = new OmsOptions;
+      $value->option_name = $dat;
+      $value->save();
+    }
+    return back()->with('success', 'Option Added Successfully ');
+  }
+
+  public function editOptionDetails($id) {
+    $details = OmsOptions::find($id);
+    $option_values = OmsDetails::select('id','value','options')->where(['options'=>$id])->get();
+    return view(self::VIEW_DIR.".addOption")->with(compact('details', 'option_values','id'));
+  }
+
+  public function addOptionDetails(Request $request, $id) {
+    if($request->option_name_id) {
+      OmsOptions::where('id', $request->option_name_id)->update(['option_name' => $request->option_name]);
+    }
+    $ids = $request->id;
+    $titles = $request->title;
+    foreach($titles as $k => $title) {
+        OmsDetails::updateOrCreate(
+          ['id' => @$ids[$k]],
+          ['value' => $title, 'options' => $id]
+        );
+    }
+
+    return back()->with('success', 'Value Updated Successfully');
+  }
+
+  public function destroyOption($id) {
+    $option = OmsOptions::find($id);
+    if($option->delete()) {
+      OmsDetails::where('options', $id)->delete();
+    }
+    return back()->with('success', 'Option Successfully Deleted');
+  }
+
+  public function destroyOptionValue($id) {
+    $value = OmsDetails::find($id);
+    if($value->delete()) {
+      return response()->json([
+        'status' => true,
+        'message' => 'Value Successfully Deleted'
+      ]);
+    }else {
+      return response()->json([
+        'status' => false,
+        'message' => 'Something went wrong.'
+      ]);
+    }
+  }
+
+  public function optionConnection(Request $request) {
+    // ->select(DB::raw('*'))
+    $baOption = OptionDescriptionModel::where('language_id', 1)->orderBy('name')->get();
+    $dfOption = DressFairOptionDescriptionModel::groupBy('option_id')->where('language_id', 1)->orderBy('name')->get();
+    $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->orderBy('option_name')->get();
+    // dd($oms_options->toArray());
+    if($request->isMethod('post')) {
+
+
+    }
+    return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
   }
  }
  

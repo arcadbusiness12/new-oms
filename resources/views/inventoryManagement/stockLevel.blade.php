@@ -42,7 +42,7 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-@include('inventoryManagement.dashboardModals')
+
 @endsection
 
 @push('scripts')

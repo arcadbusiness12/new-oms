@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
 use App\Http\Controllers\Orders\OrdersController;
+use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,11 +65,23 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
         Route::post('/update/stock/level', 'updateStockLevel')->name('update.stock.level');
         Route::get('/stock/report', 'stockReport')->name('stock.report');
         Route::get('/inventory/alarm', 'inventoryAlarm')->name('inventory.alarm');
+        Route::any('/inventory/options', 'inventoryOptions')->name('inventory.options');
+        Route::post('/add/option/name', 'addOptionName')->name('add.option.name');
+        Route::get('/edit/option/detail/{id}', 'editOptionDetails')->name('edit.option.details');
+        Route::post('/add/option/details/{id}', 'addOptionDetails')->name('add.option.details');
+        Route::get('/destroy/option/{id}', 'destroyOption')->name('destroy.option');
+        Route::get('/destroy/option/value/{id}', 'destroyOptionValue')->name('destroy.option.value');
+        Route::any('/option/connection', 'optionConnection')->name('option.connection');
     });
 });
 Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
-    Route::controller(PurchaseManagementController::class) ->group(function() {
+    Route::controller(PurchaseManagementController::class)->group(function() {
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
+        Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
+        
+    });
+    Route::controller(PurchaseManagementAjaxController::class)->group(function() {
+        Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
