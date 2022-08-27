@@ -1004,9 +1004,10 @@ use Carbon\Carbon;
   }
 
   public function optionConnection(Request $request) {
-    $baOption = OptionDescriptionModel::where('language_id', 1)->get();
-    $dfOption = DressFairOptionDescriptionModel::where('language_id', 1)->get();
+    // $baOption = OptionDescriptionModel::where('language_id', 1)->get();
+    // $dfOption = DressFairOptionDescriptionModel::where('language_id', 1)->get();
     $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->orderBy('option_name')->get();
+    dd($oms_options);
     if($request->isMethod('post')) {
 
     }
