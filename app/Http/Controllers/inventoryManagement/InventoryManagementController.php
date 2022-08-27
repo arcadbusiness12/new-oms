@@ -1004,15 +1004,35 @@ use Carbon\Carbon;
   }
 
   public function optionConnection(Request $request) {
-    // ->select(DB::raw('*'))
-    // dd($request->all());
     $baOption = OptionDescriptionModel::where('language_id', 1)->orderBy('name')->get();
     $dfOption = DressFairOptionDescriptionModel::groupBy('option_id')->where('language_id', 1)->orderBy('name')->get();
     $oms_options = OmsOptions::with('omsOptionsDetails')->where('status',1)->orderBy('option_name')->get();
-    // dd($dfOption->toArray());                   
     if($request->isMethod('post')) {
+        $post_option         = $request->baoptions;
+        $post_option_details = $request->baoptionsdetails;
+        $post_dfoption = $request->dfoptions;
+        $post_dfoption_details = $request->dfoptionsdetails;
+        if(!empty($oms_options)){
+          OmsInventoryOptionModel::truncate();
+          OmsInventoryOptionValueModel::truncate();
+          foreach ($oms_options as $key => $oms_option) {
+            if($key == count($post_option)) break;
+            $temp_insert = ['oms_options_id' => $oms_option->id,'ba_option_id' => $post_option[$key],'df_option_id' => $post_dfoption[$key]];
+            OmsInventoryOptionModel::create($temp_insert);
+            foreach ($oms_option->omsOptionsDetails as $key1=>$omsOptionsDetail) {
+              $omsdetails = new OmsInventoryOptionValueModel;
+              $omsdetails->oms_options_id = $oms_option->id;
+              $omsdetails->oms_option_details_id = $omsOptionsDetail->id;
+              $omsdetails->ba_option_id =  $post_option[$key];
+              $omsdetails->df_option_id =  $post_dfoption[$key];
+              $omsdetails->ba_option_value_id = isset($post_option_details[$post_option[$key]][$key1]) ? $post_option_details[$post_option[$key]][$key1] : 0;
+              $omsdetails->df_option_value_id = isset($post_dfoption_details[$post_dfoption[$key]][$key1]) ? $post_dfoption_details[$post_dfoption[$key]][$key1] : 0;
+              $omsdetails->save();
+            }
 
-
+          }
+          Session::flash('message', "Option connected Successfully.");
+        }
     }
     return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
   }
