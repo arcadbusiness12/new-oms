@@ -69,7 +69,7 @@ class OrdersController extends Controller
         }else if( @$old_input['by_store'] == 2 ){
             $data = $df_orders->paginate(20);
         }else{
-            $data = $ba_orders->union($df_orders)->where("order_id",1)->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc');
+            $data = $ba_orders->union($df_orders)->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc');
             $data = $data->paginate(20);
         }
         // dd($data->toArray());
@@ -80,33 +80,29 @@ class OrdersController extends Controller
     public function online(){
         $old_input = Request::all();
 
-        $ba_orders = OrdersModel::with(['status', 'orderd_products','orderd_totals'=>function($query){
-                $query->whereNotIn('code',['tax']);
-             }])
-            ->select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
+        $ba_orders = OrdersModel::
+            select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
             // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
             ->where('order_type', 'like', 'normal')
             ->where('order_status_id', '>', 0)
             ->where('online_approved', 0)
             ->where('reseller_approve', 1)
-            ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-                return $query->where('order_id',$old_input['order_id']);
+            ->when(@$old_input['order_id'] != "",function($query1) use ($old_input){
+                return $query1->where('order_id',$old_input['order_id']);
             })
-            ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-                return $query->where('order_status_id',$old_input['order_status_id']);
+            ->when(@$old_input['order_status_id'] != "",function($query1) use ($old_input){
+                return $query1->where('order_status_id',$old_input['order_status_id']);
             })
-            ->when(@$old_input['date_from'] != "",function($query) use ($old_input){
-                return $query->whereDate('date_added','>=',$old_input['date_from']);
+            ->when(@$old_input['date_from'] != "",function($query1) use ($old_input){
+                return $query1->whereDate('date_added','>=',$old_input['date_from']);
             })
-            ->when(@$old_input['date_to'] != "",function($query) use ($old_input){
-                return $query->whereDate('date_added','<=',$old_input['date_to']);
+            ->when(@$old_input['date_to'] != "",function($query1) use ($old_input){
+                return $query1->whereDate('date_added','<=',$old_input['date_to']);
             });
 
         //dressfair orders
-        $df_orders = DFOrdersModel::with(['status', 'orderd_products','orderd_totals'=>function($query){
-            $query->whereNotIn('code',['tax']);
-            }])
-            ->select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
+        $df_orders = DFOrdersModel::
+            select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
             // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
             ->where('order_type', 'like', 'normal')
             ->where('order_status_id', '>', 0)
@@ -134,6 +130,7 @@ class OrdersController extends Controller
             ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc');
             $data = $data->paginate(20);
         }
+        // dd($data->toArray());
         ///extra variable
         $searchFormAction = URL::to('orders/online');
         $orderStatus = OrderStatusModel::all();
