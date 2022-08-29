@@ -29,9 +29,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
-      Route::prefix("normal")->group(function(){
         Route::get("/","index")->name('orders');
-      });
+        Route::get("/online","online")->name('orders.online');
     });
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
@@ -78,7 +77,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
     Route::controller(PurchaseManagementController::class)->group(function() {
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
-        
+
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

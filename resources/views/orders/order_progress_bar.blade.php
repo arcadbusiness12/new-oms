@@ -10,105 +10,22 @@ if( !empty($reship_data) && $reship_data->reship==1 ){
     // echo $label.$label.$label.$label;
 }
 @endphp
-<div class="process-step">
-    @if(isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] == 5)
-    <div class="circle done undelivered">
-        <span class="p-label">
-            <i class="fa fa-close" aria-hidden="true"></i>
-        </span>
-        <span class="title">Cancelled</span>
-    </div>
-    @else
-    <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 0 && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : '' }}">
-        @if(isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 0  && $omsOrderStatus[$order['order_id']] <= 7)
-        <span class="p-label">
-            <i class="fa fa-check" aria-hidden="true"></i>
-        </span>
-        @else
-        <span class="p-label">
-        </span>
-        @endif
-        <span class="title">Picklist</span>
-    </div>
-    <span class="bar {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 1  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}"></span>
-    <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 1  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}">
-        @if(isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 1  && $omsOrderStatus[$order['order_id']] <= 7)
-        <span class="p-label">
-            <i class="fa fa-check" aria-hidden="true"></i>
-        </span>
-        @else
-        <span class="p-label"></span>
-        @endif
-        <span class="title">Packed</span>
-    </div>
-    <span class="bar {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 2  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}"></span>
-    <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 2  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}">
-        @if(isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 2  && $omsOrderStatus[$order['order_id']] <= 7)
-        <span class="p-label">
-            <i class="fa fa-check" aria-hidden="true"></i>
-        </span>
-        @else
-        <span class="p-label"></span>
-        @endif
-        <span class="title">AwbGen</span>
-    </div>
-    <span class="bar {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 3  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}"></span>
-    <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 3  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}">
-        @if(isset($omsOrderStatus[$order['order_id']]) && $omsOrderStatus[$order['order_id']] >= 3  && $omsOrderStatus[$order['order_id']] <= 7)
-        <span class="p-label">
-            <i class="fa fa-check" aria-hidden="true"></i>
-        </span>
-        @else
-        <span class="p-label"></span>
-        @endif
-        <span class="title">Shipped</span>
-    </div>
-    @if($order['order_status_id'] == 9)
-    <span class="bar undone"></span>
-    <div class="circle undone">
-        <span class="p-label">
-            <i class="fa fa-reply" aria-hidden="true"></i>
-        </span>
-        <span class="title">Returned</span>
-    </div>
-    @else
-        <span class="bar {{isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7)  && $omsOrderStatus[$order['order_id']] <= 7? 'done' : ''}}"></span>
-        @if(isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7) && $omsOrderStatus[$order['order_id']] < 7)
-        <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7)  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done' : ''}}">
-            @if(isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7) && $omsOrderStatus[$order['order_id']] <= 7)
-            <span class="p-label">
-                <i class="fa fa-check" aria-hidden="true"></i>
-            </span>
-            @else
-            <span class="p-label"></span>
-            @endif
-            <span class="title">Delivered</span>
-        </div>
-        @else
-        <div class="circle {{isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7)  && $omsOrderStatus[$order['order_id']] <= 7 ? 'done undelivered' : ''}}">
-            @if(isset($omsOrderStatus[$order['order_id']]) && ($omsOrderStatus[$order['order_id']] == 4 || $omsOrderStatus[$order['order_id']] == 7) && $omsOrderStatus[$order['order_id']] <= 7)
-            <span class="p-label">
-                <i class="fa fa-close" aria-hidden="true"></i>
-            </span>
-            @else
-            <span class="p-label"></span>
-            @endif
-            <span class="title">Delivered</span>
-        </div>
-        @endif
-        @endif
-    @endif
-    @if( @$omsOrderStatus[$order['order_id']] != 5 && stripos(Request::path(),'orders') === 0)
-      <span class="bar {{ (@$reship_data->airway_bills[0]->payment_status == 1) ? 'done' : ''  }}"></span>
-      <div class="circle {{ (@$reship_data->airway_bills[0]->payment_status == 1) ? 'done' : ''  }}">
-          @if(@$reship_data->airway_bills[0]->payment_status == 1)
-          <span class="p-label">
-              <i class="fa fa-check" aria-hidden="true"></i>
-          </span>
-          @else
-          <span class="p-label"></span>
-          @endif
-          <span class="title">Paid</span>
-      </div>
-    @endif
+<div class="stepper sw-main sw-theme-circles"
+   data-options='{
+   "theme":"sw-theme-circles",
+   "transitionEffect":"fade",
+   "toolbarSettings":{
+   "showNextButton":false,
+   "showPreviousButton":false
+   }
+   }'>
+   <ul class="nav step-anchor">
+      <li><a href=""  class="circle"><i class="icon-check"></i></a><center>Picklist</center></li>
+      <li><a  class="circle"><i class="icon-check"></i></a><center>Packed</center></li>
+      <li><a  class="circle"><i class="icon-check"></i></a><center>AWB</center></li>
+      <li><a  class="circle"><i class="icon-check"></i></a><center>Shipped</center></li>
+      <li><a  class="circle"><i class="icon-check"></i></a><center>Delivered</center></li>
+      <li><a  class="circle"><i class="icon-check"></i></a><center>Paid</center></li>
+   </ul>
+
 </div>
