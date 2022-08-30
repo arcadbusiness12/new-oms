@@ -46,7 +46,7 @@
                                     <tr>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center>-</center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->courier_name }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->date_added }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->date_modified }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->telephone }} </center></td>

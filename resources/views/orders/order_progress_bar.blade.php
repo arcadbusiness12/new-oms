@@ -1,15 +1,4 @@
-@php
-$reship_data = App\Models\Oms\OmsOrdersModel::with(['airway_bills'=>function($query){
-  $query->select('order_id','payment_status');
-}])->where('order_id',$order['order_id'])->first();
-if( !empty($reship_data) && $reship_data->reship==1 ){
-    @endphp
-    <span class="label label-warning" style="margin-left: 142px;">R</span>
-    @php
-    echo $label = '<span class="label label-warning" style="margin-left: 50px;">R</span>';
-    // echo $label.$label.$label.$label;
-}
-@endphp
+
 <div class="stepper sw-main sw-theme-circles"
    data-options='{
    "theme":"sw-theme-circles",
