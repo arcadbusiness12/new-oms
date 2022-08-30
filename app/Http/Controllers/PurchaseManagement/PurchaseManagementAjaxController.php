@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseManagementAjaxController extends Controller
 {
-    const VIEW_DIR = 'purchaseManagement';
+    const VIEW_DIR = 'PurchaseManagement';
     const PER_PAGE = 10;
     private $opencart_image_url = '';
     private $static_option_id = 0;
@@ -186,7 +186,7 @@ class PurchaseManagementAjaxController extends Controller
         }
     }
     $product = $product_array;
-    return view(self::VIEW_DIR.".addproductrow")->with(compact('product'));
+    return view(self::VIEW_DIR.".addProductRow")->with(compact('product'));
   }
 
   protected function get_inventory_product_image($product_image = ''){
