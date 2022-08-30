@@ -1,5 +1,4 @@
 /public/hot
-/public/uploads
 /public/storage
 /public/.htaccess
 /public/assets/TFM_request_response.php
@@ -20,4 +19,3 @@ yarn-error.log
 /.vscode
 inventory_stock_manage.txt
 **/.DS_Store
-node_modules

@@ -185,8 +185,8 @@ class PurchaseManagementAjaxController extends Controller
             }
         }
     }
-    // dd($product_array);
-    return view(self::VIEW_DIR.".addProductRow", ['product' => $product_array]);
+    $product = $product_array;
+    return view(self::VIEW_DIR.".addProductRow")->with(compact('product'));
   }
 
   protected function get_inventory_product_image($product_image = ''){
