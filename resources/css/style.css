@@ -82,3 +82,11 @@ span>svg {
 .btn-card-head {
     float: left;
 }
+
+.col-grid {
+    float: left;
+}
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}

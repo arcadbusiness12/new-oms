@@ -188,7 +188,7 @@
                    
                    </table>
                     <?php if($products) { ?>
-                      <div class="text-right">
+                      <div class="text">
                         <?php echo $products->appends(@$old_input)->render(); ?>
                       </div>
                       <?php } ?>

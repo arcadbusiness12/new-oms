@@ -69,8 +69,10 @@ use Carbon\Carbon;
         $subcategories = GroupSubCategoryModel::where('group_main_category_id', $category)->get();
         if(strpos($latestGroup->name, '-') !== false) {
             $code = explode('-', $latestGroup->name);
-        }else {
+        }elseif(strpos($latestGroup->group_sku, '-') !== false) {
             $code = explode('-', $latestGroup->group_sku);
+        }else {
+            $code = array('', $latestGroup->name);
         }
         return response()->json([
             'status' => true,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PurchaseManagement;
 
 use App\Http\Controllers\Controller;
+use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
@@ -52,6 +53,15 @@ class PurchaseManagementController extends Controller
         $this->oms_inventory_product_image_cache_path = public_path('uploads/inventory_products/cache/');
     }
 
+    public function placePurchaseOrder(Request $request) {
+        $products = [];
+        if($request->isMethod('post')) {
+            dd("Ok");
+        }
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->where('status', 1)->get()->toArray();
+        return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
+    }
+
     public function orderOutStockProduct(Request $request) {
         $products = [];
         // dd($request->all());
@@ -81,7 +91,7 @@ class PurchaseManagementController extends Controller
                                 $OmsInventoryStockModel = OmsInventoryStockModel::select('minimum_quantity','average_quantity','duration')->where('product_id', $product['product_id'])->where('option_id', $option['option_id'])->where('option_value_id', $value['option_value_id'])->first();
         
                                 //$average_quantity = $this->getLastSaleQtyWithOption($product['product_id'], $value);  //for delivered quantity
-                                $average_quantity_shipped = $this->getLastSaleQtyWithOptionShipped($product['product_id'], $value); //for shipped quantity
+                                $average_quantity_shipped = getLastSaleQtyWithOptionShipped($product['product_id'], $value); //for shipped quantity
                                 // $average_tot_quantity = $average_quantity->total+$average_quantity_shipped->total;
                                 $average_tot_quantity = $average_quantity_shipped->total;
                                 if($OmsInventoryStockModel){
@@ -115,28 +125,9 @@ class PurchaseManagementController extends Controller
             return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
     }
 
-    
-
-    protected function getLastSaleQtyWithOptionShipped($product_id, $options){
-        $today = Carbon::now();
-        $today_date = Carbon::createFromFormat('Y-m-d H:i:s', $today)->toDateTimeString();
-        $now = Carbon::now();
-        $last = $now->subDays(30);
-        $last_date = Carbon::createFromFormat('Y-m-d H:i:s', $last)->toDateTimeString();
-        return OmsInventoryShippedQuantityModel::select(DB::Raw('SUM(quantity) as total'))
-        ->where('product_id', $product_id)
-        ->where('option_id', $options['option_id'])
-        ->where('option_value_id', $options['option_value_id'])
-        ->where('updated_at', '>=', $last_date)
-        ->first();
-    }
-
     public function addOrder(Request $request) {
-        // dd($request->all());
         if(count($request->all()) > 0){
             $option_id = OmsSettingsModel::get('product_option','color');
-            // die($option_id);
-            // dd($request->all());
             $same_option = false;
             if($request->purchase){
 	            foreach ($request->purchase as $product_id => $op_code_arr) {
@@ -194,7 +185,6 @@ class PurchaseManagementController extends Controller
 	                $p_o_id[$product_id] = array();
 	                if($product_id == 'product'){
 	                    foreach ($op_code_arr as $product_kk => $product_option_arr) {
-                            dd($product_option_arr);
 				            if(isset($product_option_arr['add_to_inventory']) && $product_option_arr['add_to_inventory'] == 'on'){
 				            	$skuExists = OmsInventoryProductModel::where('sku', $product_option_arr['name'])->exists();
 				            	if($skuExists){
@@ -228,15 +218,19 @@ class PurchaseManagementController extends Controller
             foreach ($request->purchase as $product_id => $value) {
                 if($product_id == 'product'){
                     foreach ($value as $key => $manual_product) {
-                        $file = $request->file('image')[$key];
-                        $extension = $request->file('image')[$key]->getClientOriginalExtension();
-                        $filename = md5(uniqid(rand(), true)) . '.' .$extension;
-                        $file->move(base_path('public/uploads/products/'), $filename);
-                        if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
-                        	copy(base_path('public/uploads/products/') . $filename, base_path('public/uploads/inventory_products/') . $filename);
+                        $name = '';
+                        $image = '';
+                        if($request->hasFile('image')) {
+                            $file = $request->file('image')[$key];
+                            $extension = $request->file('image')[$key]->getClientOriginalExtension();
+                            $filename = md5(uniqid(rand(), true)) . '.' .$extension;
+                            $file->move(base_path('public/uploads/products/'), $filename);
+                            if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
+                                copy(base_path('public/uploads/products/') . $filename, base_path('public/uploads/inventory_products/') . $filename);
+                            }
+                            $name = $manual_product['name'];
+                            $image = $filename;
                         }
-                        $name = $manual_product['name'];
-                        $image = $filename;
 
                         $OmsPurchaseProductModel = new OmsPurchaseProductModel();
                         $OmsPurchaseProductModel->{OmsPurchaseProductModel::FIELD_NAME} = $name;
@@ -287,8 +281,13 @@ class PurchaseManagementController extends Controller
                             $groupName = $this->getGroupName($manual_product['name']);
                             $group_exist = ProductGroupModel::where('name', $groupName)->first();
                             if(!$group_exist) {
+                                $cateName = GroupCategoryModel::find($request->category);
                                 $group = new ProductGroupModel();
                                 $group->name = $groupName;
+                                $group->category_id = $request->category;
+                                $group->category_name = $cateName->name;
+                                $group->sub_category_id = $request->subCategory ? $request->subCategory : null;
+                                $group->group_sku = $request->newSku;
                                 if($group->save()) {
                                     $group_id = $group->id;
                                 }

@@ -142,15 +142,17 @@
                             </ul>
                         </li>
 
-                        <li class="treeview">
+                        <li class="treeview @if( str_contains(Request::url(), 'PurchaseManagement/') ) active @endif)">
                             <a href="#">
                             <i class="icon icon icon-shopping-bag s-24"></i>
                             Purchase Management
                             <i class=" icon-angle-left  pull-right"></i></a>
                         </a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-products.html"><i class="icon icon-add"></i>Add
-                                    Products</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/place/purchase/order') !== false || strpos(Request::url(), 'out/stock/product') !== false) active @endif">
+                                    <a href="{{route('place.purchase.order')}}"><i class="icon icon-add"></i>Add
+                                    Products
+                                </a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-circle-o"></i>All
                                     Orders</a>

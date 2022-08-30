@@ -78,10 +78,15 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
     Route::controller(PurchaseManagementController::class)->group(function() {
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
+        Route::any('/place/purchase/order', 'placePurchaseOrder')->name('place.purchase.order');
         
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
+        Route::get('/add/purchase/product/manually', 'addPurchaseProductManualy')->name('add.purchase.product.manually');
+        Route::post('/get/manually/all/options', 'getManuallyAllOptions')->name('get.manually.all.options');
+        Route::post('/get/purchase/product/sku', 'getPurchaseProductSku')->name('get.purchase.product.sku');
+        Route::post('/add/product', 'addProduct')->name('add.product');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
