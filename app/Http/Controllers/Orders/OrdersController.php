@@ -132,7 +132,7 @@ class OrdersController extends Controller
             if( @$old_input['order_id'] != "" ){
                 $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added');
             }
-            $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN dford.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) DESC")
+            $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN dford.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
                 ->paginate(100);
             $data = $this->getOrdersWithImage($data);
             dd($data->toArray());
