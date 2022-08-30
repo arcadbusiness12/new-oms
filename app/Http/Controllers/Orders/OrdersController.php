@@ -128,14 +128,20 @@ class OrdersController extends Controller
                   (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total,
                   (CASE WHEN opo.store = 1 THEN baord.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) AS date_modified,
                   (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added
-                "));
-            if( @$old_input['order_id'] != "" ){
-                $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added');
-            }
+                "))
+                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
+                })
+                ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
+                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_status_id = '.$old_input["order_status_id"].' WHEN opo.store = 2 THEN dford.order_status_id = '.$old_input["order_status_id"].' ELSE 0 END)');
+                });
+            // if( @$old_input['order_id'] != "" ){
+            //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
+            // }
             $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
                 ->paginate(100);
             $data = $this->getOrdersWithImage($data);
-            dd($data->toArray());
+            // dd($data->toArray());
         ///
         $searchFormAction = URL::to('orders');
         $orderStatus = OrderStatusModel::all();
