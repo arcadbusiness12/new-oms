@@ -29,9 +29,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
-      Route::prefix("normal")->group(function(){
         Route::get("/","index")->name('orders');
-      });
+        Route::get("/online","online")->name('orders.online');
     });
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
