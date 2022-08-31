@@ -60,7 +60,7 @@
                                         <td colspan="5" >@include('orders.order_progress_bar')</td>
                                     </tr>
                                     @if( $order->orderd_products )
-                                        <tr style="border-bottom: 7px solid #e9e9e9 !important">
+                                        <tr>
                                             <td colspan="8">
                                                 <center>
                                                 <table width="100%" style="font-size:12px;">
@@ -89,6 +89,29 @@
                                             </td>
                                         </tr>
                                     @endif
+                                    <tr  class="order-action" style="border-bottom: 7px solid #e9e9e9 !important">
+                                        <td colspan="4">
+                                            @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
+                                                <div class="row">
+                                                    <div class="col-2">
+                                                        <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
+                                                            <form action="{{URL::to('orders/cancel-order')}}" id="cancel_order_form_{{ $order->order_id }}">
+                                                                {{csrf_field()}}
+                                                                <input type="hidden" name="order_id" value="{{ $order->order_id  }}" />
+                                                                <button order_id="{{ $order->order_id  }}" type="button" class="btn btn-danger btn-sm cancel-order">
+                                                                    Cancel Order
+                                                                </button>
+                                                            </form>
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <a data-orderid={{ $order->order_id  }} data-toggle="modal" data-target="#addressModal"
+                                                        class="btn btn-info btn-sm  btn-edit-customer-adress">Edit Details</a>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </td>
+                                     </tr>
                                 @endforeach
                                 @endif
                              </tbody>

@@ -105,12 +105,12 @@ class OrdersController extends Controller
             //   $join->on('awbt.order_id','=','ord.order_id');
             //   $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
             //  })
-             ->join(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
+             ->leftjoin(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
               $join->on('awbt.order_id','=','ord.order_id');
               $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
              })
-             ->join("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-             ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
+             ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
+             ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
                   (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
                   (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
                   (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
@@ -139,7 +139,7 @@ class OrdersController extends Controller
             //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
             // }
             $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
-                ->paginate(100);
+                ->paginate(20);
             $data = $this->getOrdersWithImage($data);
             // dd($data->toArray());
         ///
