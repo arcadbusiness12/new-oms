@@ -3,14 +3,14 @@
         <div class="product_row">
             <div class="row mb-4" style="border-bottom: 1px solid #9595953b;">
                 <div class="col-xs-4 col-sm-2" style="padding: 0">
-                    <input type="file" name="image" class="input-image" data-id="" style="position: absolute;height: 100%;width: 100%;opacity: 0;cursor: pointer;" />
-                    <img id="uploadable" src="<?php echo $placeholder ?>" width="150px" style="float: right;" />
+                    <input type="file" name="image[<?= $unique ?>]" class="input-image" required data-id="<?= $unique ?>" style="position: absolute;height: 100%;width: 100%;opacity: 0;cursor: pointer;" />
+                    <img id="uploadable<?= $unique ?>" src="<?php echo $placeholder ?>" width="150px" style="float: right;" />
                 </div>
                 <div class="col-xs-10 col-sm-10">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-4 col-sm-4">
-                                <select name="category" id="category" class="form-control select-category" >
+                                <select name="purchase[product][<?= $unique ?>][category]" id="category" class="form-control select-category main-cate<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $cate)
                                         
@@ -21,7 +21,7 @@
                                 </select>
                             </div>
                             <div class="col-xs-4 col-sm-4">
-                                <select name="subCategory" id="sub-category" class="form-control sub-category">
+                                <select name="purchase[product][<?= $unique ?>][subCategory]" id="sub-category" class="form-control sub-category subCate-row<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Sub-category</option>
                                     {{-- @foreach($subcategories as $cate)
                                         <option value="{{$cate->id}}" data-code="{{$cate->code}}">{{$cate->name}}</option>
@@ -29,10 +29,10 @@
                                 </select>
                             </div>
                         <div class="col-xs-4 col-sm-4">
-                            <input type="hidden" class="new-code" >
-                            <input type="hidden" name="newSku" class="new-sku" >
-                            <input type="hidden" class="newCode" >
-                            <input type="text" name="purchase[product][<?= $unique ?>][name]"id="sku" class="form-control" placeholder="Enter Product Name" required/>
+                            <input type="hidden" class="new-code<?= $unique ?>" >
+                            <input type="hidden" name="purchase[product][<?= $unique ?>][newSku]" class="new-sku<?= $unique ?>" >
+                            <input type="hidden" class="newCode<?= $unique ?>" >
+                            <input type="text" name="purchase[product][<?= $unique ?>][name]"id="sku<?= $unique ?>" class="form-control" placeholder="Enter Product Name" required/>
                         </div>
                         
                     </div>
@@ -41,7 +41,7 @@
                 <div class="row mt-4 all_options_row">
                     <div class="col-lg-4">
                         <label class="control-label">Color</label>
-                        <select name="purchase[product][<?= $unique ?>][manually_option_color]" id="manually_option_color" class="form-control">
+                        <select name="purchase[product][<?= $unique ?>][manually_option_color]" id="manually_option_color" class="form-control manually_option_color<?= $unique ?>" data-row="<?= $unique ?>">
                             <option value="">Select Color</option>
                         <?php foreach ($colors as $key => $value) { ?>
                             <option value="<?= $value ?>" data-id="<?= $value ?>"><?= $key ?></option>
