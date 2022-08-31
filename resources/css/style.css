@@ -122,6 +122,10 @@ input[type="checkbox"] {
 } 
  
 
+.sw-theme-circles>ul.step-anchor>li>a {
+    height: 46px !important;
+}
+
 
 /* .sw-theme-circles>ul.step-anchor>li>a {
     min-width: 11px !important;

@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
+use App\Http\Controllers\Orders\OrdersAjaxController;
 use App\Http\Controllers\Orders\OrdersController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
@@ -31,6 +32,9 @@ Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
         Route::get("/","index")->name('orders');
         Route::get("/online","online")->name('orders.online');
+    });
+    Route::controller(OrdersAjaxController::class)->group(function() {
+        Route::post('/cancel-order','OrdersAjaxController@cancelOrder')->name('orders.cancel-order');
     });
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
