@@ -21,43 +21,31 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="card-header white">
-                            <form name="form_stock_level" id="form_stock_level" action="{{route('stock.report')}}" method="get">
-                                {{ csrf_field() }}
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label class="control-label">Product SKU</label>
-                                        <input type="text" name="product_sku" id="product_sku" list="product_skus" class="form-control" value="<?php if(isset($old_input['product_sku'])) { echo $old_input['product_sku']; } ?>" autocomplete="off" placeholder="Product SKU">
+
+                            <form name="filter_products" id="filter_products" method="get" action="">
+                                {{csrf_field()}}
+                                <div id="alert-response"></div>
+                                <div>
+                                    <label class="col-sm-2 control-label text-center col-grid" for="input-product" style="margin: 0;padding-top: 7px;">Choose Product</label>
+                                   
+                                    <div class="col-sm-2 col-grid">
+                                        <input type="text" name="product_sku" id="product_sku" list="product_skus" class="form-control" autocomplete="off" value="" placeholder="Product SKU">
                                         <datalist id="product_skus"></datalist>
+                                    </div>  
+                                    <div class="col-sm-2 col-grid">
+                                        <button type="submit" id="search_filter" class="btn btn-primary btn-block">
+                                            <i class="icon icon-filter"></i>
+                                            Search
+                                        </button>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <label class="form-label" for="status">Product Model</label>
-                                        <input type="text" name="product_model" id="product_model" list="product_models" class="form-control" autocomplete="off" value="<?php if(isset($old_input['product_model'])) {echo $old_input['product_model']; } ?>" placeholder="Product Model">
-                                            <datalist id="product_models"></datalist>
+                                    <div class="col-sm-2 col-grid">
+                                        <button type="button" id="add_manually" class="btn btn-primary btn-block" data-action="">
+                                            Add Manually
+                                        </button>
                                     </div>
-                                    <div class="clearfix"></div>
-                                    <div class="col-sm-6">
-                                        <label class="control-label">From Date</label>
-                                        <input type="text" name="from_date" id="date_added" class="date-time-picker form-control" autocomplete="off" placeholder="From Date"  data-options='{
-                                            "timepicker":false,
-                                            "format":"Y-m-d"
-                                            }' value="<?php if(isset($old_input['from_date'])) { echo $old_input['from_date']; } ?>">
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="control-label">To Date</label>
-                                        <input type="text" name="to_date" id="date_modified" class="date-time-picker form-control" data-options='{
-                                            "timepicker":false,
-                                            "format":"Y-m-d"
-                                            }' autocomplete="off" placeholder="To Date" value="<?php if(isset($old_input['to_date'])) { echo $old_input['to_date']; } ?>">
-                                    </div>
-                                    <div class="col-sm-12 text-right">
-                                        <br>
-                                        <button type="submit" id="search_filter" class="btn btn-primary">Search</button>
-                                        <!-- <button type="button" onclick="$('#add_product_to_order').attr('action', '<?php echo URL::to('/inventory_manage/reportExport'); ?>').submit();" class="btn btn-danger">Export</button> -->
-                                        <!-- <button type="button" id="subimt-place-order" class="btn btn-info">Order</button> -->
-                                    </div>
-                            </div>
-                           
+                                </div>
                             </form>
+                            
                         </div>
                     </div>
                 </div>
@@ -67,7 +55,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="panel-heading">
-                            Stock Reports
+                            Order Products
                           </div>
                           @if(session()->has('success'))
                             <div role="alert" class="alert alert-success">
@@ -316,6 +304,7 @@
 
 @push('scripts')
     <script>
+        var xhr = {};
         $(document).delegate('.btn-delete-order-product', 'click', function(){
         var $this = $(this);
         var product_length = $('.product_list_row').length;
@@ -353,6 +342,170 @@
             }
         });
     });
-    </script>
+
+    $("#add_manually").click(function() {
+        $this = $(this);
+        $.ajax({
+            method: "GET",
+            url: "{{route('add.purchase.product.manually')}}",
+            dataType: "html",
+            beforeSend: function() {
+                $this.html('<i class="fa fa-spin fa-circle-o-notch"></i>');
+                $this.prop('disabled', true);
+            },
+            complete: function() {
+                $this.html('Add Manually');
+                $this.prop('disabled', false);
+            }
+        }).done(function(html) {
+            $('.product_list').show();
+            if (html.length) {
+                $(".product_list").find('.alert-danger').remove();
+                $(".product_list").prepend(html);
+                $(".instruction_row").show();
+            } else {
+                $(".product_list").prepend('<div class="alert alert-danger">Product Not Found!</div>');
+            }
+        });
+    });
+
+    $(document).delegate('.select-category', 'change', function() {
+        var code = $(this).find(':selected').data("code");
+        var url = '{{ route("cheking.for.group.code", ":category") }}';
+        url = url.replace(':category', $(this).val());
+        $('#option_color').prop('selectedIndex',0);
+        $.ajax({
+            url: url,
+            type: "GET",
+            caches: false,
+            success: function(respo) {
+                console.log('code='+code);
+                console.log(respo);
+                var nCode = code;
+                $('.newCode').val(respo.code);
+                $('#sku').val(nCode);
+                $('.new-code').val(nCode);
+                $('.new-sku').val(respo.newSku);
+
+                var html = '';
+                var op = '<option value="">Select Sub-category</option>';
+                respo.subCategories.forEach(element => {
+                    html += '<option value="'+element.id+'" data-code="'+element.code+'">'+element.name+'</option>';
+                });
+                var options = op+html;
+                $('#sub-category').html(options);
+            }
+        });
+    });
+    $(document).delegate('#sub-category', 'change', function() {
+        var code = $(this).find(':selected').data("code");
+        code = code ? code : '';
+        var nCode = $('.new-code').val() +''+ code +''+ $('.newCode').val();
+        $('#sku').val(nCode);
+        // $('.new-code').val(nCode);
+        $('#manually_option_color').prop('selectedIndex',0);
+    });
+     $(document).delegate('#manually_option_color', 'change', function() {
+        var iCode = $(this).find(':selected').data('id');
+        var cateCode = $('.new-code').val();
+            cateCode = cateCode ? cateCode : '';
+        var subCatedCode = $('#sub-category').find(':selected').data('code');
+            subCatedCode =  subCatedCode ? subCatedCode : '';
+        var nCode = $('.newCode').val();
+        var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
+        $('#sku').val(code);
+    })
+    
+    $(document).delegate(".add_selected_options", "click", function() {
+        $this = $(this);
+        $this_text = $(this).text();
+        _this_parent = $(this).parents('.product_list_row').find('.all_options_row');
+        var data_id = $(this).attr('data-product-id');
+        var option_color = $(_this_parent).find('#manually_option_color').val();
+        var option_size = $(_this_parent).find('#manually_option_size').val();
+        $.ajax({
+            method: "POST",
+            url: "{{route('get.manually.all.options')}}",
+            data: {
+                data_product_id: data_id,
+                color: option_color,
+                size: option_size,
+            },
+            dataType: "html",
+            headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+            beforeSend: function() {
+                $this.html('<i class="fa fa-spin fa-circle-o-notch"></i>');
+                $this.prop('disabled', true);
+            },
+            complete: function() {
+                $this.html($this_text);
+                $this.prop('disabled', false);
+            }
+        }).done(function(html) {
+            if (html != "") {
+                $this.parents('.product_list_row').find('.manually_option_row').html(html);
+            }
+        });
+    });
+
+    $(document).delegate('.is-to-inventory','click', function() {
+        if($("input[type=checkbox]:checked").length > 0) {
+            $('.select-category').attr('required', true);
+        }else {
+            $('.select-category').attr('required', false);
+        }
+        var v= $(this).val();
+        console.log(v);
+    });
+    $(document).delegate('#product_sku', 'keyup', function() {
+        _this = $(this);
+        if (typeof xhr['get_product_sku_keyup'] != 'undefined' && xhr['get_product_sku_keyup'].readyState != 4) {
+            xhr['get_product_sku_keyup'].abort();
+        }
+        xhr['get_product_sku_keyup'] = $.ajax({
+            method: "POST",
+            url: "{{route('get.purchase.product.sku')}}",
+            data: {
+                product_sku: $(this).val()
+            },
+            headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+        }).done(function(data) {
+            html = '';
+            if (data.skus) {
+                $.each(data.skus, function(k, v) {
+                    html += '<option value="' + v + '">';
+                });
+                $('#product_skus').html(html);
+            }
+        });
+    });
+    
+    $('#filter_products').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            method: "POST",
+            url: "{{route('add.product')}}",
+            data: $(this).serialize(),
+            dataType: "html",
+            beforeSend: function() {
+                $('#search_filter').html('<i class="fa fa-spin fa-circle-o-notch"></i>');
+                $('#search_filter').prop('disabled', true);
+            },
+            complete: function() {
+                $('#search_filter').html('<i class="fa fa-filter"></i>Search');
+                $('#search_filter').prop('disabled', false);
+            }
+        }).done(function(html) {
+            $('.product_list').show();
+            if (html.length) {
+                $(".product_list").find('.alert-danger').remove();
+                $(".product_list").prepend(html);
+                $(".instruction_row").show();
+            } else {
+                $(".product_list").prepend('<div class="alert alert-danger">Product does not attached with the inventory!</div>');
+            }
+        });
+    })
+</script>
 @endpush
 

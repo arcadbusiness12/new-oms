@@ -9,6 +9,15 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
+                        <?php if(Session::has('message')) { ?>
+                            <div class="toast"
+                                data-title="Done !"
+                                data-message="{{Session::get('message')}}"
+                                data-type="success"
+                                data-position-class="toast-top-right"
+                                >
+                            </div>
+                            <?php } ?>
                         <div class="panel-heading">
                             Option Connection
                           </div>
@@ -187,123 +196,12 @@
     </div>
 </div>
 
-<div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
 
- <!-- product location modal start -->
- <div class="modal fade porduct_location_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content" >
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalCenterTitle">Add & Edit options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="porduct_location_content">
-          <div class="text-center" id="loader">
-            
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- product location modal end -->
+ 
 @endsection
 
 @push('scripts')
 <script>
 
-    $("#addRow").click(function () {
-            var html = '';
-            html += '<div class="inserted-row mt-4">';
-            html += '<div class="row">';
-            html += '<div class="col-lg-4"> <input type="text" name="value[]" class="form-control m-input" placeholder="Enter Option Details" autocomplete="off"></div>';
-            html += '<div class="col-md-1"><button id="removeRow" type="button" class="btn btn-danger col-md-6"><i class="icon-close"></i></button></div>';
-            // html += '<div class="input-group-append">';
-            // html += '<button id="removeRow" type="button" class="btn btn-danger">Remove</button>';
-            html += '</div>';
-            html += '</div>';
-
-            $('#newRow').append(html);
-        });
-
-        // remove row
-        $(document).on('click', '#removeRow', function () {
-            $(this).parent().parent().parent().remove();
-        });
-
-        function viewAndEdit(id) {
-            console.log(id);
-            if(id) {
-                var url = "{{route('edit.option.details', ':id')}}";
-                url = url.replace(':id', id);
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    beforeSend: function() {
-                        $('#porduct_location_content').html('<div class="text-center"><div class="preloader-wrapper small active"><div class="spinner-layer spinner-green-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div></div>');
-                    },
-                    complete: function() {
-                        // $('#porduct_location_content').html('');
-                    }
-                }).done(function(response) {
-                    $('#porduct_location_content').html(response);
-                });
-            }
-        }
-
-        $(document).on('click',"#addNewRow",function () {
-             console.log("Ok");
-            var html = '';
-            html += '<tr>';
-            html += '<td><input type="text" name="title[]" id="myInput" class="form-control m-input" placeholder="" autocomplete="off"></td><td><button id="removeNewRow" type="button" class="btn btn-danger "><i class="icon-close"></i></button></td>';
-            
-            html += '</tr>';
-            $('.rowNew').append(html);
-            });
-        // remove row
-        $(document).on('click', '#removeNewRow', function () {
-            $(this).parent().parent().remove();
-        });
-
-       function checkName(v) {
-           console.log(v);
-           if(v) {
-               $('#btn-update').attr('disabled', false);
-           }
-           else {
-            $('#btn-update').attr('disabled', true);
-           }
-       }
-
-       function destroyOptionValue(id) {
-           console.log(id);
-           if(id && confirm('Are You Sure Want To Delete ?')) {
-               var url = "{{route('destroy.option.value', ':id')}}";
-               url = url.replace(':id', id);
-               $.ajax({
-                   url: url,
-                   type: 'GET',
-                   success: function(response) {
-                        if(response.status) {
-                            $('#value-row'+id).remove();
-                            $(".toast-action").data('title', 'Action Done!');
-                            $(".toast-action").data('type', 'success');
-                            $(".toast-action").data('message', 'Value deleted successfully.');
-                            $(".toast-action").trigger('click');
-                        } else {
-                            $(".toast-action").data('title', 'Went Wrong!');
-                            $(".toast-action").data('type', 'error');
-                            $(".toast-action").data('message', 'Something went wrong.');
-                            $(".toast-action").trigger('click');
-                        }
-                   }
-               });
-           }
-       }
 </script>
 @endpush

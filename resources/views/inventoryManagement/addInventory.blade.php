@@ -124,7 +124,7 @@
             success: function(respo) {
                 console.log('code='+code);
                 console.log(respo);
-                var nCode = code+''+respo.code;
+                var nCode = code;
                 $('.newCode').val(respo.code);
                 $('#sku').val(nCode);
                 $('.new-code').val(nCode);
@@ -144,8 +144,9 @@
     $(document).delegate('#sub-category', 'change', function() {
         var code = $(this).find(':selected').data("code");
         code = code ? code : '';
-        var nCode = $('.new-code').val() +''+ code;
+        var nCode = $('.new-code').val() +''+ code +''+ $('.newCode').val();
         $('#sku').val(nCode);
+        // $('.new-code').val(nCode);
         $('#option_color').prop('selectedIndex',0);
     });
 
@@ -156,7 +157,7 @@
         var subCatedCode = $('#sub-category').find(':selected').data('code');
             subCatedCode =  subCatedCode ? subCatedCode : '';
         var nCode = $('.newCode').val();
-        var code = cateCode +''+ subCatedCode +''+ iCode;
+        var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
         $('#sku').val(code);
     })
 
