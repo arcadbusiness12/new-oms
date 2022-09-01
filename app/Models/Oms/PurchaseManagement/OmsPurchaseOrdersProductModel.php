@@ -20,4 +20,8 @@ class OmsPurchaseOrdersProductModel extends Model
     public function ProductsSizes() {
         return $this->hasMany(OmsPurchaseOrdersProductOptionModel::class, 'order_product_id');
     }
+
+    public function orderProductQuantities() {
+        return $this->hasMany(OmsPurchaseOrdersProductQuantityModel::class, 'order_product_id');
+    }
 }

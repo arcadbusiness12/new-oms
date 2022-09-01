@@ -169,7 +169,7 @@
                             <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
                                 <table class="table">
                                     <?php $i = 0; 
-                                    foreach ($order['order_product_quantities'] as $quantity) { $i++; ?>
+                                    foreach ($product['order_product_quantities'] as $quantity) { $i++; ?>
                                         <tr class="single_option_row">
                                             <?php foreach ($quantity['product_options'] as $option) { ?>
                                             <td class="col-xs-2">
@@ -430,7 +430,7 @@
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
                                                 <?php $total_quantity = 0; 
-                                                foreach ($order['order_product_quantities'] as $quantity) { 
+                                                foreach ($product['order_product_quantities'] as $quantity) { 
                                                     $quant = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                                                     ?>
                                                     <?php if( $quant > 0 ) 
