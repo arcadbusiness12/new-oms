@@ -94,6 +94,9 @@ class PurchaseManagementController extends Controller
             'orderProductQuantities' => function($qu) {
                 $qu->orderBy('order_product_quantity_id', 'ASC');
             },
+            'orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');;
+            },
             'shippedOrders' => function($sh) use($shippedWhereClause) {
                 $sh->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
             },

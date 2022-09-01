@@ -163,7 +163,64 @@
                                 </div>
                             </div>
                             <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
-                                
+                                <table class="table">
+                                    <?php $i = 0; 
+                                    foreach ($order['order_product_quantities'] as $quantity) { $i++; ?>
+                                        <tr class="single_option_row">
+                                            <?php foreach ($quantity['product_options'] as $option) { ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label"><?php echo $option['name'] ?></label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control" value="<?php echo $option['value'] ?>" readonly></div>
+                                            </td>
+                                            <?php } ?>
+                                            <?php if($order['order_status_id'] !== $status_cancel) { ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">Quantity</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control" value="<?php echo $quantity['quantity'] ?>" readonly></div>
+                                            </td>
+                                            <?php } ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">Order Quantity</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control" value="<?php echo $quantity['order_quantity'] ?>" readonly></div>
+                                            </td>
+                                            <?php if($order['order_status_id'] === $status_cancel) { ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">Remain Quantity</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control" value="<?php echo $quantity['remain_quantity'] ?>" readonly></div>
+                                            </td>
+                                            <?php } ?>
+                                            <?php if($quantity['order_quantity'] > 0) { ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">Price</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control price" value="<?php echo number_format($quantity['price'],2) ?>" readonly/></div>
+                                            </td>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">Sum</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control sum" value="<?php echo number_format($quantity['total'],2) ?>" readonly/></div>
+                                            </td>
+                                            <?php } else { ?>
+                                            <td class="col-xs-2">
+                                                <?php if($i == 1) { ?>
+                                                <label class="control-label">&nbsp;</label>
+                                                <?php } ?>
+                                                <div><input type="text" class="form-control not-available" value="Not Available" disabled /></div>
+                                            </td>
+                                            <?php } ?>
+                                        </tr>
+                                    <?php } ?>
+                                    </table>
                             </div>
                         </div>
                         <?php } ?>
@@ -246,7 +303,8 @@
                                     </div>
                                     <div id="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" class="options_row table-responsive collapsible-content">
                                         <table class="table">
-                                        <?php $i = 0; foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
+                                        <?php $i = 0; 
+                                        foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
                                                 if( $shipped_order['status'] == 5 && $shipped_quantity['quantity'] < 1 ) continue;
                                           $i++; ?>
                                             <tr class="single_option_row">
