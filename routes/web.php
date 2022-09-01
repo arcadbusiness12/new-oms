@@ -79,6 +79,7 @@ Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
 });
 Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
     Route::controller(PurchaseManagementController::class)->group(function() {
+        Route::any('/purchase/orders', 'purchaseOrders')->name('purchase.orders');
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
         Route::any('/place/purchase/order', 'placePurchaseOrder')->name('place.purchase.order');

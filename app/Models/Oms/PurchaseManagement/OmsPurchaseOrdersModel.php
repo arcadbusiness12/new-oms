@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models\Oms\PurchaseManagement;
+
+use App\Models\Oms\OmsUserModel;
 use Illuminate\Database\Eloquent\Model;
 
 class OmsPurchaseOrdersModel extends Model
@@ -16,4 +18,23 @@ class OmsPurchaseOrdersModel extends Model
     const FIELD_SUPPLIER = 'supplier';
     const FIELD_DATE_ADDED = 'created_at';
     const FIELD_DATE_MODIFIED = 'updated_at';
+
+    public function orderProducts() {
+        return $this->hasMany(OmsPurchaseOrdersProductModel::class, 'order_id');
+    }
+    public function orderTotals() {
+        return $this->hasMany(OmsPurchaseOrdersTotalModel::class, 'order_id');
+    }
+    public function orderHistories() {
+        return $this->hasMany(OmsPurchaseOrdersHistoryModel::class, 'order_id');
+    }
+    public function orderProductQuantities() {
+        return $this->hasMany(OmsPurchaseOrdersProductQuantityModel::class, 'order_id');
+    }
+    public function shippedOrders() {
+        return $this->hasMany(OmsPurchaseShippedOrdersModel::class, 'order_id');
+    }
+    public function orderSupplier() {
+        return $this->belongsTo(OmsUserModel::class, 'supplier');
+    }
 }

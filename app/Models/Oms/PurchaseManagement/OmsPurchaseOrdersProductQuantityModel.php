@@ -15,4 +15,6 @@ class OmsPurchaseOrdersProductQuantityModel extends Model
     const FIELD_ORDER_QUANTITY = 'order_quantity';
     const FIELD_PRICE = 'price';
     const FIELD_TOTAL = 'total';
+
+   
 }

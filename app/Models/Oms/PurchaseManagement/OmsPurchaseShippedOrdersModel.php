@@ -20,4 +20,16 @@ class OmsPurchaseShippedOrdersModel extends Model
     const FIELD_STATUS = 'status';
     const FIELD_DATE_ADDED = 'date_added';
     const FIELD_DATE_MODIFIED = 'date_modified';
+
+    public function orderTotals() {
+        return $this->hasMany(OmsPurchaseShippedOrdersTotalModel::class, 'shipped_order_id');
+    }
+
+    public function orderProducts() {
+        return $this->hasMany(OmsPurchaseShippedOrdersProductModel::class, 'shipped_order_id');
+    }
+
+    public function orderProductQuantities() {
+        return $this->hasMany(OmsPurchaseShippedOrdersProductQuantityModel::class, 'shipped_order_id');
+    }
 }
