@@ -90,7 +90,7 @@ class PurchaseManagementController extends Controller
                 $qu->orderBy('order_product_quantity_id', 'ASC');
             },
             'orderProducts.orderProductQuantities.productOptions' => function($qo) {
-                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');;
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
             'orderTotals' => function($q1) {
                 $q1->orderBy('sort_order', 'ASC');
@@ -113,7 +113,7 @@ class PurchaseManagementController extends Controller
             
         ]
         )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
-        // dd($orders->toArray());
+        dd($orders->toArray());
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
         $shipped_order_statuses = $this->shippedOrderStatuses();
         $pagination = $orders->render();
