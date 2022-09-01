@@ -17,7 +17,7 @@ class OmsPurchaseOrdersProductQuantityModel extends Model
     const FIELD_TOTAL = 'total';
 
  public function productOptions() {
-        return $this->hasMany(OmsPurchaseOrdersProductOptionModel::class, 'order_product_id');
+        return $this->hasMany(OmsPurchaseOrdersProductOptionModel::class, 'order_product_quantity_id');
     }  
 
 }
