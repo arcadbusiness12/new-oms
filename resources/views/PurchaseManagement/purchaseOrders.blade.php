@@ -158,11 +158,15 @@
                                     <strong><?php echo $product['name'] ?></strong><br>
                                     <i><?php echo $product['model'] ?></i>
                                 </div>
+                                </p>
                                 <div class="col-xs-2 col-sm-2">
-                                    <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button>
+                                    {{-- <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button> --}}
+                                    <button class="btn btn-default form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                        Details
+                                      </button>
                                 </div>
                             </div>
-                            <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
+                            <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
                                 <table class="table">
                                     <?php $i = 0; 
                                     foreach ($order['order_product_quantities'] as $quantity) { $i++; ?>
