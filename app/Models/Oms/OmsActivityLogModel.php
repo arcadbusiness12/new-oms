@@ -1,7 +1,7 @@
 <?php
 namespace App\Models\Oms;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Casts\Attribute;
 class OmsActivityLogModel extends Model
 {
     protected $table = 'oms_activity_log';
@@ -28,5 +28,12 @@ class OmsActivityLogModel extends Model
         $inertion->created_by = session('user_id');
         if($inertion->save()) return true; else return false;
     }
-    
+    protected function createdAt(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => date('Y-m-d G:i:s',strtotime($value)),
+            set: fn ($value) => $value,
+        );
+    }
+
 }

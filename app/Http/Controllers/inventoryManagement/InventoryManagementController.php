@@ -47,7 +47,7 @@ use Carbon\Carbon;
     private $opencart_image_url = '';
     private $oms_inventory_product_image_source_path = '';
     private $oms_inventory_product_image_source_url = '';
-    
+
     function __construct() {
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
         $this->oms_inventory_product_image_source_path = public_path('uploads/inventory_products/');
@@ -137,7 +137,7 @@ use Carbon\Carbon;
         $product->option_name = $request->options;
         $product->option_value = $request->title;
         $product->save();
-        
+
         if($request->value) {
             foreach($request->value as $key => $value) {
                 $productOption = new OmsInventoryProductOptionModel();
@@ -165,7 +165,7 @@ use Carbon\Carbon;
               $query->where('product_type_id',$request->by_type);
             });
           }
-          $products->orderByRaw('SUBSTRING_INDEX(sku,"-",1),CAST(SUBSTRING_INDEX(sku,"-",-1) AS SIGNED INTEGER)'); 
+          $products->orderByRaw('SUBSTRING_INDEX(sku,"-",1),CAST(SUBSTRING_INDEX(sku,"-",-1) AS SIGNED INTEGER)');
           if( $request->product_sku !="" ){
             $products=$products->where('sku',"LIKE",$request->product_sku."%");
           }
@@ -201,7 +201,7 @@ use Carbon\Carbon;
           }
           $old_input = $request->all();
           $product_types = PromotionTypeModel::where('product_status',1)->get();
-          
+
         return view(self::VIEW_DIR. ".dashboard")->with(compact('products','old_input','product_types'));
     }
 
@@ -239,11 +239,11 @@ use Carbon\Carbon;
           fputcsv($fp, $row);
           fputcsv($fp, ['']);
         }
-        
+
         fclose($fp);
         exit();
       }
-    
+
       public function changeProductStatus(Request $request) {
         $update = OmsInventoryProductModel::where('product_id', $request->product_id)->update(['status' => $request->status]);
         if($update) {
@@ -257,7 +257,7 @@ use Carbon\Carbon;
                 $df_product_status_update = false;
                 $ba_exist = ProductsModel::where('sku',$omsProduct->sku)->exists();
                 $dr_exist = DressFairProductsModel::where('sku', $omsProduct->sku)->exists();
-                if($ba_exist){ 
+                if($ba_exist){
                     $ba_product_status_update  = ProductsModel::where('sku',$omsProduct->sku)->update(['status'=>$request->status]);
                     if($ba_product_status_update){
                     $msg = "Products updated successfully in Business Arcade.";
@@ -390,9 +390,9 @@ use Carbon\Carbon;
         $option_value = OmsDetails::select('options','value')->where('options', 1)->get();
         $option_detail = OmsOptions::select('id','option_name')->where('id', '>', 1)->get();
         $inventory_product = OmsInventoryProductModel::where('product_id', $id)->get();
-        
+
         return view(self::VIEW_DIR. '.editInventory')->with(compact('inventory_product','option_detail','option_value'))->render();
-        
+
       }
     }
 
@@ -432,16 +432,16 @@ use Carbon\Carbon;
                 }else{
                   $val['product_option_id'] = 0;
                 }
-                
+
               }
               $remaining_option_data = OmsDetails::whereNotIn('id', $ids_arr)->where('options',$current_opton_id)->get();
             }
       }
       return view(self::VIEW_DIR.".editInventoryOptionDetails")->with(compact('option_detail','placeholder','option_value_detail','remaining_option_data','option_value'))->render();
-    } 
-    
+    }
+
     public function addStock(Request $request, $id=null)
-    { 
+    {
       $q = $request->input('a');
       $stocks = DB::table('oms_inventory_product_option')
       ->select('oms_inventory_product_option.product_option_id','oms_inventory_product_option.available_quantity','oms_inventory_product_option.onhold_quantity','oms_inventory_product_option.product_id','oms_options_details.value','oms_inventory_product.sku','oms_inventory_product.option_name','oms_inventory_product.image','oms_inventory_product.print_label','oms_inventory_product_option.option_id','oms_inventory_product_option.option_value_id')
@@ -515,8 +515,8 @@ use Carbon\Carbon;
             $color_entry_upd = ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
             if($color_entry_upd){
               ProductsModel::where('sku',$request->sku)->where("product_id",$ba_product->product_id)->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            }  
-          }   
+            }
+          }
           // die("test twelve".$key);
           DB::commit();
           $this->updateSitesStock($request->sku);
@@ -533,7 +533,7 @@ use Carbon\Carbon;
     }
     $user_update = OmsInventoryAddStockHistoryModel::select('comment','updated_at')->orderBy('history_id','DESC')->where('product_id',$id)->limit(15)->get();
     // echo "<pre>"; print_r($user_update->toArray()); die;
-    return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update')); 
+    return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update'));
   }
 
   public function destoryInventoryProduct($id) {
@@ -632,7 +632,7 @@ use Carbon\Carbon;
         $field = 'model';
         $product_model = $request->product_model;
         $product_skus = ProductsModel::select('model', 'sku')->where('model','LIKE',"%{$product_model}%")->limit(10)->get();
-        
+
       }
       if ($product_skus->count() >0) {
         foreach ($product_skus as $product) {
@@ -666,7 +666,7 @@ use Carbon\Carbon;
           $quantity = OmsInventoryDeliveredQuantityModel::where('product_id', $product->product_id)->where('option_id', $option['option_id'])
                                                           ->where('option_value_id', $option['option_value_id'])
                                                           ->where('created_at', '>=', $last_date)->get();
-         
+
           if($option['option_id'] == $option_id) {
             $product_options['static'] = array(
               'option_id' => $option['option_id'],
@@ -795,7 +795,7 @@ use Carbon\Carbon;
       $whereClause[] = array('sku', 'like', $sproduct_sku->sku.'%');
     }
     if ($request->status) {
-      $status = $request->status; 
+      $status = $request->status;
       if($status != 'overall') {
         $statusWhereClause = $status.'_quantity';
       }
@@ -818,7 +818,7 @@ use Carbon\Carbon;
             $onhold_qry = OmsInventoryOnholdQuantityModel::select(
               DB::Raw('SUM(quantity) as onhold_quantity')
             )->where('product_id', $sizes->product_id)->where('option_id', $sizes->option_id)->where('option_value_id', $sizes->option_value_id)
-            ->where($whereClauseOption)->first(); 
+            ->where($whereClauseOption)->first();
             $sizes->onhold_quantity = $onhold_qry->onhold_quantity ? $onhold_qry->onhold_quantity : 0;
             //onhold query End===============================================================================================================
             //packed query start==============================================================================================================
@@ -915,7 +915,7 @@ use Carbon\Carbon;
           }else {
             $value['out_qty'] = 0;
           }
-        } 
+        }
         if ($request->dashboard) {
           $product_array_count = $product_array_count + 1;
         } else {
@@ -950,7 +950,7 @@ use Carbon\Carbon;
     $option_value  = OmsDetails::all();
     return view(self::VIEW_DIR. '.inventoryOption')->with(compact('colors','option_detail','option_value'));
   }
-  
+
   public function addOptionName(Request $request) {
     foreach($request->value as $dat){
       $value = new OmsOptions;
@@ -1039,5 +1039,5 @@ use Carbon\Carbon;
     return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
   }
  }
- 
+
 

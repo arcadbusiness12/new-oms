@@ -108,22 +108,26 @@ span>svg {
 .col-grid {
     float: left;
 }
+
 input[type="checkbox"] {
     width: 20px;
     height: 20px;
 }
-  
+
+
 /* step bar design start */
 
 .sw-theme-circles>ul.step-anchor:before {
     top: 38% !important;
     width: 67% !important;
     margin-left: 46px !important;
-} 
- 
+}
 
 .sw-theme-circles>ul.step-anchor>li>a {
-    height: 46px !important;
+    height: 30px !important;
+    min-width: 0px !important;
+    width: 10px !important;
+    margin-top: 6px !important;
 }
 
 
