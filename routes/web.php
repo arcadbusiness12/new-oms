@@ -32,9 +32,11 @@ Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
         Route::get("/","index")->name('orders');
         Route::get("/online","online")->name('orders.online');
+        Route::any("/update-customer-details","updateCustomerDetails")->name('orders.update-customer-details');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
-        Route::post('/cancel-order','OrdersAjaxController@cancelOrder')->name('orders.cancel-order');
+        Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
+        Route::any('/activity-details', 'activityDetails')->name('orders.activity-details');
     });
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
@@ -83,7 +85,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
         Route::any('/place/purchase/order', 'placePurchaseOrder')->name('place.purchase.order');
-        
+
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

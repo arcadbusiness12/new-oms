@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Orders;
 use App\Http\Controllers\Controller;
-use App\Models\DressFairOpenCart\Orders\OrdersModel AS DFOrdersModel;
+use App\Models\DressFairOpenCart\ExchangeOrders\AreaModel AS DFAreaModel;
 use App\Models\DressFairOpenCart\Orders\OrderStatusModel;
+use App\Models\Oms\OmsActivityLogModel;
+use App\Models\Oms\OmsActivityModel;
 use App\Models\Oms\OmsOrdersModel;
+use App\Models\Oms\ShippingProvidersModel;
+use App\Models\OpenCart\ExchangeOrders\AreaModel;
 use App\Models\OpenCart\Orders\OrderedProductModel;
 use App\Models\OpenCart\Orders\OrdersModel;
+use App\Models\DressFairOpenCart\Orders\OrdersModel AS DFOrdersModel;
 use DB;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Request AS RequestFacad;
 use App\Platform\Helpers\ToolImage;
+use Illuminate\Http\Request;
 class OrdersController extends Controller
 {
 	const VIEW_DIR = 'orders';
@@ -87,7 +93,7 @@ class OrdersController extends Controller
     //     return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus','old_input'));
     // }
     public function index(){
-        $old_input = Request::all();
+        $old_input = RequestFacad::all();
         $data = DB::table("oms_place_order AS opo")
                 ->leftjoin("oms_orders AS ord",function($join){
                     $join->on("ord.order_id","=","opo.order_id");
@@ -110,7 +116,7 @@ class OrdersController extends Controller
               $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
              })
              ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-             ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
+             ->select(DB::raw("opo.order_id,ord.oms_order_status,opo.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
                   (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
                   (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
                   (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
@@ -145,10 +151,11 @@ class OrdersController extends Controller
         ///
         $searchFormAction = URL::to('orders');
         $orderStatus = OrderStatusModel::all();
-        return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus','old_input'));
+        $couriers = ShippingProvidersModel::where('is_active',1)->get();
+        return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus','old_input','couriers'));
     }
     public function online(){
-        $old_input = Request::all();
+        $old_input = RequestFacad::all();
 
         $ba_orders = OrdersModel::
             select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
@@ -202,27 +209,6 @@ class OrdersController extends Controller
             }
             $order->orderd_products = $ordered_products;
         }
-
-        // foreach ($orders as $order_key => &$orders_value) {
-        //     if(isset($orders_value->orderd_products) && !empty($orders_value->orderd_products)){
-        //         foreach ($orders_value->orderd_products as $orderd_product_key => &$orderd_products_value) {
-
-        //             // dd($orderd_products_value);
-        //             if(isset($orderd_products_value->product_details) && !empty($orderd_products_value->product_details)){
-        //                 $ToolImage = new ToolImage();
-        //                 if(file_exists($this->website_image_source_path . $orderd_products_value->product_details->image)){
-        //                     $orderd_products_value->product_details->image = $ToolImage->resize($this->website_image_source_path, $this->website_image_source_url, $orderd_products_value->product_details->image, 100, 100);
-        //                 }else if(strpos($orderd_products_value->product_details->image, "cache/catalog")){
-        //                     // dd("find");
-        //                     continue;
-        //                 }else{
-        //                     // echo "Not <br>". $this->website_image_source_url;
-        //                     $orderd_products_value->product_details->image = $this->website_image_source_url . 'placeholder.png';
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         return $orders;
     }
     protected function orderedProducts($order){
@@ -231,4 +217,50 @@ class OrdersController extends Controller
           }])->where('order_id',$order->order_id)->get();
         return $data;
     }
+    public function updateCustomerDetails(Request $request){
+        $order_id = $request->order_id;
+        $store    = $request->store;
+        if( $request->isMethod('POST') ){
+          //update details
+          $address_1 = $request->address_1;
+          $area = $request->area;
+          $city = $request->city;
+          $adress_2 = $request->street_building.",-".$request->villa_flat;
+          $telephone = $request->telephone;
+          $name = $request->name;
+          $google_map_link = $request->google_map;
+          $update_array = ["payment_address_1"=>$address_1,"payment_address_2"=>$adress_2,"payment_city"=>$city,"payment_area"=>$area,"payment_zone"=>$city,"shipping_address_1"=>$address_1,"shipping_address_2"=>$adress_2,"shipping_city"=>$city,"shipping_area"=>$area,"shipping_zone"=>$city,'telephone'=>$telephone,'firstname'=>$name,'google_map_link'=>$google_map_link];
+          if( $store == 1 ){
+            $qry = OrdersModel::where('order_id',$order_id)->update($update_array);
+          }else if(  $store == 2 ){
+            $qry = DFOrdersModel::where('order_id',$order_id)->update($update_array);
+          }
+          if($qry){
+            OmsActivityLogModel::newLog($order_id,21,$store);
+          }
+          return redirect()->back()->with('success_msg',"Customer details updated successfully in order # ".$order_id);
+        }else{
+          //get details
+          if( $store == 1 ){
+            $data = OrdersModel::select("payment_address_1","shipping_address_2","shipping_zone","payment_area",'telephone','firstname','google_map_link','payment_zone_id')->where("order_id",$order_id)->first();
+            $areas = AreaModel::select('name')->where('zone_id', $data->payment_zone_id)->where('status', 1)->pluck('name');
+          }else if( $store == 2 ){
+            $data  = DFOrdersModel::select("payment_address_1","shipping_address_2","shipping_zone","payment_area",'telephone','firstname','google_map_link','payment_zone_id')->where("order_id",$order_id)->first();
+            $areas = DFAreaModel::select('name')->where('zone_id', $data->payment_zone_id)->where('status', 1)->pluck('name');
+          }
+          $data->areas = $areas->toArray();
+          $data->store = $store;
+          if( $data  ){
+            $address_two_arr = explode(',-',$data->shipping_address_2);
+            if( is_array($address_two_arr) && count($address_two_arr) > 0 ){
+              $data->street_building = $address_two_arr[0];
+              $data->villa_flat = @$address_two_arr[1];
+            }else{
+              $data->street_building = "";
+              $data->villa_flat = "";
+            }
+           return response()->json($data);
+          }
+        }
+      }
 }
