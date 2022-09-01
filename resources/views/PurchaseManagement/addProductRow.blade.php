@@ -30,6 +30,7 @@
                             //array_multisort($option_name[$option['name']], SORT_ASC, $option['option_values']);
                             $colspan++; 
                         }else if($option['static_option_id'] == $option['option_id'] && count($product['options']) == 1){
+                            
                             foreach($option['option_values'] as $okey => $values) {
                                 $option_name[$option['name']][] = $values;    
                             }

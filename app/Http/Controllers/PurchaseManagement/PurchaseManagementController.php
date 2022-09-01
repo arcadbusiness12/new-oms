@@ -281,13 +281,13 @@ class PurchaseManagementController extends Controller
                             $groupName = $this->getGroupName($manual_product['name']);
                             $group_exist = ProductGroupModel::where('name', $groupName)->first();
                             if(!$group_exist) {
-                                $cateName = GroupCategoryModel::find($request->category);
+                                $cateName = GroupCategoryModel::find($manual_product['category']);
                                 $group = new ProductGroupModel();
                                 $group->name = $groupName;
-                                $group->category_id = $request->category;
+                                $group->category_id = $manual_product['category'];
                                 $group->category_name = $cateName->name;
-                                $group->sub_category_id = $request->subCategory ? $request->subCategory : null;
-                                $group->group_sku = $request->newSku;
+                                $group->sub_category_id = $manual_product['subCategory'] ? $manual_product['subCategory'] : null;
+                                $group->group_sku = $manual_product['newSku'];
                                 if($group->save()) {
                                     $group_id = $group->id;
                                 }

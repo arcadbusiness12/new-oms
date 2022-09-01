@@ -13,3 +13,4 @@ class OmsPurchaseProductModel extends Model
     const FIELD_DATE_ADDED = 'created_at';
     const FIELD_DATE_MODIFIED = 'updated_at';
 }
+ 

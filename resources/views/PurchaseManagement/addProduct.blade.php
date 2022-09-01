@@ -371,6 +371,8 @@
 
     $(document).delegate('.select-category', 'change', function() {
         var code = $(this).find(':selected').data("code");
+        var row = $(this).data("row");
+        console.log(row);
         var url = '{{ route("cheking.for.group.code", ":category") }}';
         url = url.replace(':category', $(this).val());
         $('#option_color').prop('selectedIndex',0);
@@ -382,10 +384,10 @@
                 console.log('code='+code);
                 console.log(respo);
                 var nCode = code;
-                $('.newCode').val(respo.code);
-                $('#sku').val(nCode);
-                $('.new-code').val(nCode);
-                $('.new-sku').val(respo.newSku);
+                $('.newCode'+row).val(respo.code);
+                $('#sku'+row).val(nCode);
+                $('.new-code'+row).val(nCode);
+                $('.new-sku'+row).val(respo.newSku);
 
                 var html = '';
                 var op = '<option value="">Select Sub-category</option>';
@@ -393,27 +395,29 @@
                     html += '<option value="'+element.id+'" data-code="'+element.code+'">'+element.name+'</option>';
                 });
                 var options = op+html;
-                $('#sub-category').html(options);
+                $('.subCate-row'+row).html(options);
             }
         });
     });
-    $(document).delegate('#sub-category', 'change', function() {
+    $(document).delegate('.sub-category', 'change', function() {
         var code = $(this).find(':selected').data("code");
+        var row = $(this).data("row");
         code = code ? code : '';
-        var nCode = $('.new-code').val() +''+ code +''+ $('.newCode').val();
-        $('#sku').val(nCode);
+        var nCode = $('.new-code'+row).val() +''+ code +''+ $('.newCode'+row).val();
+        $('#sku'+row).val(nCode);
         // $('.new-code').val(nCode);
-        $('#manually_option_color').prop('selectedIndex',0);
+        $('.manually_option_color'+row).prop('selectedIndex',0);
     });
      $(document).delegate('#manually_option_color', 'change', function() {
         var iCode = $(this).find(':selected').data('id');
-        var cateCode = $('.new-code').val();
+        var row = $(this).data("row");
+        var cateCode = $('.new-code'+row).val();
             cateCode = cateCode ? cateCode : '';
-        var subCatedCode = $('#sub-category').find(':selected').data('code');
+        var subCatedCode = $('.subCate-row'+row).find(':selected').data('code');
             subCatedCode =  subCatedCode ? subCatedCode : '';
-        var nCode = $('.newCode').val();
+        var nCode = $('.newCode'+row).val();
         var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
-        $('#sku').val(code);
+        $('#sku'+row).val(code);
     })
     
     $(document).delegate(".add_selected_options", "click", function() {

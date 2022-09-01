@@ -5,6 +5,7 @@ $(document).ready(function() {
 });
 // =================== Inventory ================
 $(document).delegate('.input-image', 'change', function(){
+  var row = $(this).data("id");
    var input = $(this)[0];
    //console.log(input);
  var data_id = $(this).attr('data-id');
@@ -13,7 +14,7 @@ if (input.files && input.files[0]) {
  reader.onload = function (e) {
    //console.log(e.target.result);
    //$('#' + data_id).attr('src', e.target.result);
-   $('#uploadable').attr('src', e.target.result);
+   $('#uploadable'+row).attr('src', e.target.result);
  }
  //console.log(input.files[0]);
  reader.readAsDataURL(input.files[0]);

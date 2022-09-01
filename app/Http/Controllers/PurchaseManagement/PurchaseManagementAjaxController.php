@@ -152,6 +152,7 @@ class PurchaseManagementAjaxController extends Controller
         if($options) {
             $product_array['options'] = array();
             foreach($options as $option) {
+                 $option_values = array();
                 foreach($option['option_values'] as $value) {
                     $quantity = $minimum_quantity = $average_quantity = $duration = '';
                     $quantity = $value['available_quantity'];
@@ -160,9 +161,9 @@ class PurchaseManagementAjaxController extends Controller
                                                                       ->where('option_id', $option['option_id'])
                                                                       ->where('option_value_id', $value['option_value_id'])
                                                                       ->first();
-                    $average_quantity_shipped = getLastSaleQtyWithOptionShipped($product['product_id'], $value); //for shipped quantity
+                    $average_quantity_shipped = getLastSaleQtyWithOptionShipped($product->product_id, $value); //for shipped quantity
                     $average_tot_quantity = $average_quantity_shipped->total;
-                    if($OmsInventoryStockModel) {
+                    if($OmsInventoryStockModel){
                         $minimum_quantity = $OmsInventoryStockModel->minimum_quantity;
                     }
                     $option_values[] = array(
