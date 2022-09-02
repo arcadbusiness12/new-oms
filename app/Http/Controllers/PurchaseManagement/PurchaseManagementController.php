@@ -102,7 +102,9 @@ class PurchaseManagementController extends Controller
             'shippedOrders' => function($sh) use($shippedWhereClause) {
                 $sh->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
             },
-            'shippedOrders.orderTotals',
+            'shippedOrders.orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },
             'shippedOrders.orderProducts' =>function($sopro) {
                 $sopro->having(DB::RAW('(type = \'manual\') OR (type = \'opencart\')'), '=', 1);
             },

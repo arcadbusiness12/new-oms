@@ -241,9 +241,9 @@
                                                     </div>
                                                     <div class="col-xs-12 col-sm-4 total_column">
                                                         <div class="row">
-                                                            <div class="col-xs-7 col-sm-6">
+                                                            <div class="col-xs-7 col-sm-6 text-black">
                                                                 <?php foreach ($order['order_totals'] as $key => $value) { ?>
-                                                                <label><?php echo $value['code'] ?></label>
+                                                                <label><b><?php echo $value['code'] ?></b></label> <br>
                                                                 <?php } ?>
                                                             </div>
                                                             <div class="col-xs-5 col-sm-6">
@@ -386,7 +386,7 @@
                                                                 <div class="row">
                                                                     <div class="col-xs-7 col-sm-6 text-black">
                                                                         <?php foreach ($shipped_order['order_totals'] as $key => $total_value) { ?>
-                                                                        <label><b><?php echo $total_value['code'] ?></b></label>
+                                                                        <label><b><?php echo $total_value['code'] ?></b></label><br>
                                                                         <?php } ?>
                                                                     </div>
                                                                     <div class="col-xs-5 col-sm-6">
