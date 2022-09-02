@@ -124,10 +124,10 @@ input[type="checkbox"] {
 }
 
 .sw-theme-circles>ul.step-anchor>li>a {
-    height: 30px !important;
-    min-width: 0px !important;
+    height: 44px !important;
+    /* min-width: 0px !important;
     width: 10px !important;
-    margin-top: 6px !important;
+    margin-top: 6px !important; */
 }
 
 

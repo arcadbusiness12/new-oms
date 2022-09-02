@@ -63,7 +63,7 @@
                                         <li class="@if( Request::url() == route('orders' ) ) active @endif">
                                             <a href="{{ route('orders') }}?order_status_id=1">Pending</a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Pick List </a>
+                                        <li class="@if( Request::url() == route('orders.picking-list-awaiting') ) active @endif"><a href="{{ route('orders.picking-list-awaiting') }}">Pick List </a>
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Pack Orders </a>
                                         </li>
@@ -73,7 +73,7 @@
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Deliver Orders  </a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Reshipment Approval </a>
+                                        <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Reshipment Approval</a>
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Return Orders  </a>
                                         </li>

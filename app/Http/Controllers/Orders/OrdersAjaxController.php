@@ -20,6 +20,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
+use App\Models\Oms\OmsOrderReshipHistoryModel;
 use Carbon\Carbon;
 use Excel;
 use DB;
@@ -244,6 +245,28 @@ class OrdersAjaxController extends Controller {
                     updateSitesStock($opencart_sku->sku);
 				}
 			}
+		}
+	}
+    public function reship(Request $request){
+		// dd($request->all());
+		////return just history start
+        $store = $request->store;
+		if($request->history){
+			$reship_comment = OmsOrderReshipHistoryModel::where('order_id',$request->order_id)->where("store",$store)->first();
+			if(!empty($reship_comment)){
+				echo json_encode($reship_comment->comment);
+			}
+			exit;
+		}
+		////return just history end
+		$qrysts = OmsOrdersModel::where(['order_id'=>$request->order_id])->where("store",$store)->update(["reship"=>'-1']);
+
+		if($qrysts){
+			OmsOrderReshipHistoryModel::create(['order_id'=>$request->order_id,'comment'=>$request->comment,'store'=>$store]);
+			OmsActivityLogModel::newLog($request->order_id,6,$store); //6 is for reship order
+			echo json_encode(["status"=>$qrysts,"msg"=>"Reshipment request send to admin."]);
+		}else{
+			echo json_encode(["status"=>$qrysts,"msg"=>"Error,Reshipment request not send."]);
 		}
 	}
 }
