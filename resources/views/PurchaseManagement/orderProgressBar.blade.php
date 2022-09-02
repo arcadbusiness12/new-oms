@@ -28,5 +28,6 @@
   <i style="color: red" class="icon icon-cancel s-24"></i>
   <p>Cancelled</p>
 @endif
+</div>
 
 
