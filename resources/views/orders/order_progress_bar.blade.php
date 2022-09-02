@@ -14,7 +14,7 @@
       <li class="@if( $order->oms_order_status > 0 ) active @endif"><a  class="circle"></a><center>Packed</center></li>
       <li class="@if( $order->oms_order_status > 1 ) active @endif"><a  class="circle"></a><center>AWB</center></li>
       <li class="@if( $order->oms_order_status > 2 ) active @endif" ><a  class="circle"></a><center>Shipped</center></li>
-      <li class="@if( $order->oms_order_status > 3 ) active @endif"><a  class="circle"></a><center>Delivered</center></li>
+      <li class="@if( $order->oms_order_status > 3 ) active @endif"><a  class="circle"></a><center>Deliver</center></li>
       <li class="@if( $order->payment_status == 1 ) active @endif"><a  class="circle"></a><center>Paid</center></li>
    </ul>
 </div>

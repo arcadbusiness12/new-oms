@@ -92,14 +92,14 @@
 
                             </table>
 
-                            @if($order['comment'])
+                            @if($order->comment)
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <div class="col-md-1 col-sm-1" style="padding-top: 12px;">
                                         <strong>Comment</strong>
                                     </div>
                                     <div class="col-md-11 col-sm-11 comment-box">
-                                        <p>{{$order['comment']}}</p>
+                                        <p>{{$order->comment}}</p>
                                     </div>
 
                                 </div>
@@ -115,36 +115,36 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="row_{{$order['order_id']}}">
-                                        <td>{{$order['order_id']}}</td>
-                                        <td>{{$order['firstname']}} {{$order['lastname']}}</td>
-                                        <td>{{$order['telephone']}}<br>
-                                            {!! $whatsapp !!} {{$order['alternate_number']}}
+                                    <tr class="row_{{$order->order_id}}">
+                                        <td>{{$order->order_id}}</td>
+                                        <td>{{$order->firstname}} {{$order->lastname}}</td>
+                                        <td>{{$order->telephone}}<br>
+                                            {!! $whatsapp !!} {{$order->alternate_number}}
                                         </td>
-                                        <td><span class="font-10 font-bold"> {{$order['currency_code']}} </span> {{$order['total']}}</td>
+                                        <td><span class="font-10 font-bold"> {{$order->currency_code}} </span> {{$order->total}}</td>
                                     </tr>
-                                    <tr class="row_{{$order['order_id']}}">
+                                    <tr class="row_{{$order->order_id}}">
                                         <td colspan="1">Total Product(s) = <span class="count">
-                                                {{array_sum(array_column(json_decode(json_encode($order['orderd_products']), True),'quantity'))}}</span></td>
-                                        <td colspan="1"><strong>Address: </strong><i>{{$order['shipping_area']}}, {{$order['shipping_address_1']}} {{ $order['shipping_address_2'] ? ", ".$order['shipping_address_2'] : "" }}</i></td>
-                                        <td colspan="1"><strong>City: </strong><i>{{ $order['shipping_city'] ? $order['shipping_city'] : $order['shipping_zone'] }}</i></td>
+                                                {{array_sum(array_column(json_decode(json_encode($order->orderd_products), True),'quantity'))}}</span></td>
+                                        <td colspan="1"><strong>Address: </strong><i>{{$order->shipping_area}}, {{$order->shipping_address_1}} {{$order->shipping_address_2 ? ", ".$order->shipping_address_2 : "" }}</i></td>
+                                        <td colspan="1"><strong>City: </strong><i>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</i></td>
                                     </tr>
                                     <tr>
                                         <td colspan="4" class="margin-0 padding-0" >
                                             <table class="table ">
                                               <tbody>
-                                                @foreach ($order['orderd_products'] as $product )
+                                                @foreach ($order->orderd_products as $product )
                                                 <tr class="order-products">
                                                     <td>
-                                                        <img width="100" src="{{$product['product_details']['image']}}" />
+                                                        <img width="100" src="{{$product->product_details->image}}" />
                                                     </td>
                                                     <td>
-                                                        {{ $product['name'] }}
-                                                        @if (count($product['order_options']) > 0)
+                                                        {{ $product->name }}
+                                                        @if ( $product->order_options )
                                                         <div class="m-t-5">
-                                                            @foreach ($product['order_options'] as $option)
-                                                            @if ($product['order_product_id'] == $option['order_product_id'])
-                                                            <span>{{$option['name']}} : </span><strong>{{$option['value']}} </strong>
+                                                            @foreach ($product->order_options as $option)
+                                                            @if ($product->order_product_id == $product->order_product_id)
+                                                            <span>{{$option->name}} : </span><strong>{{$option->value}} </strong>
                                                             @if(!$loop->last)
                                                             <label>|</label>
                                                             @endif
@@ -153,10 +153,10 @@
                                                         </div>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $product['model'] }}</td>
-                                                    <td><span class="count">{{$product['quantity']}}</span></td>
-                                                    <td>{{$product['price']}}</td>
-                                                    <td>{{$product['total']}}</td>
+                                                    <td>{{ $product->model }}</td>
+                                                    <td><span class="count">{{$product->quantity}}</span></td>
+                                                    <td>{{$product->price}}</td>
+                                                    <td>{{$product->total}}</td>
                                                 </tr>
                                                 @endforeach
                                               </tbody>
