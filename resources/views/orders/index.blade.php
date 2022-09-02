@@ -3,7 +3,7 @@
 @section('content')
 <style>
     .sw-theme-circles>ul.step-anchor:before {
-        top: 36%!important;
+        //top: 36%!important;
         width: 68%!important;
         margin-left: 39px!important;
     }

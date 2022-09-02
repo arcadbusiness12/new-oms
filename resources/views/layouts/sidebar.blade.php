@@ -58,8 +58,7 @@
                                         <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">All Orders </a></li>
                                         {{--  <li><a href="panel-page-blank-tabs.html">Customer Return Request </a></li>  --}}
                                         <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}">Online Orders </a></li>
-                                        <li><a href="panel-page-blank-tabs.html">Ready For Returns </a>
-                                        </li>
+                                        {{--  <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>  --}}
                                         <li class="@if( Request::url() == route('orders' ) ) active @endif">
                                             <a href="{{ route('orders') }}?order_status_id=1">Pending</a>
                                         </li>
@@ -71,7 +70,7 @@
                                         </li>
                                        <li><a href="panel-page-blank-tabs.html">Ship Orders  </a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Deliver Orders  </a>
+                                        {{--  <li><a href="panel-page-blank-tabs.html">Deliver Orders</a>  --}}
                                         </li>
                                         <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Reshipment Approval</a>
                                         </li>
