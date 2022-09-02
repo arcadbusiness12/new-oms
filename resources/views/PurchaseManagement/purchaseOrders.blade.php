@@ -301,7 +301,7 @@
                                                                 <table class="table">
                                                                 <?php $i = 0; 
                                                                 foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
-                                                                    if($product['product_id'] != $quantity['order_product_id']) {
+                                                                    if($shipped_product['product_id'] != $shipped_quantity['order_product_id']) {
                                                                                 continue;
                                                                             }
                                                                         if( $shipped_order['status'] == 5 && $shipped_quantity['quantity'] < 1 ) continue;
