@@ -18,6 +18,7 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductOptionModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
 use Carbon\Carbon;
@@ -113,6 +114,9 @@ class PurchaseManagementController extends Controller
             
         ]
         )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
+        foreach($orders as $order) {
+            $order['status_history'] = $this->statusHistory($order['order_id']);
+        } 
         // dd($orders->toArray());
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
         $shipped_order_statuses = $this->shippedOrderStatuses();
@@ -460,4 +464,28 @@ class PurchaseManagementController extends Controller
         $group = $first_piece.$second_piece;
         return $group;
     }
+
+    protected function statusHistory($order_id){
+    	$data = array();
+    	
+    	$history = OmsPurchaseOrdersStatusHistoryModel::where('order_id', $order_id)->get();
+    	if($history->count()){
+	    	foreach ($history as $key => $value) {
+          $user_name = $this->returnUsername($value['created_by']);
+	    		$data[$value['order_status_id']] = $value['created_at']->toDateString().$user_name;
+	    	}
+	    	if(isset($data[4])){
+	    		$data[3] = $data[4];
+	    	}
+    	}
+    	return $data;
+    }
+    private function returnUsername($user_id){
+        $data = OmsUserModel::where('user_id',$user_id)->first();
+        if( !empty($data) ){
+          return "<br>".$data->firstname;
+        }else{
+          return '';
+        }
+      } 
 }

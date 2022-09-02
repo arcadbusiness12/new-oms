@@ -53,7 +53,7 @@
 
             <div class="row">
                 <div class="col-md-12 col-sm-12">
-                    <div class="card no-b">
+                    <div class="body-card">
                         <div class="panel-heading">
                             Stock Reports
                           </div>
@@ -63,7 +63,6 @@
                             </div>
                           @endif
                           
-                          <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
 
                                         <?php if($orders['data']) { ?>
@@ -75,32 +74,34 @@
                                                     $checkbox = true;
                                                 }
                                                 ?>
-                                            <div class="order_list">
+                                            <div class="card order_list mb-4">
                                                 <div class="row top_row">
+                                                  <div class="col-12 col-sm-12 col-xs-12">
                                                     <?php if($checkbox) { ?>
-                                                    <div class="col-xs-1">
+                                                    <div class="col-xs-1 col-grid mb-2">
                                                         <div>
                                                         <label for="checkbox-<?php echo $order['order_id'] ?>"><input type="checkbox" name="delete_orders[]" id="checkbox-<?php echo $order['order_id'] ?>" value="<?php echo $order['order_id'] ?>" class="chk-col-green">
                                                         
                                                         </div>
                                                         <?php if($order['order_status_id'] < 1) { ?>
                                                         <div>
-                                                            <a href="" class="btn btn-info"><i class="fa fa-pencil"></i></a>
+                                                            <a href="" class="btn btn-info"><i class="icon icon-pencil"></i></a>
                                                         </div>
                                                         <?php } ?>
                                                     </div>
                                                     <?php } ?>
-                                                    <div class="col-xs-2"><b>Order Number: #<?php echo $order['order_id'] ?></b>
+                                                    <div class="col-xs-2 col-grid"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                                         <?php if($order['supplier']) { ?>
-                                                        <div class="badge">
-                                                            <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?>
+                                                        <div class="badge badge-secondary">
+                                                           <strong> <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></strong>
                                                         </div>
                                                         <?php } ?>
                                                     </div>
                                                     <div class="<?php echo $checkbox ? 'col-xs-7' : 'col-xs-8' ?> text-center">
-                                                        {{-- @include('purchase_management.order_progress_bar') --}}
+                                                        @include('purchaseManagement.orderProgressBar')
+                                                        
                                                     </div>
-                                                    <div class="col-xs-2 text-right">
+                                                    <div class="col-xs-2 col-grid text-right">
                                                         <?php if($order['urgent']) { ?>
                                                             <div class="label label-warning">Urgent</div>
                                                         <?php } ?>
@@ -108,6 +109,7 @@
                                                             <div class="badge"><?php echo $order['created_at'] ?></div>
                                                         </div>
                                                     </div>
+                                                 </div>
                                                 </div>
                                                 <?php if(empty($order['shipped_orders'])) { ?>
                                                 <!-- <div class="row top_row">
@@ -131,15 +133,14 @@
                                                 <?php foreach ($order['order_products'] as $product) { ?>
                                                 <div class="product_list_row">
                                                     <div class="row product_row">
-                                                        <div class="col-xs-4 col-sm-2">
+                                                        <div class="col-xs-4 col-sm-2 col-grid">
                                                             {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
                                                         </div>
-                                                        <div class="col-xs-6 col-sm-8">
+                                                        <div class="col-xs-6 col-sm-8 col-grid">
                                                             <strong><?php echo $product['name'] ?></strong><br>
                                                             <i><?php echo $product['model'] ?></i>
                                                         </div>
-                                                        </p>
-                                                        <div class="col-xs-2 col-sm-2">
+                                                        <div class="col-xs-2 col-sm-2 col-grid">
                                                             {{-- <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button> --}}
                                                             <button class="btn btn-default form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                                 Details
@@ -254,7 +255,7 @@
                                                 <?php } ?> 
                                                 <?php if($order['shipped_orders']) { ?>
                                                 <?php foreach ($order['shipped_orders'] as $shipped_order) { ?>
-                                                <div class="order_list">
+                                                <div class="card order_list mb-4">
                                                     <div class="row top_row collapse-product-option" data-target="product-<?php echo $shipped_order['shipped_id'] ?>">
                                                         <div class="col-xs-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b></div>
                                                         <div class="col-xs-4 text-center">
@@ -392,7 +393,7 @@
                                                 <?php } } ?>
                                                 <!-  to be shipped condition start-------------------------------------------------------------  -->
                                                 @if( $order['order_status_id'] == 4 )
-                                                <div class="order_list">
+                                                <div class="card order_list mb-4">
                                                     <div class="row top_row collapse-product-option" data-target="product-{{$order['order_id']}}">
                                                         <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
                                                         <div class="col-xs-4 text-center">
@@ -447,13 +448,7 @@
                                             <div class="alert alert-info">No Orders Found!</div>
                                             <?php } ?>
                             
-                      </div>
-                    </div>
-                    <div class="row pull-right">
-                        <div class="col-xs-12">
-                            <?php echo $pagination ?>
-                        </div>
-                    </div>
+                </div>
                 </div>
             </div>
         </div>
