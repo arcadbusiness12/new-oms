@@ -218,7 +218,7 @@
                                                 <div class="row instruction_row mb-4 mt-2">
                                                     <div class="col-xs-12 col-sm-8">
                                                         <?php if($order['link']) { ?>
-                                                        <div>
+                                                        <div class="supper-links">
                                                             <input type="text" name="supplier_link" value="<?php echo $order['link'] ?>" class="form-control copy_to_clipboard" placeholder="Supplier Link" readonly/>
                                                         </div>
                                                         <?php } ?>
@@ -359,7 +359,7 @@
                                                         <div class="row instruction_row">
                                                             <div class="col-xs-12 col-sm-8">
                                                                 <?php if($order['link']) { ?>
-                                                                <div>
+                                                                <div class="supper-links">
                                                                     <input type="text" name="supplier_link" value="<?php echo $order['link'] ?>" class="form-control copy_to_clipboard" placeholder="Supplier Link" readonly/>
                                                                 </div>
                                                                 <?php } ?>
@@ -381,9 +381,9 @@
                                                             </div>
                                                             <div class="col-xs-12 col-sm-4 total_column">
                                                                 <div class="row">
-                                                                    <div class="col-xs-7 col-sm-6">
+                                                                    <div class="col-xs-7 col-sm-6 text-black ">
                                                                         <?php foreach ($shipped_order['order_totals'] as $key => $total_value) { ?>
-                                                                        <label><?php echo $total_value['code'] ?></label>
+                                                                        <label><b><?php echo $total_value['code'] ?></b></label>
                                                                         <?php } ?>
                                                                     </div>
                                                                     <div class="col-xs-5 col-sm-6">
