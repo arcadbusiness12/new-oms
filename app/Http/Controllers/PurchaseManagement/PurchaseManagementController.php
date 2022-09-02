@@ -517,4 +517,31 @@ class PurchaseManagementController extends Controller
         }
         return $image;
       }
+
+      protected function get_product_image($type = 'opencart', $product_id = 0, $width = 0, $height = 0){
+        $slash = DIRECTORY_SEPARATOR;
+        $return_image = '';
+        if($type == 'opencart'){
+            $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
+            
+            if($product_image){
+                if(file_exists($this->website_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+					$ToolImage = new ToolImage();
+					return $ToolImage->resize($this->website_image_source_path, $this->website_image_source_url, $product_image->image, $width, $height);
+                }else{
+                    return $this->opencart_image_url . $product_image->image;
+                }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }else if($type == 'manual'){
+            $product_image = OmsPurchaseProductModel::select('image')->where('product_id', $product_id)->first();
+            if($product_image){
+	            if(file_exists($this->oms_manual_product_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+	            	$ToolImage = new ToolImage();
+	            	return $ToolImage->resize($this->oms_manual_product_image_source_path, $this->oms_manual_product_image_source_url, $product_image->image, $width, $height);
+	            }else{
+	                return str_replace("public/", "", url('public/uploads/products/cache/' . $product_image->image));
+	            }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }
+    }
 }
