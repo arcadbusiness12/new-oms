@@ -46,7 +46,7 @@
                                     <tr class="row_{{ $order->order_id }}">
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->courier_name }}</center></td>
+                                        <td class="column col-sm-1 td-valign"><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span></center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->date_added }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->date_modified }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->telephone }} </center></td>
@@ -89,29 +89,42 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr  class="order-action" style="border-bottom: 7px solid #e9e9e9 !important">
-                                        <td><a class="btn btn-sm btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</a></td>
-                                        <td colspan="4">
-                                            @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
-                                                <div class="row">
-                                                    <div class="col-2">
-                                                        <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
-                                                            <form action="{{URL::to('orders/cancel-order')}}" id="cancel_order_form_{{ $order->order_id }}">
-                                                                {{csrf_field()}}
-                                                                <input type="hidden" name="order_id" value="{{ $order->order_id }}" />
-                                                                <input type="hidden" name="store" value="{{ $order->store }}" />
-                                                                <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm cancel-order">
-                                                                    Cancel Order
-                                                                </button>
-                                                            </form>
-                                                        </a>
+                                    <tr  class="order-action" class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
+                                        <td colspan="11">
+                                                    <div class="row">
+                                                        <div class="col-1">
+                                                            <a class="btn btn-sm btn-warning darken-1" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</a>
+                                                        </div>
+                                                        @if ( $order->oms_order_status < 2 )
+                                                             @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
+                                                                <div class="col-1">
+                                                                    <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
+                                                                        <form action="{{URL::to('orders/cancel-order')}}" id="cancel_order_form_{{ $order->order_id }}">
+                                                                            {{csrf_field()}}
+                                                                            <input type="hidden" name="order_id" value="{{ $order->order_id }}" />
+                                                                            <input type="hidden" name="store" value="{{ $order->store }}" />
+                                                                            <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm cancel-order">
+                                                                                Cancel Order
+                                                                            </button>
+                                                                        </form>
+                                                                    </a>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <a data-orderid={{ $order->order_id }} data-store={{ $order->store }} data-toggle="modal" data-target="#addressModal"
+                                                                    class="btn btn-info btn-sm  btn-edit-customer-adress">Edit Details</a>
+                                                                </div>
+                                                            @endif
+                                                        @endif
+                                                        @if ( $order->oms_order_status ==3 )
+                                                            <div class="col-1">
+                                                                @if( $order->reship == "-1" )
+                                                                    <span class="badge badge-warning orange darken-1">Reship Request</span>
+                                                                @else
+                                                                    <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
+                                                                @endif
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <div class="col-2">
-                                                        <a data-orderid={{ $order->order_id }} data-store={{ $order->store }} data-toggle="modal" data-target="#addressModal"
-                                                        class="btn btn-info btn-sm  btn-edit-customer-adress">Edit Details</a>
-                                                    </div>
-                                                </div>
-                                            @endif
                                         </td>
                                      </tr>
                                 @endforeach
@@ -189,5 +202,53 @@ thead, tbody, tfoot, tr, td, th {
             });
     });
     {{--  cancel order end  --}}
+    {{--  reship code start  ------------------------------}}
+  $(document).on('click', '#btn-reship-checkbox', function(event) {
+    var order_id = $(this).attr('data-orderid');
+    var store = $(this).attr('data-store');
+   swal({
+      title: "Are you sure?",
+      text: "If you want to send Reship request for this order then type reason in below box. ",
+      type: "input",
+      showCancelButton: true,
+      closeOnConfirm: true,
+      animation: "slide-from-top",
+      inputPlaceholder: "Write comment."
+    },
+    function(inputValue){
+      console.log(inputValue);
+      if (inputValue === false || inputValue === ""){
+          console.log("first if");
+          return false;
+      }else{
+        var orignal_text = $('#btn-reship-checkbox').text();
+        $('#btn-reship-checkbox').text('wait').prop('disabled',true);
+        $.ajax({
+          method: "POST",
+          url: APP_URL + "/orders/reship",
+          data: {order_id:order_id,store:store,comment:inputValue},
+          dataType: 'json',
+          cache: false,
+          headers:
+          {
+              'X-CSRF-Token': $('input[name="_token"]').val()
+          },
+        }).done(function (data)
+        {
+          if(data.status){
+              // $('#msg').addClass('alert alert-success').html(data.msg);
+              $('#msg').html(data.msg).fadeIn('slow').addClass("alert alert-success").delay(3000).fadeOut('slow');
+              location.reload();
+          }else{
+              // $('#msg').addClass('alert alert-danger').html(data.msg);
+              $('#msg').html(data.msg).fadeIn('slow').addClass("alert alert-danger").delay(3000).fadeOut('slow');
+          }
+          $('#btn-reship-checkbox').text(orignal_text).prop('disabled',false);
+        }); // End of Ajax
+  }
+});
+
+});
+{{--  reship code end  --}}
 </script>
 @endpush

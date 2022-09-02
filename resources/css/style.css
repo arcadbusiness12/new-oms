@@ -88,7 +88,6 @@ span>svg {
     background-color: white;
 }
 
-.table td,
 .table th {
     /* vertical-align: unset; */
 }
@@ -125,6 +124,7 @@ input[type="checkbox"] {
     width: 72% !important;
     margin-left: 46px !important;
 }
+
 .sw-theme-circles>ul>li.nav-item {
     margin-left: 25px;
     float: left ;
@@ -133,12 +133,14 @@ input[type="checkbox"] {
     font-weight: bold;
     font-size: 12px;
 }
+
 .sw-theme-circles>ul.step-anchor>li>a {
     height: 36px !important;
     min-width: 0px !important;
     width: 0px !important;
     /* margin-top: 4px !important; */
 }
+
 .sw-theme-circles>ul.step-anchor>li.active>a {
     background: #11e531;
 }
@@ -146,6 +148,7 @@ input[type="checkbox"] {
     margin-bottom: 19px !important;
     z-index: 1;
 }
+
 
 /* .sw-theme-circles>ul.step-anchor>li>a {
     min-width: 11px !important;
@@ -156,7 +159,9 @@ input[type="checkbox"] {
 
 /* step bar design end */
 
+
 /* Purchase style start  */
+
 .body-card>.panel-heading {
     color: #333 !important;
     background-color: #dddddda1 !important;
@@ -171,8 +176,9 @@ input[type="checkbox"] {
 }
 .top_row {
     margin-top: 12px;
-    border-bottom: 1px solid #000000 ;
+    border-bottom: 1px solid #000000;
 }
+
 .order_list>.product_list_row {
     border-bottom: 1px groove #dddddd;
     margin-bottom: 10px;
@@ -186,4 +192,10 @@ input[type="checkbox"] {
 }
 .purchase-history-contnet {
     padding: 8px;
+}
+.sw-theme-circles>ul.step-anchor>li>a {
+    background: #d9d9d9;
+}
+.clickable {
+    cursor: pointer;
 }

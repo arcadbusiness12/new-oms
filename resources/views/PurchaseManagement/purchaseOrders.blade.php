@@ -135,7 +135,7 @@
                                                 <div class="product_list_row">
                                                     <div class="row product_row">
                                                         <div class="col-xs-4 col-sm-2 col-grid">
-                                                            {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
+                                                            <img width="100" src="<?php echo $product['image'] ?>" />
                                                         </div>
                                                         <div class="col-xs-6 col-sm-8 col-grid">
                                                             <strong><?php echo $product['name'] ?></strong><br>
@@ -224,11 +224,12 @@
                                                         <?php } ?>
                                                         <div class="row button-row">
                                                             <div class="col-xs-12 col-sm-4">
-                                                                <button type="button" class="btn btn-default form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?>">Comment</button>
+                                                                
+                                                                <button type="button" class="btn btn-default form-control" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                             </div>
                                                             <div class="col-sm-8"></div>
                                                         </div>
-                                                        <div id="history<?php echo $order['order_id'] ?>" class="history-panel mt-2 text-black">
+                                                        <div id="history<?php echo $order['order_id'] ?>" class="collapse show history-panel mt-2 text-black">
                                                         <?php foreach ($order['order_histories'] as $history) { ?>
                                                             <div class="purchase-history-contnet">
                                                                 <label><b><?php echo $history['name'] ?>:</b></label>
@@ -257,42 +258,46 @@
                                                 <?php if($order['shipped_orders']) { ?>
                                                 <?php foreach ($order['shipped_orders'] as $shipped_order) { ?>
                                                 <div class="card order_list mb-4">
-                                                    <div class="row top_row collapse-product-option" data-target="product-<?php echo $shipped_order['shipped_id'] ?>">
-                                                        <div class="col-xs-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b></div>
-                                                        <div class="col-xs-4 text-center">
+                                                    <div class="row top_row clickable collapse-product-option" data-toggle="collapse" data-target="#product-<?php echo $shipped_order['shipped_id']?>" aria-expanded="false" aria-controls="collapseExample">
+                                                        <div class="col-sm-4 col-grid text-black">
+                                                            <b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b>
+                                                        </div>
+                                                        <div class="col-sm-4 text-center col-grid mb-2">
                                                             <?php if($shipped_order['status'] == 5){ ?>
-                                                            <div class="label label-danger">
-                                                                <?php echo $shipped_order_statuses[$shipped_order['status']]; ?>
+                                                            <div class="badge badge-success" style="font-size: 15px;">
+                                                                <b><?php echo $shipped_order_statuses[$shipped_order['status']]; ?></b>
                                                             </div>
                                                             <?php }else{ ?>
-                                                            <div class="label label-success">
-                                                                <?php echo $shipped_order_statuses[$shipped_order['status']]; ?>
+                                                            <div class="badge badge-success" style="font-size: 15px;">
+                                                              <b> <?php echo $shipped_order_statuses[$shipped_order['status']]; ?> </b>
                                                             </div>
                                                             <?php } ?>
                                                         </div>
-                                                        <div class="col-xs-4 text-right">
+                                                        <div class="col-sm-4 text-right col-grid">
                                                             <?php if($shipped_order['status'] == 2){ ?>
                                                             <div class="badge badge-secondary">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
                                                             <?php } ?>
                                                         </div>
                                                     </div>
-                                                    <div id="product-<?php echo $shipped_order['shipped_id'] ?>" class="collapsible-content">
+                                                    <div id="product-<?php echo $shipped_order['shipped_id'] ?>" class="collapse order_list">
                                                         <?php foreach ($shipped_order['order_products'] as $shipped_product) { 
                                                         ?>
-                                                        <div class="product_list_row">
+                                                        <div class="product_list_row pt-2">
                                                             <div class="row product_row">
                                                                 <div class="col-xs-4 col-sm-2">
-                                                                    {{-- <img width="100" src="<?php echo $shipped_product['image'] ?>" /> --}}
+                                                                    <img width="100" src="<?php echo $shipped_product['image'] ?>" />
                                                                 </div>
                                                                 <div class="col-xs-6 col-sm-8">
                                                                     <strong><?php echo $shipped_product['name'] ?></strong><br>
                                                                     <i><?php echo $shipped_product['model'] ?></i>
                                                                 </div>
                                                                 <div class="col-xs-2 col-sm-2">
-                                                                    <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>">Details</button>
+                                                                    <button class="btn btn-default form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                                        Details
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                            <div id="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" class="options_row table-responsive collapsible-content">
+                                                            <div id="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" class="options_row table-responsive collapse">
                                                                 <table class="table">
                                                                 <?php $i = 0; 
                                                                 foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
@@ -360,16 +365,16 @@
                                                                 <?php } ?>
                                                                 <div class="row button-row">
                                                                     <div class="col-xs-12 col-sm-4">
-                                                                        <button type="button" class="btn btn-default form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?><?php echo $shipped_order['shipped_id'] ?>">Comment</button>
+                                                                        <button type="button" class="btn btn-default form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] . $shipped_order['shipped_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                                     </div>
                                                                     <div class="col-sm-8"></div>
                                                                 </div>
-                                                                <div id="history<?php echo $order['order_id'] ?><?php echo $shipped_order['shipped_id'] ?>" class="history-panel">
+                                                                <div id="history<?php echo $order['order_id'] ?><?php echo $shipped_order['shipped_id'] ?>" class="collapse show history-panel mt-2 text-black">
                                                                 <?php foreach ($order['order_histories'] as $history) { ?>
-                                                                    <div>
-                                                                        <label><?php echo $history['name'] ?>:</label>
+                                                                    <div class="purchase-history-contnet">
+                                                                        <label><b><?php echo $history['name'] ?>:</b></label>
                                                                         <i><?php echo $history['comment'] ?></i>
-                                                                        <i style="float: right;"><?php echo $history['created_at']; ?></i>
+                                                                        <i style="float: right;"><?php echo date('Y-m-d', strtotime($history['created_at'])); ?></i>
                                                                     </div>
                                                                 <?php } ?>
                                                                 </div>
@@ -398,7 +403,7 @@
                                                     <div class="row top_row collapse-product-option" data-target="product-{{$order['order_id']}}">
                                                         <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
                                                         <div class="col-xs-4 text-center">
-                                                            <div class="label label-warning">To Be Shipped</div>
+                                                            <div class="badge badge-success" style="font-size: 15px;"><b>To Be Shipped</b></div>
                                                         </div>
                                                         <div class="col-xs-4 text-right">
                                                         </div>
@@ -410,7 +415,7 @@
                                                         <div class="product_list_row">
                                                             <div class="row product_row">
                                                                 <div class="col-xs-4 col-sm-2">
-                                                                    {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
+                                                                    <img width="100" src="<?php echo $product['image'] ?>" />
                                                                 </div>
                                                                 <div class="col-xs-8 col-sm-10">
                                                                     <strong><?php echo $product['name'] ?></strong><br>

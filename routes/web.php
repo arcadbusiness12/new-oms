@@ -33,9 +33,12 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::get("/","index")->name('orders');
         Route::get("/online","online")->name('orders.online');
         Route::any("/update-customer-details","updateCustomerDetails")->name('orders.update-customer-details');
+        Route::any('/reship-orders', 'approveReshipment')->name('orders.reship-orders');
+        Route::get('/picking-list-awaiting', 'pickingListAwaiting')->name('orders.picking-list-awaiting');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
+        Route::post('/reship', 'reship')->name('orders.reship');
         Route::any('/activity-details', 'activityDetails')->name('orders.activity-details');
     });
 });

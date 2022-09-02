@@ -119,20 +119,24 @@ class PurchaseManagementController extends Controller
         foreach($orders as $order) {
             $order['status_history'] = $this->statusHistory($order['order_id']);
             foreach($order->orderProducts as $product) {
-                $product['image'] = $this->get_product_image($product->type, $product->product_id, 300, 300);
+                $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
             }
+            if(count((array)$order->shippedOrders) > 0) {
+                foreach($order->shippedOrders as $sorder) {
+                    foreach($sorder->orderProducts as $sproduct) {
+                        $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+                    }
+                    
+                }
+            }
+            
         } 
-        // dd($orders->toArray());
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
         $shipped_order_statuses = $this->shippedOrderStatuses();
         $pagination = $orders->render();
         $old_input = $request->all();
         $status_cancel = 7;
         $orders = $orders->toArray();
-        // dd($shipped_order_statuses);
-        // foreach($orders['data'] as $or) {
-        //     dd($or['order_supplier']->firstname);
-        // }
         return view(self::VIEW_DIR. ".purchaseOrders")->with(compact('orders','pagination','order_statuses','shipped_order_statuses','status_cancel','old_input'));
     }
     public function shippedOrderStatuses(){
@@ -494,30 +498,23 @@ class PurchaseManagementController extends Controller
         }
       }
     
-      protected function get_product_image($type = 'opencart', $product_id = 0, $width = 0, $height = 0){
-        $slash = DIRECTORY_SEPARATOR;
-        $return_image = '';
-        if($type == 'opencart'){
-            $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
-            
-            if($product_image){
-                if(file_exists($this->website_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
-					$ToolImage = new ToolImage();
-					return $ToolImage->resize($this->website_image_source_path, $this->website_image_source_url, $product_image->image, $width, $height);
-                }else{
-                    return $this->opencart_image_url . $product_image->image;
-                }
-            }else return $this->opencart_image_url . 'placeholder.png';
-        }else if($type == 'manual'){
-            $product_image = OmsPurchaseProductModel::select('image')->where('product_id', $product_id)->first();
-            if($product_image){
-	            if(file_exists($this->oms_manual_product_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
-	            	$ToolImage = new ToolImage();
-	            	return $ToolImage->resize($this->oms_manual_product_image_source_path, $this->oms_manual_product_image_source_url, $product_image->image, $width, $height);
-	            }else{
-	                return str_replace("public/", "", url('public/uploads/products/cache/' . $product_image->image));
-	            }
-            }else return $this->opencart_image_url . 'placeholder.png';
+      protected function omsProductImage($product_id = 0,$width = 0, $height = 0,$type=""){
+        if( $type == "" ||  $type == "opencart"){
+          $product_data = OmsInventoryProductModel::where('product_id',$product_id)->first();
+          $img_dir = "inventory_products";
+        }else{
+          $product_data = OmsPurchaseProductModel::where('product_id',$product_id)->first();
+          $img_dir = "inventory_products";
         }
-    }
+        if( !empty( $product_data ) && $product_data->image != "" ){
+          $source = asset("uploads/$img_dir/$product_data->image");
+          $image = $source;
+        }else{
+          $image = "";
+        }
+        if( $image == "" ){
+          $image = $this->get_product_image("opencart",$product_id,$width = 0, $height = 0);
+        }
+        return $image;
+      }
 }
