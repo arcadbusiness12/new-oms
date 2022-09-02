@@ -12,7 +12,7 @@ use App\Models\OpenCart\Reseller\BaResellerProductModel;
 /**
  * Description of ProductsModel
  *
- * @author kamran
+ * @author Siraj Ali
  */
 class ProductsModel extends AbstractOpenCartModel
 {

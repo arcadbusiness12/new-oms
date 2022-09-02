@@ -19,7 +19,7 @@
         <a href=""  class="circle">
           {{-- <i class="icon-check"></i> --}}
         </a>
-       <?php echo $value['name']; ?>
+       <span class="text-black"><?php echo $value['name']; ?> </span>
       </li>
     <?php $i++; } ?>
    </ul>

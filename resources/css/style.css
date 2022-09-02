@@ -122,23 +122,29 @@ input[type="checkbox"] {
     width: 67% !important;
     margin-left: 46px !important; */
     top: 25% !important;
-    width: 64% !important;
+    width: 72% !important;
     margin-left: 46px !important;
 }
 .sw-theme-circles>ul>li.nav-item {
     margin-left: 25px;
     float: left ;
-    max-width: 10% ;
+    max-width: 11% ;
     text-align: left;
+    font-weight: bold;
+    font-size: 12px;
 }
 .sw-theme-circles>ul.step-anchor>li>a {
     height: 36px !important;
     min-width: 0px !important;
     width: 0px !important;
-    margin-top: 4px !important;
+    /* margin-top: 4px !important; */
 }
 .sw-theme-circles>ul.step-anchor>li.active>a {
     background: #11e531;
+}
+.sw-theme-circles>ul.step-anchor {
+    margin-bottom: 19px !important;
+    z-index: 1;
 }
 
 /* .sw-theme-circles>ul.step-anchor>li>a {
@@ -156,9 +162,12 @@ input[type="checkbox"] {
     background-color: #dddddda1 !important;
     border-color: #dddddda1 !important;
 }
-.product_list_row,.top_row,.button-row ,.history-panel {
+.product_list_row,.top_row,.button-row {
     margin: 0px 18px 0px 18px;
     font-weight: bold;
+}
+.history-panel {
+    margin: 0px 18px 0px 18px;
 }
 .top_row {
     margin-top: 12px;
@@ -168,4 +177,13 @@ input[type="checkbox"] {
     border-bottom: 1px groove #dddddd;
     margin-bottom: 10px;
     padding: 10px 0 10px 0;
+}
+.text-black {
+    color: #090909 !important;
+}
+.instruction_row .history-panel {
+    border: 1px solid gainsboro !important;
+}
+.purchase-history-contnet {
+    padding: 8px;
 }

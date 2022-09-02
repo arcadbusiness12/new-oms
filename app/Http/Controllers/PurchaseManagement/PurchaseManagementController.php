@@ -21,6 +21,8 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
+use App\Models\OpenCart\Products\ProductsModel;
+use App\Platform\Helpers\ToolImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +118,9 @@ class PurchaseManagementController extends Controller
         )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
         foreach($orders as $order) {
             $order['status_history'] = $this->statusHistory($order['order_id']);
+            foreach($order->orderProducts as $product) {
+                $product['image'] = $this->get_product_image($product->type, $product->product_id, 300, 300);
+            }
         } 
         // dd($orders->toArray());
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
@@ -487,5 +492,32 @@ class PurchaseManagementController extends Controller
         }else{
           return '';
         }
-      } 
+      }
+    
+      protected function get_product_image($type = 'opencart', $product_id = 0, $width = 0, $height = 0){
+        $slash = DIRECTORY_SEPARATOR;
+        $return_image = '';
+        if($type == 'opencart'){
+            $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
+            
+            if($product_image){
+                if(file_exists($this->website_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+					$ToolImage = new ToolImage();
+					return $ToolImage->resize($this->website_image_source_path, $this->website_image_source_url, $product_image->image, $width, $height);
+                }else{
+                    return $this->opencart_image_url . $product_image->image;
+                }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }else if($type == 'manual'){
+            $product_image = OmsPurchaseProductModel::select('image')->where('product_id', $product_id)->first();
+            if($product_image){
+	            if(file_exists($this->oms_manual_product_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+	            	$ToolImage = new ToolImage();
+	            	return $ToolImage->resize($this->oms_manual_product_image_source_path, $this->oms_manual_product_image_source_url, $product_image->image, $width, $height);
+	            }else{
+	                return str_replace("public/", "", url('public/uploads/products/cache/' . $product_image->image));
+	            }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }
+    }
 }

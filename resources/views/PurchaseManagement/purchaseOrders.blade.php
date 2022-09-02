@@ -80,7 +80,8 @@
                                                     <?php if($checkbox) { ?>
                                                     <div class="col-xs-1 col-grid mb-2">
                                                         <div>
-                                                        <label for="checkbox-<?php echo $order['order_id'] ?>"><input type="checkbox" name="delete_orders[]" id="checkbox-<?php echo $order['order_id'] ?>" value="<?php echo $order['order_id'] ?>" class="chk-col-green">
+                                                        <label for="checkbox-<?php echo $order['order_id'] ?>">
+                                                            <input type="checkbox" name="delete_orders[]" id="checkbox-<?php echo $order['order_id'] ?>" value="<?php echo $order['order_id'] ?>" class="chk-col-green">
                                                         
                                                         </div>
                                                         <?php if($order['order_status_id'] < 1) { ?>
@@ -90,23 +91,23 @@
                                                         <?php } ?>
                                                     </div>
                                                     <?php } ?>
-                                                    <div class="col-xs-2 col-grid"><b>Order Number: #<?php echo $order['order_id'] ?></b>
+                                                    <div class="col-xs-2 col-grid text-black"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                                         <?php if($order['supplier']) { ?>
                                                         <div class="badge badge-secondary">
                                                            <strong> <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></strong>
                                                         </div>
                                                         <?php } ?>
                                                     </div>
-                                                    <div class="<?php echo $checkbox ? 'col-xs-7' : 'col-xs-8' ?> text-center">
+                                                    <div class="<?php echo $checkbox ? 'col-xs-7' : 'col-xs-8' ?> text-center col-grid">
                                                         @include('PurchaseManagement.orderProgressBar')
                                                         
                                                     </div>
                                                     <div class="col-xs-2 col-grid text-right">
                                                         <?php if($order['urgent']) { ?>
-                                                            <div class="label label-warning">Urgent</div>
+                                                            <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><strong> Urgent </strong></div>
                                                         <?php } ?>
                                                         <div>
-                                                            <div class="badge"><?php echo $order['created_at'] ?></div>
+                                                            <div class="badge badge-secondary"><strong><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></strong></div>
                                                         </div>
                                                     </div>
                                                  </div>
@@ -214,7 +215,7 @@
                                                     </div>
                                                 </div>
                                                 <?php } ?>
-                                                <div class="row instruction_row">
+                                                <div class="row instruction_row mb-4 mt-2">
                                                     <div class="col-xs-12 col-sm-8">
                                                         <?php if($order['link']) { ?>
                                                         <div>
@@ -227,12 +228,12 @@
                                                             </div>
                                                             <div class="col-sm-8"></div>
                                                         </div>
-                                                        <div id="history<?php echo $order['order_id'] ?>" class="history-panel">
+                                                        <div id="history<?php echo $order['order_id'] ?>" class="history-panel mt-2 text-black">
                                                         <?php foreach ($order['order_histories'] as $history) { ?>
-                                                            <div>
-                                                                <label><?php echo $history['name'] ?>:</label>
+                                                            <div class="purchase-history-contnet">
+                                                                <label><b><?php echo $history['name'] ?>:</b></label>
                                                                 <i><?php echo $history['comment'] ?></i>
-                                                                <i style="float: right;"><?php echo $history['created_at']; ?></i>
+                                                                <i style="float: right;"><?php echo date('Y-m-d', strtotime($history['created_at'])); ?></i>
                                                             </div>
                                                         <?php } ?>
                                                         </div>
@@ -271,7 +272,7 @@
                                                         </div>
                                                         <div class="col-xs-4 text-right">
                                                             <?php if($shipped_order['status'] == 2){ ?>
-                                                            <div class="badge">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
+                                                            <div class="badge badge-secondary">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
                                                             <?php } ?>
                                                         </div>
                                                     </div>
@@ -447,7 +448,11 @@
                                             <?php } else { ?>
                                             <div class="alert alert-info">No Orders Found!</div>
                                             <?php } ?>
-                            
+                                            <div class="row pull-right">
+                                                <div class="col-xs-12">
+                                                    <?php echo $pagination ?>
+                                                </div>
+                                            </div>
                 </div>
                 </div>
             </div>
