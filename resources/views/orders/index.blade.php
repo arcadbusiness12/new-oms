@@ -1,7 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-
+<style>
+    .sw-theme-circles>ul.step-anchor:before {
+        top: 36%!important;
+        width: 68%!important;
+        margin-left: 39px!important;
+    }
+</style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
         <div class="col-md-12">
@@ -27,7 +33,7 @@
 
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
-                            <table class="table" width="100%" style="font-size: 13px !important">
+                            <table class="table" width="100%" style="font-size: 14px !important; color:black !important">
                              <thead>
                               <tr style="background-color: #3f51b5;color:white">
                                 <th scope="col"><center>Order Id</center></th>
@@ -56,8 +62,8 @@
                                     <tr class="row_{{ $order->order_id }}">
                                         <td>&nbsp;</td>
                                         <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
-                                        <td colspan="1"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
-                                        <td colspan="5" >@include('orders.order_progress_bar')</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
+                                        <td colspan="4" ><center>@include('orders.order_progress_bar')</center></td>
                                     </tr>
                                     @if( $order->orderd_products )
                                         <tr class="row_{{ $order->order_id }}">
