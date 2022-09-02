@@ -18,6 +18,8 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductOptionModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusHistoryModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,24 +55,101 @@ class PurchaseManagementController extends Controller
         $this->oms_inventory_product_image_cache_path = public_path('uploads/inventory_products/cache/');
     }
 
+    public function purchaseOrders(Request $request) {
+        $supplier_order_orders = [];
+        $whereClause = [];
+        $relationWhereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->order_type || $request->order_type === 0) {
+            $whereClause[] = ['urgent', $request->order_type];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', $request->product_model];
+        }
+        if($request->product_sku) {
+            $sku_parts = explode("-", $request->product_sku);
+            if(count($sku_parts) == 2 && $sku_parts[1] != "") {
+                $relationWhereClause[] = ['model', 'REGEXP', $request->product_sku . "[A-Z]"];
+            }else {
+                $relationWhereClause[] = ['model', 'LIKE', $request->product_sku . "%"];
+            }
+        }
+        $shippedWhereClause = [];
+        if($request->order_status_id) {
+            $shippedWhereClause[] = ['status', $request->order_status_id];
+        }
+        $orders = OmsPurchaseOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },
+            'orderProducts.orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },
+            'orderHistories',
+            'shippedOrders' => function($sh) use($shippedWhereClause) {
+                $sh->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
+            },
+            'shippedOrders.orderTotals',
+            'shippedOrders.orderProducts' =>function($sopro) {
+                $sopro->having(DB::RAW('(type = \'manual\') OR (type = \'opencart\')'), '=', 1);
+            },
+            'shippedOrders.orderProductQuantities' =>function($soproq) {
+                $soproq->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'shippedOrders.orderProductQuantities.productOptions' =>function($soproop) {
+                $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderSupplier'
+            
+        ]
+        )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
+        foreach($orders as $order) {
+            $order['status_history'] = $this->statusHistory($order['order_id']);
+        } 
+        // dd($orders->toArray());
+        $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
+        $shipped_order_statuses = $this->shippedOrderStatuses();
+        $pagination = $orders->render();
+        $old_input = $request->all();
+        $status_cancel = 7;
+        $orders = $orders->toArray();
+        // dd($shipped_order_statuses);
+        // foreach($orders['data'] as $or) {
+        //     dd($or['order_supplier']->firstname);
+        // }
+        return view(self::VIEW_DIR. ".purchaseOrders")->with(compact('orders','pagination','order_statuses','shipped_order_statuses','status_cancel','old_input'));
+    }
+    public function shippedOrderStatuses(){
+        return array(
+            1  =>  'Forward',
+            2 =>  'Shipped',
+            3 =>  'Delivered',
+            5 =>  'Cancelled',
+        );
+    }
     public function placePurchaseOrder(Request $request) {
         $products = [];
-        if($request->isMethod('post')) {
-            dd("Ok");
-        }
         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->where('status', 1)->get()->toArray();
         return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
     }
 
     public function orderOutStockProduct(Request $request) {
         $products = [];
-        // dd($request->all());
     		foreach ($request->order_product as $product_id) {
-    			// dd($product_id);
                 $product = OmsInventoryProductModel::where('product_id', $product_id)->first();
                 $product_array = array();
                 if ($product){
-                    // $product = (array)$product;
                     $product = $product->toArray();
                     $product_array = array(
                         'product_id'    =>  $product['product_id'],
@@ -81,7 +160,6 @@ class PurchaseManagementController extends Controller
                     $options = get_inventory_product_options_format($product['product_id']);
                     if($options){
                         $product_array['options'] = array();
-                        // dd($options);
                         foreach ($options as $option) {
                             $option_values = array();
                             foreach ($option['option_values'] as $value) {
@@ -90,9 +168,7 @@ class PurchaseManagementController extends Controller
         
                                 $OmsInventoryStockModel = OmsInventoryStockModel::select('minimum_quantity','average_quantity','duration')->where('product_id', $product['product_id'])->where('option_id', $option['option_id'])->where('option_value_id', $value['option_value_id'])->first();
         
-                                //$average_quantity = $this->getLastSaleQtyWithOption($product['product_id'], $value);  //for delivered quantity
                                 $average_quantity_shipped = getLastSaleQtyWithOptionShipped($product['product_id'], $value); //for shipped quantity
-                                // $average_tot_quantity = $average_quantity->total+$average_quantity_shipped->total;
                                 $average_tot_quantity = $average_quantity_shipped->total;
                                 if($OmsInventoryStockModel){
                                     $minimum_quantity = $OmsInventoryStockModel->minimum_quantity;
@@ -120,7 +196,6 @@ class PurchaseManagementController extends Controller
              array_push($products, $product_array);
     		}
             
-            // dd($products);
             $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->where('status',1)->get()->toArray();
             return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
     }
@@ -133,17 +208,14 @@ class PurchaseManagementController extends Controller
 	            foreach ($request->purchase as $product_id => $op_code_arr) {
 	                $p_o_id[$product_id] = array();
 	                if($product_id == 'product'){
-                      // die("if");
 	                    foreach ($op_code_arr as $product_kk => $product_option_arr) {
 	                        $p_o_id_color[$product_kk] = array();
 	                        if(isset($product_option_arr['options']) && !empty($product_option_arr['options'])){
 	                            foreach ($product_option_arr['options'] as $product_keys => $product_values) {
 	                                if(in_array($product_values['option'], $p_o_id_color[$product_kk])){
-	                                //if($p_o_id_color == $product_values['option']){
 	                                    $same_option = true;
 	                                }else{
 	                                    array_push($p_o_id_color[$product_kk], $product_values['option']);
-	                                    //$p_o_id_color = $product_values['option'];
 	                                }
                                     
 	                            }
@@ -153,7 +225,6 @@ class PurchaseManagementController extends Controller
 	                        }
 	                    }
 	                }else{
-                    // die("else");
 	                    foreach ($op_code_arr as $option_arr) {
 	                        if(isset($option_arr['option']) && !empty($option_arr['option'])){
 	                            foreach ($option_arr['option'] as $o_id => $o_v_id) {
@@ -364,7 +435,7 @@ class PurchaseManagementController extends Controller
         }else{
             Session::flash('message', 'Something went wrong, please try again!');
             Session::flash('alert-class', 'alert-warning');
-            return redirect()->route('inventory.alarm')->with('message', 'Something went wrong, please try again!');
+            return redirect()->route('place.purchase.order')->with('message', 'Something went wrong, please try again!');
         }
     }
 
@@ -393,4 +464,28 @@ class PurchaseManagementController extends Controller
         $group = $first_piece.$second_piece;
         return $group;
     }
+
+    protected function statusHistory($order_id){
+    	$data = array();
+    	
+    	$history = OmsPurchaseOrdersStatusHistoryModel::where('order_id', $order_id)->get();
+    	if($history->count()){
+	    	foreach ($history as $key => $value) {
+          $user_name = $this->returnUsername($value['created_by']);
+	    		$data[$value['order_status_id']] = $value['created_at']->toDateString().$user_name;
+	    	}
+	    	if(isset($data[4])){
+	    		$data[3] = $data[4];
+	    	}
+    	}
+    	return $data;
+    }
+    private function returnUsername($user_id){
+        $data = OmsUserModel::where('user_id',$user_id)->first();
+        if( !empty($data) ){
+          return "<br>".$data->firstname;
+        }else{
+          return '';
+        }
+      } 
 }

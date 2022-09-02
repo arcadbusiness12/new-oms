@@ -405,7 +405,6 @@
         code = code ? code : '';
         var nCode = $('.new-code'+row).val() +''+ code +''+ $('.newCode'+row).val();
         $('#sku'+row).val(nCode);
-        // $('.new-code').val(nCode);
         $('.manually_option_color'+row).prop('selectedIndex',0);
     });
      $(document).delegate('#manually_option_color', 'change', function() {

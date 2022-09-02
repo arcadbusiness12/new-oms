@@ -10,12 +10,12 @@
    }'>
    <ul class="nav step-anchor">
       <li style="display: none"><a href=""></a></li>
-      <li class="@if( $order->oms_order_status == '0' || $order->oms_order_status > 0 ) active @endif"><a href=""  class="circle"><i class="icon-check"></i></a><center>Picklist</center></li>
-      <li class="@if( $order->oms_order_status > 0 ) active @endif"><a  class="circle"><i class="icon-check"></i></a><center>Packed</center></li>
-      <li class="@if( $order->oms_order_status > 1 ) active @endif"><a  class="circle"><i class="icon-check"></i></a><center>AWB</center></li>
-      <li class="@if( $order->oms_order_status > 2 ) active @endif" ><a  class="circle"><i class="icon-check"></i></a><center>Shipped</center></li>
-      <li class="@if( $order->oms_order_status > 3 ) active @endif"><a  class="circle"><i class="icon-check"></i></a><center>Delivered</center></li>
-      <li class="@if( $order->payment_status == 1 ) active @endif"><a  class="circle"><i class="icon-check"></i></a><center>Paid</center></li>
+      <li class="@if( $order->oms_order_status == '0' || $order->oms_order_status > 0 ) active @endif"><a href=""  class="circle"></a><center>Picklist</center></li>
+      <li class="@if( $order->oms_order_status > 0 ) active @endif"><a  class="circle"></a><center>Packed</center></li>
+      <li class="@if( $order->oms_order_status > 1 ) active @endif"><a  class="circle"></a><center>AWB</center></li>
+      <li class="@if( $order->oms_order_status > 2 ) active @endif" ><a  class="circle"></a><center>Shipped</center></li>
+      <li class="@if( $order->oms_order_status > 3 ) active @endif"><a  class="circle"></a><center>Delivered</center></li>
+      <li class="@if( $order->payment_status == 1 ) active @endif"><a  class="circle"></a><center>Paid</center></li>
    </ul>
 </div>
 @else
