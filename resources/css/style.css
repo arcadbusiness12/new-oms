@@ -179,7 +179,7 @@ input[type="checkbox"] {
     border-bottom: 1px solid #000000;
 }
 
-.order_list>.product_list_row {
+.order_list>.product_list_row,.product_list_row {
     border-bottom: 1px groove #dddddd;
     margin-bottom: 10px;
     padding: 10px 0 10px 0;
