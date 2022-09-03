@@ -65,10 +65,10 @@
                           
                            <div id="status_changed_msg" style="display: none"></div>
 
-                                        <?php if($orders['data']) { ?>
-                                            <form name="form-delete-orders" id="form-delete-orders" method="post" action="<?php echo URL::to('/purchase_manage/purchase_orders') ?>">
+                               <?php if($orders['data']) { ?>
+                                 <form name="form-delete-orders" id="form-delete-orders" method="post" action="<?php echo URL::to('/purchase_manage/purchase_orders') ?>">
                                             {{ csrf_field() }}
-                                            <?php foreach ($orders['data'] as $order) { 
+                                   <?php foreach ($orders['data'] as $order) { 
                                                 $checkbox = false;
                                                 if($order['order_status_id'] < 2){
                                                     $checkbox = true;
@@ -280,7 +280,7 @@
                                                         </div>
                                                     </div>
                                                     <div id="product-<?php echo $shipped_order['shipped_id'] ?>" class="collapse order_list">
-                                                        <?php foreach ($shipped_order['order_products'] as $shipped_product) { 
+                                                        <?php foreach ($shipped_order['order_products'] as $k => $shipped_product) { 
                                                         ?>
                                                         <div class="product_list_row pt-2">
                                                             <div class="row product_row">
@@ -300,7 +300,7 @@
                                                             <div id="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" class="options_row table-responsive collapse">
                                                                 <table class="table">
                                                                 <?php $i = 0; 
-                                                                foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
+                                                                foreach ($shipped_order['order_product_quantities'] as $key => $shipped_quantity) { 
                                                                     if($shipped_product['product_id'] != $shipped_quantity['order_product_id']) {
                                                                                 continue;
                                                                             }
@@ -326,7 +326,7 @@
                                                                             <?php if($i == 1) { ?>
                                                                             <label class="control-label">Confirm Quantity</label>
                                                                             <?php } ?>
-                                                                            {{-- <div><input type="text" class="form-control" value="<?php echo $shipped_quantity['confirm_qty'] ?>" size="5" readonly></div> --}}
+                                                                            <div><input type="text" class="form-control" value="<?php echo $order['order_products'][$k]['order_product_quantities'][$key]['order_quantity'] ?>" size="5" readonly></div>
                                                                         </td>
                                                                         {{-- new work end================== --}}
                                                                         <td class="col-xs-2">
