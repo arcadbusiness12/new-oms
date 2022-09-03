@@ -217,3 +217,10 @@ input[type="checkbox"] {
 .purchase-s-d-section {
     margin: 12px;
 }
+.order_list .product_list_row .product_row .options-label {
+    border: 1px solid #dddddd;
+}
+.order_list .product_list_row .product_row .options-label .box-label {
+    display: inline-block;
+    padding: 6px 10px;
+}

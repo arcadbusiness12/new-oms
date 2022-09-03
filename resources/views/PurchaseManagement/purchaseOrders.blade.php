@@ -435,7 +435,7 @@
                                                                             ?>
                                                                             <?php if( $remain_quantity > 0 ) 
                                                                             { $total_quantity += $remain_quantity; ?>
-                                                                                <div class="box-label">
+                                                                                <div class="box-label col-grid">
                                                                                     <?php echo @$quantity['product_options'][0]['value']?> - <?php echo @$quantity['product_options'][1]['value'] ?> = <?php echo $remain_quantity; ?>
                                                                                 </div>
                                                                             <?php }  ?>
