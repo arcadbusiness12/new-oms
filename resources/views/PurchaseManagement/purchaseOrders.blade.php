@@ -98,7 +98,7 @@
                                                         </div>
                                                         <?php } ?>
                                                     </div>
-                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid">
+                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid purchase-order-progress">
                                                         @include('PurchaseManagement.orderProgressBar')
                                                         
                                                     </div>

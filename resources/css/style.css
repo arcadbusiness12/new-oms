@@ -116,14 +116,23 @@ input[type="checkbox"] {
 
 /* step bar design start */
 
-.sw-theme-circles>ul.step-anchor:before {
+.normal-order-progress .sw-theme-circles>ul.step-anchor:before {
     /* top: 38% !important;
     width: 67% !important;
     margin-left: 46px !important; */
-    top: 16% !important;
-    width: 72% !important;
+    top: 32% !important;
+    width: 58% !important;
     margin-left: 46px !important;
 }
+
+.purchase-order-progress .sw-theme-circles>ul.step-anchor:before {
+    /* top: 38% !important;
+    width: 67% !important;
+    margin-left: 46px !important; */
+    top: 17% !important;
+    width: 72% !important;
+    margin-left: 46px !important;
+} 
 
 .sw-theme-circles>ul>li.nav-item {
     margin-left: 25px;
@@ -224,6 +233,7 @@ input[type="checkbox"] {
     display: inline-block;
     padding: 6px 10px;
 }
-.order_progress_bar_new .step-anchor .h-class {
+
+.purchase-order-progress .order_progress_bar_new .step-anchor .h-class {
     height: 99px !important;
 }

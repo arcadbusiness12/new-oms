@@ -57,7 +57,11 @@
                                         <td>&nbsp;</td>
                                         <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
                                         <td colspan="1"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
-                                        <td colspan="5" >@include('orders.order_progress_bar')</td>
+                                        <td colspan="5" >
+                                          <div class="normal-order-progress">
+                                            @include('orders.order_progress_bar')</td>
+                                          </div>
+                                          
                                     </tr>
                                     @if( $order->orderd_products )
                                         <tr style="border-bottom: 7px solid #e9e9e9 !important">
