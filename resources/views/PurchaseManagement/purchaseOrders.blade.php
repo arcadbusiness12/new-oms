@@ -443,7 +443,7 @@
                                                                         <div class="box-label">
                                                                             T. Units = <?php echo @$total_quantity ?>
                                                                         </div>
-                                                                    </div>
+                                                                    </div> 
                                                                 </div>
                                                             </div>
                                                         </div>
