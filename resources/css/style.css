@@ -120,7 +120,7 @@ input[type="checkbox"] {
     /* top: 38% !important;
     width: 67% !important;
     margin-left: 46px !important; */
-    top: 25% !important;
+    top: 16% !important;
     width: 72% !important;
     margin-left: 46px !important;
 }
@@ -223,4 +223,7 @@ input[type="checkbox"] {
 .order_list .product_list_row .product_row .options-label .box-label {
     display: inline-block;
     padding: 6px 10px;
+}
+.order_progress_bar_new .step-anchor .h-class {
+    height: 99px !important;
 }
