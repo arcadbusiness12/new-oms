@@ -36,17 +36,21 @@
                             <i class="icon icon-sailing-boat-water s-24"></i> <span>Dashboard</span>
                             </a>
                         </li>
-                        <li class="treeview"><a href="#"><i class="icon icon-shopping-cart s-24"></i>Place Order<i
+                        <li class="treeview @if( str_contains(Request::url(), '/placeOrder') ) active @endif"><a href="#"><i class="icon icon-shopping-cart s-24"></i>Place Order<i
                                 class=" icon-angle-left  pull-right"></i></a>
-                            <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-circle-o"></i>Add Order</a>
-                                </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-add"></i>Report</a>
-                                </li>
-                            </ul>
+                                <ul class="treeview-menu">
+                                    <li class="@if( str_contains(Request::url(), '/placeOrder') ) active @endif"><a href="#"><i class="icon icon-circle-o"></i>Add Order</a>
+                                        <ul class="treeview-menu">
+                                            <li class="@if( str_contains(Request::url(), '/placeOrder') && str_contains(Request::url(), '/placeOrder/df') != 1  ) active @endif"><a href="{{ route('place.order') }}"><i class="icon icon-circle-o"></i>Business Arcade</a>
+                                            </li>
+                                            <li class="@if( str_contains(Request::url(), '/placeOrder/df') ) active @endif"><a href="{{ route('df.place.order') }}"><i class="icon icon-circle-o"></i>Dress Fair</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
                         </li>
 
-                        <li class="treeview @if( str_contains(Request::url(), '/orders') ) active @endif)">
+                        <li class="treeview @if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>

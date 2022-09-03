@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
 use App\Http\Controllers\Orders\OrdersAjaxController;
 use App\Http\Controllers\Orders\OrdersController;
+use App\Http\Controllers\PlaceOrder\PlaceOrderController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +30,55 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::prefix('placeOrder')->middleware('auth')->group(function(){
+    Route::controller(PlaceOrderController::class)->group(function() {
+        Route::get('/', 'view')->name('place.order');
+        Route::post('/ajax/search', 'searchProducts')->name('place.order.ajax.search');
+        Route::post('/ajax/getCustomerDetails', 'getCustomerDetails')->name('place.order.ajax.getCustomerDetails');
+        Route::post('/ajax/searchCustomer', 'searchCustomer')->name('place.order.ajax.search.Customer');
+        Route::post('/ajax/addToCart', 'addToCart')->name('place.order.ajax.addToCart');
+        Route::post('/ajax/getCart', 'getCart')->name('place.order.ajax.getCart');
+        Route::post('/ajax/getAddress', 'getAddress')->name('place.order.ajax.getAddress');
+        Route::post('/ajax/getPaymentAddress', 'getPaymentAddress')->name('place.order.ajax.getPaymentAddress');
+        Route::post('/ajax/getShippingAddress', 'getShippingAddress')->name('place.order.ajax.getShippingAddress');
+        Route::post('/ajax/getPaymentShipping', 'getPaymentShipping')->name('place.order.ajax.getPaymentShipping');
+        Route::post('/ajax/addIP', 'addIP')->name('place.order.ajax.addIP');
+        Route::post('/ajax/cart_total', 'getcartTotal')->name('place.order.ajax.cart_total');
+        Route::post('/ajax/update_return_product', 'update_return_product')->name('place.order.ajax.update_return_product');
+        Route::post('/ajax/addUserOrder', 'addUserOrder')->name('place.order.ajax.addUserOrder');
+        Route::post('/ajax/save_customer', 'save_customer')->name('place.order.ajax.save_customer');
+        Route::post('/ajax/get_customer', 'get_customer')->name('place.order.ajax.get_customer');
+        Route::post('/ajax/get_product_name', 'get_product_name')->name('place.order.ajax.get_product_name');
+        Route::post('/ajax/get_product_model', 'get_product_model')->name('place.order.ajax.get_product_model');
+        Route::post('/ajax/get_zone', 'get_zone')->name('place.order.ajax.get_zone');
+        Route::post('/ajax/get_area', 'get_area')->name('place.order.ajax.get_area');
+        Route::post('/ajax/set_payment_address', 'set_payment_address')->name('place.order.ajax.set_payment_address');
+    });
+    //for df
+    Route::controller(DressFairPlaceOrderController::class)->group(function() {
+        Route::get('/df', 'view')->name('df.place.order');
+        Route::post('/df/ajax/search', 'searchProducts')->name('df.place.order.ajax.search');
+        Route::post('/df/ajax/getCustomerDetails', 'getCustomerDetails')->name('df.place.order.ajax.getCustomerDetails');
+        Route::post('/df/ajax/searchCustomer', 'searchCustomer')->name('df.place.order.ajax.searchCustomer');
+        Route::post('/df/ajax/addToCart', 'addToCart')->name('df.place.order.ajax.addToCart');
+        Route::post('/df/ajax/getCart', 'getCart')->name('df.place.order.ajax.getCart');
+        Route::post('/df/ajax/getAddress', 'getAddress')->name('df.place.order.ajax.getAddress');
+        Route::post('/df/ajax/getPaymentAddress', 'getPaymentAddress')->name('df.place.order.ajax.getPaymentAddress');
+        Route::post('/df/ajax/getShippingAddress', 'getShippingAddress')->name('df.place.order.ajax.getShippingAddress');
+        Route::post('/df/ajax/getPaymentShipping', 'getPaymentShipping')->name('df.place.order.ajax.getPaymentShipping');
+        Route::post('/df/ajax/addIP', 'addIP')->name('df.place.order.ajax.addIP');
+        Route::post('/df/ajax/cart_total', 'getcartTotal')->name('df.place.order.ajax.cart_total');
+        Route::post('/df/ajax/update_return_product', 'update_return_product')->name('df.place.order.ajax.update_return_product');
+        Route::post('/df/ajax/addUserOrder', 'addUserOrder')->name('df.place.order.ajax.addUserOrder');
+        Route::post('/df/ajax/save_customer', 'save_customer')->name('df.place.order.ajax.save_customer');
+        Route::post('/df/ajax/get_customer', 'get_customer')->name('df.place.order.ajax.get_customer');
+        Route::post('/df/ajax/get_product_name', 'get_product_name')->name('df.place.order.ajax.get_product_name');
+        Route::post('/df/ajax/get_product_model', 'get_product_model')->name('df.place.order.ajax.get_product_model');
+        Route::post('/df/ajax/get_zone', 'get_zone')->name('df.place.order.ajax.get_zone');
+        Route::post('/df/ajax/get_area', 'get_area')->name('df.place.order.ajax.get_area');
+        Route::post('/df/ajax/set_payment_address', 'set_payment_address')->name('df.place.order.ajax.set_payment_address');
+    });
+});
 Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
         Route::get("/","index")->name('orders');
