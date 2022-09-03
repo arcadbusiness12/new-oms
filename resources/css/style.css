@@ -88,7 +88,6 @@ span>svg {
     background-color: white;
 }
 
-.table td,
 .table th {
     /* vertical-align: unset; */
 }
@@ -121,27 +120,33 @@ input[type="checkbox"] {
     /* top: 38% !important;
     width: 67% !important;
     margin-left: 46px !important; */
-    top: 25% !important;
-    width: 64% !important;
+    top: 16% !important;
+    width: 72% !important;
     margin-left: 46px !important;
 }
 
 .sw-theme-circles>ul>li.nav-item {
     margin-left: 25px;
-    float: left;
-    max-width: 10%;
+    float: left ;
+    max-width: 11% ;
     text-align: left;
+    font-weight: bold;
+    font-size: 12px;
 }
 
 .sw-theme-circles>ul.step-anchor>li>a {
     height: 36px !important;
     min-width: 0px !important;
     width: 0px !important;
-    margin-top: 4px !important;
+    /* margin-top: 4px !important; */
 }
 
 .sw-theme-circles>ul.step-anchor>li.active>a {
     background: #11e531;
+}
+.sw-theme-circles>ul.step-anchor {
+    margin-bottom: 19px !important;
+    z-index: 1;
 }
 
 
@@ -162,22 +167,63 @@ input[type="checkbox"] {
     background-color: #dddddda1 !important;
     border-color: #dddddda1 !important;
 }
-
-.product_list_row,
-.top_row,
-.button-row,
-.history-panel {
+.product_list_row,.top_row {
     margin: 0px 18px 0px 18px;
     font-weight: bold;
 }
-
+.history-panel {
+    margin: 0px 18px 0px 18px;
+}
 .top_row {
     margin-top: 12px;
     border-bottom: 1px solid #000000;
 }
 
-.order_list>.product_list_row {
+.order_list>.product_list_row,.product_list_row {
     border-bottom: 1px groove #dddddd;
     margin-bottom: 10px;
     padding: 10px 0 10px 0;
+}
+.text-black {
+    color: #090909 !important;
+}
+.instruction_row .history-panel {
+    border: 1px solid gainsboro !important;
+}
+.purchase-history-contnet {
+    padding: 8px;
+}
+.sw-theme-circles>ul.step-anchor>li>a {
+    background: #d9d9d9;
+}
+.clickable {
+    cursor: pointer;
+}
+.button-row {
+    margin-left: 4px;
+}
+.supper-links {
+    margin-left: 18px;
+    margin-bottom: 12px;
+}
+.total_column label {
+    padding: 4px !important;
+    font-size: 14px;
+}
+.purchase-ship-delived-section {
+    box-shadow: 4px -4px 4px -2px;
+    border: 1px solid #000000;
+}
+.purchase-s-d-section {
+    margin: 12px;
+}
+.order_list .product_list_row .product_row .options-label {
+    border: 1px solid #dddddd;
+}
+.order_list .product_list_row .product_row .options-label .box-label {
+    display: inline-block;
+    padding: 6px 10px;
+}
+.order_progress_bar_new .step-anchor .h-class {
+    height: 99px !important;
 }

@@ -13,13 +13,24 @@
    <ul class="nav step-anchor">
       <?php array_pop($order_statuses);
       $i = 1;
-      foreach ($order_statuses as $key => $value) { ?>
-
-      <li class="<?php if($value['order_status_id'] <= $order['order_status_id'] + 1) { ?> active <?php }?>">
+      foreach ($order_statuses as $key => $value) { 
+        $h_class = 'h-class';
+        if(count($order['status_history']) > 0) {
+          $h_class = '';
+        }
+        ?>
+       
+      <li class="<?php if($value['order_status_id'] <= $order['order_status_id'] + 1) { ?> active <?php }?> {{$h_class}}">
         <a href=""  class="circle">
           {{-- <i class="icon-check"></i> --}}
         </a>
-       <?php echo $value['name']; ?>
+       <span class="text-black"><?php echo $value['name']; ?></span>
+       <?php if(isset($order['status_history'][$value['order_status_id']])){ ?>
+        <small class="badge badge-secondary" style="font-size:9px">
+          <b><?php echo $order['status_history'][$value['order_status_id']] ?></b>
+        </small>
+       <?php } ?>
+        
       </li>
     <?php $i++; } ?>
    </ul>

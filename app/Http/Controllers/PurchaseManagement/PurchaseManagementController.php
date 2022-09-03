@@ -21,6 +21,8 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
+use App\Models\OpenCart\Products\ProductsModel;
+use App\Platform\Helpers\ToolImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -100,7 +102,9 @@ class PurchaseManagementController extends Controller
             'shippedOrders' => function($sh) use($shippedWhereClause) {
                 $sh->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
             },
-            'shippedOrders.orderTotals',
+            'shippedOrders.orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },
             'shippedOrders.orderProducts' =>function($sopro) {
                 $sopro->having(DB::RAW('(type = \'manual\') OR (type = \'opencart\')'), '=', 1);
             },
@@ -116,18 +120,26 @@ class PurchaseManagementController extends Controller
         )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
         foreach($orders as $order) {
             $order['status_history'] = $this->statusHistory($order['order_id']);
+            foreach($order->orderProducts as $product) {
+                $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+            }
+            if(count((array)$order->shippedOrders) > 0) {
+                foreach($order->shippedOrders as $sorder) {
+                    foreach($sorder->orderProducts as $sproduct) {
+                        $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+                    }
+                    
+                }
+            }
+            
         } 
-        // dd($orders->toArray());
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
         $shipped_order_statuses = $this->shippedOrderStatuses();
         $pagination = $orders->render();
         $old_input = $request->all();
         $status_cancel = 7;
         $orders = $orders->toArray();
-        // dd($shipped_order_statuses);
-        // foreach($orders['data'] as $or) {
-        //     dd($or['order_supplier']->firstname);
-        // }
+        // dd($orders);
         return view(self::VIEW_DIR. ".purchaseOrders")->with(compact('orders','pagination','order_statuses','shipped_order_statuses','status_cancel','old_input'));
     }
     public function shippedOrderStatuses(){
@@ -487,5 +499,52 @@ class PurchaseManagementController extends Controller
         }else{
           return '';
         }
-      } 
+      }
+    
+      protected function omsProductImage($product_id = 0,$width = 0, $height = 0,$type=""){
+        if( $type == "" ||  $type == "opencart"){
+          $product_data = OmsInventoryProductModel::where('product_id',$product_id)->first();
+          $img_dir = "inventory_products";
+        }else{
+          $product_data = OmsPurchaseProductModel::where('product_id',$product_id)->first();
+          $img_dir = "inventory_products";
+        }
+        if( !empty( $product_data ) && $product_data->image != "" ){
+          $source = asset("uploads/$img_dir/$product_data->image");
+          $image = $source;
+        }else{
+          $image = "";
+        }
+        if( $image == "" ){
+          $image = $this->get_product_image("opencart",$product_id,$width = 0, $height = 0);
+        }
+        return $image;
+      }
+
+      protected function get_product_image($type = 'opencart', $product_id = 0, $width = 0, $height = 0){
+        $slash = DIRECTORY_SEPARATOR;
+        $return_image = '';
+        if($type == 'opencart'){
+            $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
+            
+            if($product_image){
+                if(file_exists($this->website_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+					$ToolImage = new ToolImage();
+					return $ToolImage->resize($this->website_image_source_path, $this->website_image_source_url, $product_image->image, $width, $height);
+                }else{
+                    return $this->opencart_image_url . $product_image->image;
+                }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }else if($type == 'manual'){
+            $product_image = OmsPurchaseProductModel::select('image')->where('product_id', $product_id)->first();
+            if($product_image){
+	            if(file_exists($this->oms_manual_product_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
+	            	$ToolImage = new ToolImage();
+	            	return $ToolImage->resize($this->oms_manual_product_image_source_path, $this->oms_manual_product_image_source_url, $product_image->image, $width, $height);
+	            }else{
+	                return str_replace("public/", "", url('public/uploads/products/cache/' . $product_image->image));
+	            }
+            }else return $this->opencart_image_url . 'placeholder.png';
+        }
+    }
 }
