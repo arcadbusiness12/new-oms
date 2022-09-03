@@ -1,4 +1,4 @@
-<div class="sticky">
+<div class="sticky d-print-none">
     <div class="navbar navbar-expand d-flex justify-content-between bd-navbar white shadow">
         <div class="relative">
             <div class="d-flex">

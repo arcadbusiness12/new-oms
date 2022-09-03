@@ -2,7 +2,7 @@
 
 namespace App\Models\DressFairOpenCart\Products;
 
-use App\Models\DressFairOpenCart\AbstractDressFairOpenCartModel
+use App\Models\DressFairOpenCart\AbstractDressFairOpenCartModel;
 
 /*
  * Opencart Product table Model
