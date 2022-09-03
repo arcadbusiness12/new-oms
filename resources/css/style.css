@@ -210,3 +210,10 @@ input[type="checkbox"] {
     padding: 4px !important;
     font-size: 14px;
 }
+.purchase-ship-delived-section {
+    box-shadow: 4px -4px 4px -2px;
+    border: 1px solid #000000;
+}
+.purchase-s-d-section {
+    margin: 12px;
+}

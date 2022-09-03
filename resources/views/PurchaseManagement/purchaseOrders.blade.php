@@ -257,12 +257,12 @@
                                                 <?php } ?> 
                                                 <?php if($order['shipped_orders']) { ?>
                                                 <?php foreach ($order['shipped_orders'] as $shipped_order) { ?>
-                                                <div class="card order_list mb-4">
-                                                    <div class="row top_row clickable collapse-product-option" data-toggle="collapse" data-target="#product-<?php echo $shipped_order['shipped_id']?>" aria-expanded="false" aria-controls="collapseExample">
-                                                        <div class="col-sm-4 col-grid text-black">
+                                                <div class="card order_list mb-4 mt-4 purchase-s-d-section">
+                                                    <div class="row top_row clickable collapse-product-option purchase-ship-delived-section" data-toggle="collapse" data-target="#product-<?php echo $shipped_order['shipped_id']?>" aria-expanded="false" aria-controls="collapseExample">
+                                                        <div class="col-sm-4 col-grid text-black mt-2">
                                                             <b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b>
                                                         </div>
-                                                        <div class="col-sm-4 text-center col-grid mb-2">
+                                                        <div class="col-sm-4 text-center col-grid mb-2 mt-2">
                                                             <?php if($shipped_order['status'] == 5){ ?>
                                                             <div class="badge badge-success" style="font-size: 15px;">
                                                                 <b><?php echo $shipped_order_statuses[$shipped_order['status']]; ?></b>
@@ -273,7 +273,7 @@
                                                             </div>
                                                             <?php } ?>
                                                         </div>
-                                                        <div class="col-sm-4 text-right col-grid">
+                                                        <div class="col-sm-4 text-right col-grid mt-2">
                                                             <?php if($shipped_order['status'] == 2){ ?>
                                                             <div class="badge badge-secondary">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
                                                             <?php } ?>
@@ -402,16 +402,18 @@
                                                 <?php } } ?>
                                                 <!-  to be shipped condition start-------------------------------------------------------------  -->
                                                 @if( $order['order_status_id'] == 4 )
-                                                <div class="card order_list mb-4">
-                                                    <div class="row top_row collapse-product-option" data-target="product-{{$order['order_id']}}">
-                                                        <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
-                                                        <div class="col-xs-4 text-center">
+                                                <div class="card order_list mb-4 purchase-s-d-section">
+                                                    <div class="row top_row clickable collapse-product-option purchase-ship-delived-section" data-toggle="collapse" data-target="#product-<?php echo $order['order_id'];?>" aria-expanded="false" aria-controls="collapseExample">
+                                                        <div class="col-sm-4 col-grid text-black mt-2">
+                                                            <b>Order Number: #<?php echo $order['order_id'] ?></b>
+                                                        </div>
+                                                        <div class="col-sm-4 col-grid text-center mt-2 mb-2">
                                                             <div class="badge badge-success" style="font-size: 15px;"><b>To Be Shipped</b></div>
                                                         </div>
-                                                        <div class="col-xs-4 text-right">
+                                                        <div class="col-sm-4 col-grid text-right mt-2">
                                                         </div>
                                                     </div>
-                                                    <div id="product-{{ $order['order_id']}}" class="collapsible-content">
+                                                    <div id="product-{{ $order['order_id']}}" class="collapse">
                                                     <?php if($order['total'])
                                                     { 
                                                         foreach ($order['order_products'] as $product) { ?>
