@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DressFairPlaceOrder\DressFairPlaceOrderController;
+use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
@@ -56,7 +56,7 @@ Route::prefix('placeOrder')->middleware('auth')->group(function(){
     });
     //for df
     Route::controller(DressFairPlaceOrderController::class)->group(function() {
-        Route::get('/', 'view')->name('df.place.order');
+        Route::get('/df', 'view')->name('df.place.order');
         Route::post('/df/ajax/search', 'searchProducts')->name('df.place.order.ajax.search');
         Route::post('/df/ajax/getCustomerDetails', 'getCustomerDetails')->name('df.place.order.ajax.getCustomerDetails');
         Route::post('/df/ajax/searchCustomer', 'searchCustomer')->name('df.place.order.ajax.searchCustomer');

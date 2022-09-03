@@ -40,7 +40,7 @@ use App\Models\Oms\OmsActivityLogModel;
 
 class DressFairPlaceOrderController extends Controller
 {
-    const VIEW_DIR = 'dressfair_place_order';
+    const VIEW_DIR = 'placeOrder.df';
     const PER_PAGE = 20;
     private $DB_DFOPENCART_DATABASE = '';
     private $DB_DFOMS_DATABASE = '';

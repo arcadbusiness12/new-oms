@@ -42,7 +42,7 @@ use Excel;
 class PlaceOrderController extends Controller
 {
 
-    const VIEW_DIR = 'place_order';
+    const VIEW_DIR = 'placeOrder.df';
     const PER_PAGE = 20;
     private $DB_BAOPENCART_DATABASE = '';
     private $DB_BAOMS_DATABASE = '';
@@ -51,7 +51,7 @@ class PlaceOrderController extends Controller
     function __construct(){
         $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
         $this->DB_BAOMS_DATABASE = env('DB_BAOMS_DATABASE');
-        $this->store = 1; //2 for businessarcade 
+        $this->store = 1; //2 for businessarcade
     }
 
     public function view(){
@@ -118,7 +118,7 @@ class PlaceOrderController extends Controller
         ->limit(20)
         ->get()
         ->toArray();
-        
+
         $data['customers'] = array();
         foreach ($customers as $key => $value) {
             $data['customers'][] = array(
@@ -308,7 +308,7 @@ class PlaceOrderController extends Controller
               $df_customer_data = $this->dfOrdersHistory($name,$number,$email);
               // echo "<pre>";print_r($customer_data);echo "</pre>";die;
               $registered_customer = CustomersModel::where('telephone', 'LIKE', "%" . $number . "%")->first();
-              
+
               if($customer_data OR $df_customer_data OR $registered_customer){
                   // $address_data = DB::table(env("DB_BAOPENCART_DATABASE").'.oc_address')->select('*')->where('address_id', $customer_data->address_id)->first();
                   $address_street_building = "";
@@ -340,7 +340,7 @@ class PlaceOrderController extends Controller
                       'country_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_country_id : 0,
                       'zone_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_zone_id : 0,
                    );
-                   
+
                  }else{
                     $customer = array(
                       'customer_id' => isset($registered_customer) ? $registered_customer->customer_id : "",
@@ -366,11 +366,11 @@ class PlaceOrderController extends Controller
               $customer_data = $customer_data->sortByDesc('date_added');
               // dd($customer_data->toArray());
               foreach ($customer_data as $order) {
-                  
+
                   $user = OmsPlaceOrderModel::select('ou.username','store')->join('oms_user as ou', 'ou.user_id', '=', 'oms_place_order.user_id')
                           ->where('oms_place_order.order_id', $order['order_id'])->first();
                   // echo "<pre>"; dd($user->toArray());
-                  if($user){ 
+                  if($user){
                     if( $user->store == 1 ){
                       $store_name = "BA";
                       $product_total = OrderedProductModel::select(DB::Raw('COUNT(*) AS total'))->where('order_id', $order['order_id'])->first();
@@ -440,7 +440,7 @@ class PlaceOrderController extends Controller
   public function save_customer(Request $request){
     $json = array();
     $customer_id = $request->get('customer_id');
-    
+
     if($customer_id){
         // Ignore space and first zero
         $telephone = str_replace(" ", "", $request->get('telephone'));
@@ -477,7 +477,7 @@ class PlaceOrderController extends Controller
         // Ignore space and first zero
         $telephone = str_replace(" ", "", $request->get('telephone'));
         $telephone = (int)$telephone;
-        
+
         if(!preg_match("/^[0-9]*$/", $telephone)){
             $json['error'] = "Enter valid mobile number!";
         }else if($request->get('telephone_code') == 971 && strlen($telephone) != 9){
@@ -499,7 +499,7 @@ class PlaceOrderController extends Controller
     //     $json = array();
     //     // echo "<pre>"; print_r($request->all());
     //     $customer_id = $request->get('customer_id');
-        
+
     //     if($customer_id){
     //         // Ignore space and first zero
     //         $telephone = str_replace(" ", "", $request->get('telephone'));
@@ -536,7 +536,7 @@ class PlaceOrderController extends Controller
     //         // Ignore space and first zero
     //         $telephone = str_replace(" ", "", $request->get('telephone'));
     //         $telephone = (int)$telephone;
-            
+
     //         if(!preg_match("/^[0-9]*$/", $telephone)){
     //             $json['error'] = "Enter valid mobile number!";
     //         }else if($request->get('telephone_code') == 971 && strlen($telephone) != 9){
@@ -606,7 +606,7 @@ class PlaceOrderController extends Controller
             }
         }
         if(isset($post_data['error'])){
-            $errors = $post_data['error'];    
+            $errors = $post_data['error'];
         }
         $totals = $post_data['totals'];
         return view(self::VIEW_DIR . '.cartview', ['products' => $products,'totals' => $totals,'errors' => $errors]);
@@ -636,7 +636,7 @@ class PlaceOrderController extends Controller
               );
           }
           $countries = CountryModel::select('country_id','name')->get()->toArray();
-          
+
           $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
           $contents = (string)$html;
           $contents = $html->render();
@@ -658,7 +658,7 @@ class PlaceOrderController extends Controller
               'shipping_country_id' => $customer_data['country_id'],
           );
           $countries = CountryModel::select('country_id','name')->get()->toArray();
-          
+
           $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
           $contents = (string)$html;
           $contents = $html->render();
@@ -691,7 +691,7 @@ class PlaceOrderController extends Controller
     //             );
     //         }
     //         $countries = CountryModel::select('country_id','name')->get()->toArray();
-            
+
     //         $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
     //         $contents = (string)$html;
     //         $contents = $html->render();
@@ -713,7 +713,7 @@ class PlaceOrderController extends Controller
     //             'shipping_country_id' => $customer_data['country_id'],
     //         );
     //         $countries = CountryModel::select('country_id','name')->get()->toArray();
-            
+
     //         $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
     //         $contents = (string)$html;
     //         $contents = $html->render();
@@ -727,7 +727,7 @@ class PlaceOrderController extends Controller
 
         $payment_address = array();
         parse_str(Input::get('payment_address'), $payment_address);
-        
+
         if($customer_id){
             $address_id = CustomersModel::select('address_id')->where('customer_id', $customer_id)->first();
             if($address_id){
@@ -748,7 +748,7 @@ class PlaceOrderController extends Controller
                 );
             }
             $countries = CountryModel::select('country_id','name')->get()->toArray();
-            
+
             $html = view(self::VIEW_DIR . '.shipping_address', ['customer' => $customer, 'countries' => $countries]);
             $contents = (string)$html;
             $contents = $html->render();
@@ -770,7 +770,7 @@ class PlaceOrderController extends Controller
                 'shipping_country_id' => $payment_address['country_id'],
             );
             $countries = CountryModel::select('country_id','name')->get()->toArray();
-            
+
             $html = view(self::VIEW_DIR . '.shipping_address', ['customer' => $customer, 'countries' => $countries]);
             $contents = (string)$html;
             $contents = $html->render();
@@ -788,7 +788,7 @@ class PlaceOrderController extends Controller
         if (count(Input::all()) > 0){
             $post_data = Input::all();
         }
-      
+
         if(isset($post_data['totals'])){
             $totals = $post_data['totals'];
         }
@@ -802,10 +802,10 @@ class PlaceOrderController extends Controller
             $shipping_method = $post_data['shipping_method'];
         }
         if(isset($post_data['payment_methods']) && is_array($post_data['payment_methods'])){
-            $payment_methods = $post_data['payment_methods']; 
+            $payment_methods = $post_data['payment_methods'];
         }
         if(isset($post_data['shipping_methods']) && is_array($post_data['shipping_methods'])){
-            $shipping_methods = $post_data['shipping_methods']; 
+            $shipping_methods = $post_data['shipping_methods'];
         }
         return view(self::VIEW_DIR . '.paymentshippingview', ['payment_method' => $payment_method, 'payment_methods' => $payment_methods, 'shipping_method' => $shipping_method, 'shipping_methods' => $shipping_methods, 'totals' => $totals,'e_wallet_balance'=>$e_wallet_balance]);
     }
@@ -850,12 +850,12 @@ class PlaceOrderController extends Controller
     public function update_return_product(){
         if(Input::all() > 0 && Input::get('submit') == 'update_return_product'){
             foreach (Input::get('order') as $order) {
-                ExchangeOrderReturnProduct::where(ExchangeOrderReturnProduct::FIELD_ORDER_ID, Input::get('order_id'))->where(ExchangeOrderReturnProduct::FIELD_ORDER_PRODUCT_ID, $order['product_id'])->update(array(ExchangeOrderReturnProduct::FIELD_ORDER_QUANTITY => $order['quantity']));            
+                ExchangeOrderReturnProduct::where(ExchangeOrderReturnProduct::FIELD_ORDER_ID, Input::get('order_id'))->where(ExchangeOrderReturnProduct::FIELD_ORDER_PRODUCT_ID, $order['product_id'])->update(array(ExchangeOrderReturnProduct::FIELD_ORDER_QUANTITY => $order['quantity']));
             }
         }
         return redirect('/exchange_orders/add/'. Input::get('order_id'));
     }
-    
+
     public function reports(){
         $orders = array();
         $whereClause = [];
@@ -952,20 +952,20 @@ public function csvReport($list){
     //     array('123', '456', '789'),
     //     array('"aaa"', '"bbb"')
     // );
-    
+
     // $fp = fopen('file.csv', 'w');
     fputcsv($fp, ['Order #','Sale Person','Amount','Courier Company','AirWay Bill #','OMS Status','Date']);
     foreach ($list as $fields) {
         fputcsv($fp, $fields);
     }
-    
+
     fclose($fp);
     exit();
 }
 public function addUserOrder(Request $request){
     $order_id = $request->get('order_id');
     $user_id = Session::get('user_id');
-    //get target data to save 
+    //get target data to save
     // $target_data = OmsUserModel::with(['paidAdPage','singleAssignedDuties'=>function($query){
     //   $query->where("activity_id",2);
     // }])->where("user_id",$user_id)->first();
