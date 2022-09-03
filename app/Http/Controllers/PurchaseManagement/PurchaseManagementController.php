@@ -139,6 +139,7 @@ class PurchaseManagementController extends Controller
         $old_input = $request->all();
         $status_cancel = 7;
         $orders = $orders->toArray();
+        // dd($orders);
         return view(self::VIEW_DIR. ".purchaseOrders")->with(compact('orders','pagination','order_statuses','shipped_order_statuses','status_cancel','old_input'));
     }
     public function shippedOrderStatuses(){

@@ -98,13 +98,13 @@
                                                         </div>
                                                         <?php } ?>
                                                     </div>
-                                                    <div class="<?php echo $checkbox ? 'col-xs-7' : 'col-xs-8' ?> text-center col-grid">
+                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid">
                                                         @include('PurchaseManagement.orderProgressBar')
                                                         
                                                     </div>
                                                     <div class="col-xs-2 col-grid text-right">
                                                         <?php if($order['urgent']) { ?>
-                                                            <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><strong> Urgent </strong></div>
+                                                            <div class="badge badge-warning orange darken-1 mb-2" style="font-size: 15px;"><strong> Urgent </strong></div>
                                                         <?php } ?>
                                                         <div>
                                                             <div class="badge badge-secondary"><strong><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></strong></div>
@@ -431,12 +431,12 @@
                                                                             if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             }
-                                                                            $quant = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                                                                            $remain_quantity = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                                                                             ?>
-                                                                            <?php if( $quant > 0 ) 
-                                                                            { $total_quantity += $quant; ?>
+                                                                            <?php if( $remain_quantity > 0 ) 
+                                                                            { $total_quantity += $remain_quantity; ?>
                                                                                 <div class="box-label">
-                                                                                    <?php echo @$product['products_sizes'][0]['value']?> - <?php echo @$product['products_sizes'][1]['value'] ?> = <?php echo $quant; ?>
+                                                                                    <?php echo @$quantity['product_options'][0]['value']?> - <?php echo @$quantity['product_options'][1]['value'] ?> = <?php echo $remain_quantity; ?>
                                                                                 </div>
                                                                             <?php }  ?>
                                                                         <?php } ?>

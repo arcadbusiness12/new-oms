@@ -19,7 +19,11 @@
         <a href=""  class="circle">
           {{-- <i class="icon-check"></i> --}}
         </a>
-       <span class="text-black"><?php echo $value['name']; ?> </span>
+       <span class="text-black"><?php echo $value['name']; ?></span>
+       <?php if(isset($order['status_history'][$value['order_status_id']])){ ?>
+        <small class="badge badge-secondary" style="font-size:9px"><b><?php echo $order['status_history'][$value['order_status_id']] ?></b></small>
+       <?php } ?>
+        
       </li>
     <?php $i++; } ?>
    </ul>
