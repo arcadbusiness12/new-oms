@@ -70,9 +70,19 @@ class categorySettingController extends Controller
         ]);
     }
 
+    public function getSubCategories($cate) {
+        $subcategories = GroupSubCategoryModel::where('group_main_category_id', $cate)->get()->toArray();
+        return response()->json(
+            [
+                'status' => true,
+                'cates'  => $subcategories
+            ]
+            );
+    }
+
     public function saveSubCategory(Request $request) {
         $this->validate($request, [
-            'main_cate.*' => 'required',
+            'main_cate' => 'required',
             'sub_cate.*' => 'required'
         ]);
         $main_cate = $request->main_cate;
@@ -81,7 +91,7 @@ class categorySettingController extends Controller
         $sub_cate_code = $request->sub_cate_code;
         for($i = 0; $i < count($sub_cate); $i++) {
             $request_data = array(
-                'group_main_category_id' => $main_cate[$i],
+                'group_main_category_id' => $main_cate,
                 'name' => $sub_cate[$i],
                 'code' => @$sub_cate_code[$i] ? $sub_cate_code[$i] : null,
             );
@@ -95,5 +105,22 @@ class categorySettingController extends Controller
             'status' => true,
             'mesg' => 'Sub category saved successfully.'
         ]);
+    }
+
+    public function destroySubCategory(Request $request) 
+    {
+        $subCate = GroupSubCategoryModel::find($request->id);
+        if($subCate->delete()) {
+            return response()->json([
+                'status' => true,
+                'mesge' => 'Sub Category Deleted Successfully.'
+            ]);
+        }else {
+            return response()->json([
+                'status' => false,
+                'mesge' => 'Something went wrong.'
+            ]);
+        }
+    
     }
 }

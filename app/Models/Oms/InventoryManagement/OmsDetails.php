@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class OmsDetails extends Model
 {
 	protected $table = 'oms_options_details';
-	protected $fillable = ['options', 'value'];
+	protected $fillable = ['options', 'value', 'code'];
 	public function omsOptions()
 	{
 		return $this->belongsTo('App\Models\Oms\OmsOptions', 'options', 'id');

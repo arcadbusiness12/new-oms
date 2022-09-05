@@ -44,7 +44,7 @@
                         <select name="purchase[product][<?= $unique ?>][manually_option_color]" id="manually_option_color" class="form-control manually_option_color<?= $unique ?>" data-row="<?= $unique ?>">
                             <option value="">Select Color</option>
                         <?php foreach ($colors as $key => $value) { ?>
-                            <option value="<?= $value ?>" data-id="<?= $value ?>"><?= $key ?></option>
+                            <option value="<?= $value->id ?>" data-id="<?= $value->code ?>"><?= $value->value ?></option>
                         <?php } ?>
                         </select>
                     </div>

@@ -66,7 +66,7 @@
                                                     <select name="options" id="option_color" class="form-control" autocomplete="off" required>
                                                     <option value="">Select Color</option>
                                                     @foreach($option_value as $option)
-                                                    <option value="{{$option->value}}" data-id="{{$option->id}}">{{$option->value}}</option>
+                                                    <option value="{{$option->value}}" data-id="{{$option->code}}">{{$option->value}}</option>
                                                     @endforeach
                                                     </select>
                                                 </div>

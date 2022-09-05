@@ -97,7 +97,9 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
     Route::controller(categorySettingController::class)->group(function() {
         route::get('/category/setting', 'categorySetting')->name('category.name');
         route::post('/save/group/main/category', 'saveMainCategory')->name('save.main.category');
+        Route::get('/get/sub/cates/{cate}', 'getSubCategories')->name('get.sub.cates');
         route::post('/save/sub/category', 'saveSubCategory')->name('save.sub.category');
+        Route::post('/destroy/group/sub/cate/setting', 'destroySubCategory')->name('destroy.sub.category');
     });
 
 });

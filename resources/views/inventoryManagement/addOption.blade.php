@@ -2,7 +2,7 @@
 
   <form action="{{route('add.option.details',$id)}}" method="post" name="form-setting" id="myForm">
     {{ csrf_field() }}
-    <input type="hidden" name="option_name_id" value="{{$details->id}}">
+    <input type="hidden" name="option_name_id" id="option_name_id" value="{{$details->id}}">
     <input type="text" name="option_name" value="{{$details->option_name}}" autocomplete="off" onkeyup="checkName(this.value)" class="form-control">
     @error('option_name')
     <span class="invalid-feedback" role="alert">
@@ -12,15 +12,26 @@
     <table class="table thead-dark">
      <thead>
       <th>Option Values</th>
+      <th>Code</th>
       <th>Remove</th>
     </thead>
     <tbody class="rowNew">
+      @php $attr = ''; @endphp
+      @if($details->id != 19)
+        @php 
+          $attr = 'disabled';
+        @endphp
+      @endif
       @foreach($option_values as $value)
+      
       <tr id="value-row{{$value->id}}">
        <td>
          <input type="hidden" name="id[]" value="{{$value->id}}" autocomplete="off">
          <input type="text" name="title[]" value="{{$value->value}}" autocomplete="off" class="form-control">
        </td>
+       <td>
+        <input type="text" name="code[]" value="{{$value->code}}" autocomplete="off" {{$attr}} class="form-control" size="6px">
+      </td>
        <td><a class="btn-danger btn" href = "javascript:;"  onclick="destroyOptionValue({{$value->id}})"><i class="icon-close"></i></a></td>
      </tr>
      @endforeach
@@ -28,6 +39,9 @@
      <tr>
       <td>
         <input type="text" name="title[]" value="" autocomplete="off" class="form-control">
+      </td>
+      <td>
+        <input type="text" name="code[]" value="" autocomplete="off" {{$attr}} class="form-control">
       </td>
       <td><button id="removeRow" type="button" class="btn btn-danger"><i class="icon-close"></i></button></td>
     </tr>
