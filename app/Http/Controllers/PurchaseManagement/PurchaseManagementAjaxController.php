@@ -90,19 +90,15 @@ class PurchaseManagementAjaxController extends Controller
   public function addPurchaseProductManualy() {
       $productOPtionColors = [];
       $productOPtionSizes = [];
-      $allColorOptions = OmsDetails::select('id', 'value')->where('options', $this->static_option_id)->orderBy('value', 'ASC')->get()->toArray();
-      foreach($allColorOptions as $k => $value) {
-          $productOPtionColors[$value['value']] = $value['id'];
-      }
+      $allColorOptions = OmsDetails::select('id', 'value', 'code')->where('options', $this->static_option_id)->orderBy('value', 'ASC')->get();
       $allSizeOptions = OmsOptions::select('id', 'option_name')->where('id', '!=', $this->static_option_id)->orderBy('option_name', 'ASC')->get()->toArray();
       foreach($allSizeOptions as $size) {
           $productOPtionSizes[$size['option_name']] = $size['id'];
       }
-
       $categories = GroupCategoryModel::all();
       $subcategories = GroupSubCategoryModel::all();
       $placeholder = $this->opencart_image_url. 'placeholder.png';
-      return view(self::VIEW_DIR.".addManuallyRow", ['colors' => $productOPtionColors, 'sizes' => $productOPtionSizes, 'categories' => $categories, 'subcategories' => $subcategories, 'placeholder' => $placeholder]);
+      return view(self::VIEW_DIR.".addManuallyRow", ['colors' => $allColorOptions, 'sizes' => $productOPtionSizes, 'categories' => $categories, 'subcategories' => $subcategories, 'placeholder' => $placeholder]);
   }
 
   public function getManuallyAllOptions(Request $request) {

@@ -9,33 +9,44 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="card-header white">
-                            <form name="form_stock_level" id="form_stock_level" action="{{route('stock.report')}}" method="get">
+                            <form name="form_stock_level" id="form_stock_level" action="{{route('purchase.orders')}}" method="get">
                                 {{ csrf_field() }}
                                 <div class="row">
                                     <div class="col-sm-6">
+                                        <label class="control-label">Order ID</label>
+                                        <input type="text" name="order_id" id="order_id" class="form-control" value="<?php if(isset($old_input['order_id'])) { echo $old_input['order_id']; } ?>" autocomplete="off" placeholder="Order ID">
+                                        
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="control-label">Product Title</label>
+                                        <input type="text" name="product_title" id="product_title" class="form-control" value="<?php if(isset($old_input['product_title'])) { echo $old_input['product_title']; } ?>" autocomplete="off" placeholder="Product Title">
+                                        
+                                    </div>
+                                    <div class="col-sm-6">
                                         <label class="control-label">Product SKU</label>
-                                        <input type="text" name="product_sku" id="product_sku" list="product_skus" class="form-control" value="<?php if(isset($old_input['product_sku'])) { echo $old_input['product_sku']; } ?>" autocomplete="off" placeholder="Product SKU">
-                                        <datalist id="product_skus"></datalist>
+                                        <input type="text" name="product_sku" id="product_sku" class="form-control" value="<?php if(isset($old_input['product_sku'])) { echo $old_input['product_sku']; } ?>" autocomplete="off" placeholder="Product SKU">
                                     </div>
                                     <div class="col-sm-6">
                                         <label class="form-label" for="status">Product Model</label>
-                                        <input type="text" name="product_model" id="product_model" list="product_models" class="form-control" autocomplete="off" value="<?php if(isset($old_input['product_model'])) {echo $old_input['product_model']; } ?>" placeholder="Product Model">
-                                            <datalist id="product_models"></datalist>
+                                        <input type="text" name="product_model" id="product_model" class="form-control" autocomplete="off" value="<?php if(isset($old_input['product_model'])) {echo $old_input['product_model']; } ?>" placeholder="Product Model">
                                     </div>
                                     <div class="clearfix"></div>
                                     <div class="col-sm-6">
-                                        <label class="control-label">From Date</label>
-                                        <input type="text" name="from_date" id="date_added" class="date-time-picker form-control" autocomplete="off" placeholder="From Date"  data-options='{
-                                            "timepicker":false,
-                                            "format":"Y-m-d"
-                                            }' value="<?php if(isset($old_input['from_date'])) { echo $old_input['from_date']; } ?>">
+                                        <label class="control-label">Status</label>
+                                        <select name="order_status_id" class="form-control">
+                                            <option value="">Select Status</option>
+                                            <?php foreach ($shipped_order_statuses as $order_status_id => $order_statuse) { ?>
+                                            <option value="<?php echo $order_status_id ?>" <?php if(isset($old_input['order_status_id']) && $old_input['order_status_id'] == $order_status_id) { ?> selected="selected" <?php } ?> ><?php echo $order_statuse ?></option>
+                                            <?php } ?>
+                                        </select>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="control-label">To Date</label>
-                                        <input type="text" name="to_date" id="date_modified" class="date-time-picker form-control" data-options='{
-                                            "timepicker":false,
-                                            "format":"Y-m-d"
-                                            }' autocomplete="off" placeholder="To Date" value="<?php if(isset($old_input['to_date'])) { echo $old_input['to_date']; } ?>">
+                                        <label class="control-label">Order Type</label>
+                                        <select name="order_type" class="form-control">
+                                            <option value="">Select Type</option>
+                                            <option value="1" <?php if(isset($old_input['order_type']) && $old_input['order_type'] == '1') { ?> selected="selected" <?php } ?> >Urgent</option>
+                                            <option value="0" <?php if(isset($old_input['order_type']) && $old_input['order_type'] == '0') { ?> selected="selected" <?php } ?> >Normal</option>
+                                        </select>
                                     </div>
                                     <div class="col-sm-12 text-right">
                                         <br>
@@ -65,10 +76,10 @@
                           
                            <div id="status_changed_msg" style="display: none"></div>
 
-                                        <?php if($orders['data']) { ?>
-                                            <form name="form-delete-orders" id="form-delete-orders" method="post" action="<?php echo URL::to('/purchase_manage/purchase_orders') ?>">
+                               <?php if($orders['data']) { ?>
+                                 <form name="form-delete-orders" id="form-delete-orders" method="post" action="<?php echo URL::to('/purchase_manage/purchase_orders') ?>">
                                             {{ csrf_field() }}
-                                            <?php foreach ($orders['data'] as $order) { 
+                                   <?php foreach ($orders['data'] as $order) { 
                                                 $checkbox = false;
                                                 if($order['order_status_id'] < 2){
                                                     $checkbox = true;
@@ -98,7 +109,7 @@
                                                         </div>
                                                         <?php } ?>
                                                     </div>
-                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid">
+                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid purchase-order-progress">
                                                         @include('PurchaseManagement.orderProgressBar')
                                                         
                                                     </div>
@@ -161,7 +172,7 @@
                                                                     <?php foreach ($quantity['product_options'] as $option) { ?>
                                                                     <td class="col-xs-2">
                                                                         <?php if($i == 1) { ?>
-                                                                        <label class="control-label"><?php echo $option['name'] ?></label>
+                                                                        <label class="control-label"><strong> <?php echo $option['name'] ?> </strong></label>
                                                                         <?php } ?>
                                                                         <div><input type="text" class="form-control" value="<?php echo $option['value'] ?>" readonly></div>
                                                                     </td>
@@ -169,14 +180,14 @@
                                                                     <?php if($order['order_status_id'] !== $status_cancel) { ?>
                                                                     <td class="col-xs-2">
                                                                         <?php if($i == 1) { ?>
-                                                                        <label class="control-label">Quantity</label>
+                                                                        <label class="control-label"><strong> Quantity </strong></label>
                                                                         <?php } ?>
                                                                         <div><input type="text" class="form-control" value="<?php echo $quantity['quantity'] ?>" readonly></div>
                                                                     </td>
                                                                     <?php } ?>
                                                                     <td class="col-xs-2">
                                                                         <?php if($i == 1) { ?>
-                                                                        <label class="control-label">Order Quantity</label>
+                                                                        <label class="control-label"><strong>Order Quantity</strong></label>
                                                                         <?php } ?>
                                                                         <div><input type="text" class="form-control" value="<?php echo $quantity['order_quantity'] ?>" readonly></div>
                                                                     </td>
@@ -280,7 +291,7 @@
                                                         </div>
                                                     </div>
                                                     <div id="product-<?php echo $shipped_order['shipped_id'] ?>" class="collapse order_list">
-                                                        <?php foreach ($shipped_order['order_products'] as $shipped_product) { 
+                                                        <?php foreach ($shipped_order['order_products'] as $k => $shipped_product) { 
                                                         ?>
                                                         <div class="product_list_row pt-2">
                                                             <div class="row product_row">
@@ -300,7 +311,7 @@
                                                             <div id="product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" class="options_row table-responsive collapse">
                                                                 <table class="table">
                                                                 <?php $i = 0; 
-                                                                foreach ($shipped_order['order_product_quantities'] as $shipped_quantity) { 
+                                                                foreach ($shipped_order['order_product_quantities'] as $key => $shipped_quantity) { 
                                                                     if($shipped_product['product_id'] != $shipped_quantity['order_product_id']) {
                                                                                 continue;
                                                                             }
@@ -310,7 +321,7 @@
                                                                         <?php foreach ($shipped_quantity['product_options'] as $shipped_option) { ?>
                                                                         <td class="col-xs-1">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label"><?php echo $shipped_option['name'] ?></label>
+                                                                            <label class="control-label"><strong> <?php echo $shipped_option['name'] ?> </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control" value="<?php echo $shipped_option['value'] ?>" readonly></div>
                                                                         </td>
@@ -318,38 +329,38 @@
                                                                         {{-- new work start================== --}}
                                                                         <td class="col-xs-2">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Order Quantity</label>
+                                                                            <label class="control-label"><strong> Order Quantity </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control" value="<?php echo $shipped_quantity['quantity'] ?>" size="5" readonly></div>
                                                                         </td>
                                                                         <td class="col-xs-2">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Confirm Quantity</label>
+                                                                            <label class="control-label"><strong> Confirm Quantity </strong></label>
                                                                             <?php } ?>
-                                                                            {{-- <div><input type="text" class="form-control" value="<?php echo $shipped_quantity['confirm_qty'] ?>" size="5" readonly></div> --}}
+                                                                            <div><input type="text" class="form-control" value="<?php echo $order['order_products'][$k]['order_product_quantities'][$key]['order_quantity'] ?>" size="5" readonly></div>
                                                                         </td>
                                                                         {{-- new work end================== --}}
                                                                         <td class="col-xs-2">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Shipped Quantity</label>
+                                                                            <label class="control-label"><strong> Shipped Quantity </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control received_quantity" value="<?php echo $shipped_quantity['quantity'] ?>" readonly></div>
                                                                         </td>
                                                                         <td class="col-xs-2">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Received Quantity</label>
+                                                                            <label class="control-label"><strong> Received Quantity </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control received_quantity" value="<?php echo $shipped_quantity['received_quantity'] ?>" readonly></div>
                                                                         </td>
                                                                         <td class="col-xs-1">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Price</label>
+                                                                            <label class="control-label"><strong> Price </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control price" value="<?php echo number_format($shipped_quantity['price'],2) ?>" readonly/></div>
                                                                         </td>
                                                                         <td class="col-xs-1">
                                                                             <?php if($i == 1) { ?>
-                                                                            <label class="control-label">Sum</label>
+                                                                            <label class="control-label"><strong> Sum </strong></label>
                                                                             <?php } ?>
                                                                             <div><input type="text" class="form-control sum" value="<?php echo number_format($shipped_quantity['total'],2) ?>" readonly/></div>
                                                                         </td>
@@ -435,12 +446,12 @@
                                                                             ?>
                                                                             <?php if( $remain_quantity > 0 ) 
                                                                             { $total_quantity += $remain_quantity; ?>
-                                                                                <div class="box-label col-grid">
+                                                                                <div class="box-label col-grid text-black">
                                                                                     <?php echo @$quantity['product_options'][0]['value']?> - <?php echo @$quantity['product_options'][1]['value'] ?> = <?php echo $remain_quantity; ?>
                                                                                 </div>
                                                                             <?php }  ?>
                                                                         <?php } ?>
-                                                                        <div class="box-label">
+                                                                        <div class="box-label text-black">
                                                                             T. Units = <?php echo @$total_quantity ?>
                                                                         </div>
                                                                     </div> 

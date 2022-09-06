@@ -94,61 +94,38 @@
                                     <h5 class="card-title">Sub Category Setting</h5>
                                             <span id="btn_delete_all_selected" style="float:right; display: none"><button  class="btn btn-primary delete_all" data-url="{{ url('myproductsDeleteAll') }}">Delete All Selected</button></span>
                                             <div id="status_changed_msg" style="display: none"></div>
-                                            <div class="sub-setting-loop col-md-12" >
+                                            <div class="sub-setting-loop col-md-10 offset-2" >
                                                         <form name="sub_cates_form" class="sub_cates_form" class="" action="{{url('add/group')}}" method="post">
                                                             {{ csrf_field() }}
+                                                          <div class="row cate-row">
+                                                            <div class="col-md-4">
+                                                                <select class="form-control" name="main_cate" id="main-category">
+                                                                      <option value="">Select Main Category</option>
+                                                                      @foreach($categories as $cate)
+                                                                       <option value="{{$cate->id}}" {{($cate->id == $catt->group_main_category_id) ? 'selected' : ''}}>{{$cate->name}}</option>
+                                                                      @endforeach
+                                                                  </select>
+                                                              </div> 
+                                                          </div>
                                                             @php $subcate_no = 0; @endphp
-                                                            @foreach($subcategories as $key => $catt)
-                                                            @php $subcate_no = $subcate_no+1; @endphp
-                                                            <div class="row cate-row mt-2" id="cate_row_{{$key}}">
-                                                            <input name="sub_category_id[]" type="hidden" value="{{$catt->id}}">
-
-                                                                <div class="col-md-4">
-                                                                <select class="form-control" name="main_cate[]" id="product_change_status">
-                                                                        <option value="">Select Category</option>
-                                                                        @foreach($categories as $cate)
-                                                                        <option value="{{$cate->id}}" {{($cate->id == $catt->group_main_category_id) ? 'selected' : ''}}>{{$cate->name}}</option>
-                                                                        
-                                                                        @endforeach
-                                                                    </select>
-                                                                </div> 
-                                                                
-                                                                <div class="col-md-4">
-                                                                    <input name="sub_cate[]" class="form-control" placeholder="Sub category" value="{{$catt->name}}">
-                                                                </div>
-
-                                                                <div class="col-md-2">
-                                                                    <input name="sub_cate_code[]" class="form-control" placeholder="Sub cate code" value="{{@$catt->code}}">
-                                                                </div>
-
-                                                                <div class="col-md-2">
-                                                                    <button type="button" id="add-more" class="btn btn-sm btn-danger " onclick="deleteSubCateSetting('{{$catt->id}}','{{$key}}')">
-                                                                    <i class="icon icon-minus-circle"></i> 
-                                                                    <!-- Remove -->
-                                                                    </button>
-                                                                </div>  
+                                                            
+                                                            <div class="row cate-row mt-2 cate_append_row">
                                                             </div>
-                                                            @endforeach
                                                             <div class="sub-cate-form-rows"></div>
                                                             
                                                             <div class="row">
-                                                                <div class="col-md-12 more-row">
                                                                 
                                                                 
                                                                 <div class="col-md-6">
-                                                                @if(count($subcategories) < 1)
-                                                                <p class="sub">No sub category available..</p>
-                                                                @endif
                                                                 <span class="sub-cat-error-msge error-mesge" ></span>
                                                                 </div>
-                                                                <div class="col-md-12 text-right more-paid mb-5" >
+                                                                <div class="col-md-8 text-right more-paid mb-5 mt-5" >
                                                                     <button type="button" id="add-more-sub-cate" class="btn btn-sm btn-success add-more-sub-cate">
                                                                         <i class="icon icon-plus-circle"></i> 
                                                                     </button>
                                                                     <!-- <button type="submit" id="excel_export" name="generate_csv" value="generate_csv" class="btn btn-warning">Export</button> -->
                                                                 </div>
-                                                                </div>  
-                                                                <div class="col-md-12 more-row text-right sub-category-save">
+                                                                <div class="col-md-12 text-right sub-category-save">
                                                                     <button type="submit" class="btn btn-sm btn-info sub-category-save-btn">Save</button>
                                                                 </div>
                                                             </div>
@@ -408,17 +385,17 @@ function deleteCateSetting(id, key) {
         if (e === true) {
             var CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
             $.ajax({
-                url: "{{url('/destroy/group/sub/cate/setting')}}/",
+                url: "{{route('destroy.sub.category')}}",
                 type: 'POST',
                 data: {_token: CSRF_TOKEN, id:id},
                 dataType: 'JSON',
                 success: function (results) {
 
                     if (results.status === true) {
-                      $('#cate_row_'+key).remove();
-                        swal("Done!", results.mesg, "success");
+                      $('#sub_cate_row_'+key).remove();
+                        swal("Done!", results.mesge, "success");
                     } else {
-                        swal("Sorry!", "There are some issues.", "error");
+                        swal("Opps!", results.mesge, "error");
                     }
                 }
             });
@@ -454,12 +431,6 @@ $(document).ready(function() {
       x++;
       $(wrapper).append('<div class="row field-row row_'+x+' appended-sub-cate cate-row mt-2" id="appended-sub-cate">' +'\n'+
                             '<input name="sub_category_id[]" type="hidden" value="">' +'\n'+
-                            '<div class="col-md-4"><select class="form-control" name="main_cate[]" id="product_change_status">' +'\n'+
-                                  '<option value="">Select Category</option>' +'\n'+
-                                  <?php foreach($categories as $cate) {?>
-                                  '<option value="<?php echo $cate->id; ?>" ><?php echo $cate->name; ?></option>' +'\n'+
-                                  <?php } ?>
-                                '</select></div>'+'\n'+
                             '<div class="col-md-4">' +'\n'+
                             '<input name="sub_cate[]" class="form-control" placeholder="Sub category">'+'\n'+
                             '</div>' +'\n'+
@@ -543,7 +514,6 @@ $(document).ready(function() {
 
 $('.sub_cates_form').submit(function(e) {
   e.preventDefault();
-  console.log("OOOOOOOOOk");
   $.ajax({
     url: "{{route('save.sub.category')}}",
     type: "POST",
@@ -575,6 +545,49 @@ $('.sub_cates_form').submit(function(e) {
     }
  })
 });
+
+$('#main-category').on('change', function() {
+  console.log($(this).val())
+  if($(this).val()) {
+    var url = "{{route('get.sub.cates', ':cate')}}",
+    url = url.replace(':cate', $(this).val());
+    $.ajax({
+      url: url,
+      type: 'GET',
+      success: function(response) {
+        var html = '';
+        html += '------------------------------------------------------------------Sub Categories-----------------------------------------------------------------<br>';
+        if(response.status) {
+          response.cates.forEach(function(v, k) {
+            console.log(k);
+            html += '<div class="row cate-row mt-2" id="sub_cate_row_'+k+'">'+'\n'+
+                    '<input name="sub_category_id[]" type="hidden" value="'+v.id+'">'+'\n'+
+                    '<div class="col-md-4 sub-cates">'+'\n'+
+                    '<input name="sub_cate[]" class="form-control" placeholder="Sub category" value="'+v.name+'">'+'\n'+
+                    '</div>'+'\n'+
+                    '<div class="col-md-2">'+'\n'+
+                    ' <input name="sub_cate_code[]" class="form-control" placeholder="Sub cate code" value="'+v.code+'">'+'\n'+
+                    '</div>'+'\n'+
+                    '<div class="col-md-2">'+'\n'+
+                    '<button type="button" id="add-more" class="btn btn-sm btn-danger " onclick="deleteSubCateSetting('+v.id+','+k+')">'+'\n'+
+                    '<i class="icon icon-minus-circle"></i>'+'\n'+
+                    '</button></div>'+'\n'+
+                    '</div>';
+          });
+          $('.sub-category-save-btn').css('display', 'inline-block');
+          $('.cate_append_row').html('');
+          $('.sub-cate-form-rows').html('');
+          $('.cate_append_row').html(html);
+        }
+        
+      }
+    })
+  }else {
+    $('.cate_append_row').html('');
+    $('.sub-cate-form-rows').html('');s
+    $('.sub-category-save-btn').css('display', 'none');
+  }
+})
 </script>
 
 @endpush

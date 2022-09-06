@@ -57,7 +57,7 @@ use Carbon\Carbon;
     public function addInventory() {
         $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
         $option_detail = OmsOptions::where('id','!=',$ba_color_option_id)->orderBy('option_name')->get();
-        $option_value = OmsDetails::select('id','value')->where(['options'=>$ba_color_option_id])->orderBy('value')->get();
+        $option_value = OmsDetails::select('id','value','code')->where(['options'=>$ba_color_option_id])->orderBy('value')->get();
         $placeholder = 'https://businessarcade.com/image/no_image.png';
         $categories = GroupCategoryModel::all();
         $subcategories = GroupSubCategoryModel::all();
@@ -962,7 +962,7 @@ use Carbon\Carbon;
 
   public function editOptionDetails($id) {
     $details = OmsOptions::find($id);
-    $option_values = OmsDetails::select('id','value','options')->where(['options'=>$id])->get();
+    $option_values = OmsDetails::select('id','value','options','code')->where(['options'=>$id])->get();
     return view(self::VIEW_DIR.".addOption")->with(compact('details', 'option_values','id'));
   }
 
@@ -972,10 +972,11 @@ use Carbon\Carbon;
     }
     $ids = $request->id;
     $titles = $request->title;
+    $code = $request->code;
     foreach($titles as $k => $title) {
         OmsDetails::updateOrCreate(
           ['id' => @$ids[$k]],
-          ['value' => $title, 'options' => $id]
+          ['value' => $title, 'options' => $id, 'code' => $code[$k]]
         );
     }
 
