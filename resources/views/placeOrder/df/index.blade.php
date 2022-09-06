@@ -1,125 +1,132 @@
 @extends('layouts.app')
 @section('title', 'Home')
 @section('content')
-<section class="content" id="place_order">
-    <div class="container-fluid">
-        <div class="error-messages"></div>
-        <div class="block-header">
-            <h2>Place Order</h2>
-        </div>
-
-        <div class="row">
-            <div class="col-xs-12" id="select_products">
-                <div id="add_products">
+<style>
+    .place_order  .panel-heading{
+        background:#fff !important;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .place_order .panel-default{
+        margin-top:5px !important;
+    }
+    .place_order .card{
+        margin-top: 5px;
+    }
+    </style>
+    <div class="container-fluid relative animatedParent animateOnce my-3">
+        <div class="row row-eq-height my-3 mt-3">
+            <div class="col-md-12 col-sm-12 place_order text-black">
+                <div class="card">
                     <div class="panel panel-default">
                         <div class="panel-heading" data-toggle="collapse" data-target="#step-1">
                             1: Select Product(s)
                         </div>
                         <div class="panel-body collapse in" id="step-1">
                             <form name="filter_products" id="filter_products" method="get">
-                            {{csrf_field()}}
-                            <div id="alert-response"></div>
-                            <div class="">
-                                <label class="col-sm-2 control-label" for="input-product" style="margin: 0;text-align: right;padding-top: 7px;">Choose Product</label>
-                                <div class="col-sm-10">
-                                    <div class="col-sm-4 ">
-                                        <input type="text" name="product_title" id="product_title" list="product_names" class="form-control" autocomplete="off" value="" placeholder="Product Title">
-                                        <datalist id="product_names"></datalist>
-                                    </div>
-                                    <div class="col-sm-4 ">
-                                        <input type="text" name="product_model" id="product_model" list="product_models" class="form-control" autocomplete="off" value="" placeholder="Product Model">
-                                        <datalist id="product_models"></datalist>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <button type="submit" id="search_filter" class="btn btn-primary pull-right">
-                                            <i class="fa fa-filter"></i>
-                                            Search
-                                        </button>
+                                {{csrf_field()}}
+                                <div id="alert-response"></div>
+                                <div class="row">
+                                    <label class="col-2 control-label" for="input-product" style="margin: 0;text-align: right;padding-top: 7px;">Choose Product</label>
+                                    <div class="col-10 col-grid">
+                                        <div class="col-4 col-grid">
+                                            <input type="text" name="product_title" id="product_title" list="product_names" class="form-control" autocomplete="off" value="" placeholder="Product Title">
+                                            <datalist id="product_names"></datalist>
+                                        </div>
+                                        <div class="col-4 col-grid">
+                                            <input type="text" name="product_model" id="product_model" list="product_models" class="form-control" autocomplete="off" value="" placeholder="Product Model">
+                                            <datalist id="product_models"></datalist>
+                                        </div>
+                                        <div class="col-2 col-grid">
+                                            <button type="submit" id="search_filter" class="btn btn-primary pull-right">
+                                                <i class="fa fa-filter"></i>
+                                                Search
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             </form>
                             <form name="product_cart" id="product_search">
                                 {{csrf_field()}}
                                 <table class="table product_search_table"></table>
                             </form>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xs-12" id="cart_products">
-                <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" data-target="#step-2">
-                        <div class="pull-left">2: Cart</div>
-                        <div class="cart-loader"></div>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="panel-body hidden collapse" id="step-2">
-                        <div class="text-danger text-center text-uppercase font-16"><b>Cart is Empty!</b></div>
-                     </div>
-                </div>
-            </div>
-            <div class="col-xs-12" id="search_customer">
-                <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" data-target="#step-3">
-                        3. Search Customer
-                    </div>
-                    <div class="panel-body collapse" id="step-3">
-                        <div id="alert-response"></div>
-                        <div>
-                            <form name="filter_customers" id="filter_customers" method="get">
-                            {{csrf_field()}}
-                                <input type="hidden" name="type" />
-                                <div class="col-sm-3">
-                                    <input type="text" name="name" placeholder="Name" class="form-control" />
-                                </div>
-                                <div class="col-sm-3">
-                                    <input type="text" name="number" placeholder="Mobile Number" class="form-control" />
-                                </div>
-                                <div class="col-sm-3">
-                                    <input type="text" name="email" placeholder="Email Address" class="form-control" />
-                                </div>
-                                <div class="col-sm-3">
-                                    <button type="button" name="search" class="btn btn-primary search_customer">
-                                        <i class="fa fa-filter"></i>
-                                        Search
-                                    </button>
-                                    <button type="button" name="new_customer" class="btn btn-primary search_customer">
-                                        <i class="fa fa-plus"></i>
-                                        New Customer
-                                    </button>
-                                </div>
-                            </form>
+                      </div> {{--panel panel-default end --}}
+                    </div> {{--card end--}}
+                    <div class="card">
+                      <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-2">
+                            <div class="pull-left">2: Cart</div>
+                            <div class="cart-loader"></div>
+                            <div class="clearfix"></div>
                         </div>
-                        <div class="customer_search_table p-t-50">
+                        <div class="panel-body hidden collapse" id="step-2">
+                            <div class="text-danger text-center text-uppercase font-16"><b>Cart is Empty!</b></div>
+                            </div>
+                      </div>{{--panel panel-default end --}}
+                    </div>{{--card end--}}
+                    <div class="card">
+                      <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-3">
+                            3. Search Customer
+                        </div>
+                        <div class="panel-body collapse" id="step-3">
+                            <div id="alert-response"></div>
+                            <div>
+                                <form name="filter_customers" id="filter_customers" method="get">
+                                {{csrf_field()}}
+                                    <input type="hidden" name="type" />
+                                    <div class="col-sm-3 col-grid">
+                                        <input type="text" name="name" placeholder="Name" class="form-control" />
+                                    </div>
+                                    <div class="col-sm-3 col-grid col-grid">
+                                        <input type="text" name="number" placeholder="Mobile Number" class="form-control" />
+                                    </div>
+                                    <div class="col-sm-3 col-grid">
+                                        <input type="text" name="email" placeholder="Email Address" class="form-control" />
+                                    </div>
+                                    <div class="col-sm-3 col-grid">
+                                        <button type="button" name="search" class="btn btn-primary search_customer">
+                                            <i class="fa fa-filter"></i>
+                                            Search
+                                        </button>
+                                        <button type="button" name="new_customer" class="btn btn-primary search_customer">
+                                            <i class="fa fa-plus"></i>
+                                            New Customer
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="customer_search_table p-t-50">
 
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xs-12" id="shipping_address">
-                <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" data-target="#step-4">
-                        <div class="pull-left">4: Confirm Address</div>
-                        <div class="cart-loader"></div>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="panel-collapse collapse panel-body hidden" id="step-4"></div>
-                </div>
-            </div>
-            <div class="col-xs-12" id="payment_shipping">
-                <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" data-target="#step-5">
-                        <div class="pull-left">5: Payment & Shipping</div>
-                        <div class="cart-loader"></div>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="panel-collapse collapse panel-body hidden" id="step-5"></div>
-                </div>
+                      </div> {{--panel panel-default end --}}
+                    </div>{{--card end--}}
+                    <div class="card">
+                      <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-4">
+                            <div class="pull-left">4: Confirm Address</div>
+                            <div class="cart-loader"></div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="panel-collapse collapse panel-body hidden" id="step-4"></div>
+                      </div> {{--panel panel-default end --}}
+                    </div>{{--card end--}}
+                    <div class="card">
+                      <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-5">
+                            <div class="pull-left">5: Payment & Shipping</div>
+                            <div class="cart-loader"></div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="panel-collapse collapse panel-body hidden" id="step-5"></div>
+                      </div>{{--panel panel-default end --}}
+                    </div> {{-- card no-b  --}}
             </div>
         </div>
     </div>
-</section>
 @endsection
 @push('scripts')
 <script type="text/javascript">

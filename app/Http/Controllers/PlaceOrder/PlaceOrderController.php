@@ -42,7 +42,7 @@ use Excel;
 class PlaceOrderController extends Controller
 {
 
-    const VIEW_DIR = 'placeOrder.df';
+    const VIEW_DIR = 'placeOrder.ba';
     const PER_PAGE = 20;
     private $DB_BAOPENCART_DATABASE = '';
     private $DB_BAOMS_DATABASE = '';
