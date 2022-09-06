@@ -169,13 +169,10 @@ class PurchaseManagementController extends Controller
             'orderProducts' => function($q) use($relationWhereClause) {
                 $q->where($relationWhereClause);
             },
-            'orderProductQuantities' => function($qu) {
+            'orderProducts.orderProductQuantities' => function($qu) {
                 $qu->orderBy('order_product_quantity_id', 'ASC');
             },
-            // 'orderProductQuantities' => function($qu) {
-            //     $qu->orderBy('order_product_quantity_id', 'ASC');
-            // },
-            'orderProductQuantities.productOptions' => function($qo) {
+            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
                 $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
             'orderHistories','orderSupplier','orderTotals'
