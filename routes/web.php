@@ -141,6 +141,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/order/out/stock/product', 'orderOutStockProduct')->name('order.out.stock.product');
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
         Route::any('/place/purchase/order', 'placePurchaseOrder')->name('place.purchase.order');
+        Route::any('/new/purchase/order', 'newPurchaseOrder')->name('new.purchase.orders');
 
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
