@@ -68,7 +68,7 @@
                                         </li>
                                         <li class="@if( Request::url() == route('orders.picking-list-awaiting') ) active @endif"><a href="{{ route('orders.picking-list-awaiting') }}">Pick List </a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Pack Orders </a>
+                                        <li class="@if( Request::url() == route('orders.pack.order') ) active @endif"><a href="{{ route('orders.pack.order') }}">Pack Orders </a>
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Generate & Print AWB </a>
                                         </li>

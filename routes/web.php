@@ -86,6 +86,9 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::any("/update-customer-details","updateCustomerDetails")->name('orders.update-customer-details');
         Route::any('/reship-orders', 'approveReshipment')->name('orders.reship-orders');
         Route::get('/picking-list-awaiting', 'pickingListAwaiting')->name('orders.picking-list-awaiting');
+        Route::get('/pack/order', 'packOrder')->name('orders.pack.order');
+        Route::post('/get/pack/order', 'getPackOrder')->name('orders.get.pack.order');
+        Route::post('/update/pack/order', 'updatePackOrder')->name('orders.update.pack.order');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');

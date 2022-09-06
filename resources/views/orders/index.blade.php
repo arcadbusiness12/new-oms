@@ -66,7 +66,7 @@
                                         <td colspan="4" >
                                             <div class="normal-order-progress">
                                                 @include('orders.order_progress_bar')</td>
-                                              </div>    
+                                              </div>
                                         </td>
                                     </tr>
                                     @if( $order->orderd_products )

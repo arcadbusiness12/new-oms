@@ -14,7 +14,7 @@
     .place_order .card{
         margin-top: 5px;
     }
-    </style>
+</style>
     <div class="container-fluid relative animatedParent animateOnce my-3">
         <div class="row row-eq-height my-3 mt-3">
             <div class="col-md-12 col-sm-12 place_order text-black">
