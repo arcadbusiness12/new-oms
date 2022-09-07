@@ -57,10 +57,14 @@
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->total }} </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
-                                        <td>&nbsp;</td>
+                                        <td>@if( $order->picklist_print == 1 )<span class="badge badge-success green darken-1"><strong>Printed<strong></span> @endif</td>
                                         <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
-                                        <td colspan="1"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
-                                        <td colspan="5" >@include('orders.order_progress_bar')</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
+                                        <td colspan="4" >
+                                            <div class="normal-order-progress">
+                                                @include('orders.order_progress_bar')</td>
+                                            </div>
+                                        </td>
                                     </tr>
                                     @if( $order->orderd_products )
                                         <tr class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">

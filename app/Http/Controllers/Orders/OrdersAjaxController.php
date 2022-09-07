@@ -15,17 +15,21 @@ use App\Models\OpenCart\Products\OptionDescriptionModel;
 use App\Models\DressFairOpenCart\Products\OptionDescriptionModel AS DFOptionDescriptionModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use App\Models\DressFairOpenCart\Products\ProductsModel AS DFProductsModel;
+use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsOrderReshipHistoryModel;
+use App\Platform\Golem\OrderGolem;
 use Carbon\Carbon;
 use Excel;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request AS RequestFacad;
 use App\Platform\Helpers\ToolImage;
+use App\Platform\ShippingProviders\ShippingProvidersInterface;
 use Illuminate\Support\Facades\Input;
 use Session;
 use Validator;
@@ -35,7 +39,23 @@ use URL;
 class OrdersAjaxController extends Controller {
 
 	const VIEW_DIR = 'orders';
+    private $DB_BAOPENCART_DATABASE = '';
+    private $DB_DFOPENCART_DATABASE = '';
+    private $website_image_source_url =  '';
+    private $website_image_source_path =  '';
+    //for dressfair
+    private $df_website_image_source_path =  '';
+	private $df_website_image_source_url  =  '';
+    //
 	function __construct(){
+        $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
+        $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
+        $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
+        $this->website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
+        //for df
+        $this->df_website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/dressfair.com/image/';
+		$this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
+        $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
 	}
     public function index(){
 
@@ -268,5 +288,238 @@ class OrdersAjaxController extends Controller {
 		}else{
 			echo json_encode(["status"=>$qrysts,"msg"=>"Error,Reshipment request not send."]);
 		}
+	}
+    public function forwardForShipping() {
+        $orderIDs         = ( RequestFacad::get('orderIDs') && count(RequestFacad::get('orderIDs')) > 0 ) ? RequestFacad::get('orderIDs') : [RequestFacad::get('order_id')];
+        $store     = RequestFacad::has('store') ? RequestFacad::get('store') : '';
+        $order_id  = RequestFacad::has('order_id') ? RequestFacad::get('order_id') : '';
+        $orderIDs = array_unique($orderIDs);
+        $awb_from_packing = 0;
+        if( $order_id != "" && $order_id > 0 ){
+        $awb_from_packing = 1;
+        $get_courier_data = OmsOrdersModel::with(["assigned_courier"])->where(OmsOrdersModel::FIELD_ORDER_ID, $order_id)->where("store",$store)->first();
+        if($get_courier_data){
+            $shippingProviders =  $get_courier_data->assigned_courier->name; // Shipping provider Name // GetGive , MaraXpress etc
+            $shippingProviderID = $get_courier_data->assigned_courier->shipping_provider_id;  // Shipping Provider ID
+        }
+
+        }else{
+            $shippingProviderInput = explode('_', RequestFacad::get('shipping_providers'));
+            $shippingProviders = $shippingProviderInput[1]; // Shipping provider Name // GetGive , MaraXpress etc
+            $shippingProviderID = $shippingProviderInput[0]; // Shipping Provider ID
+        }
+
+        $assigned_courier_data = OmsOrdersModel::with(["assigned_courier"])->whereIn(OmsOrdersModel::FIELD_ORDER_ID, $orderIDs)->where("picklist_courier","!=",$shippingProviderID)->get();
+            //echo "<pre>"; print_r($orderIDs);
+        // echo "<pre>"; print_r($assigned_courier_data);
+        if( $assigned_courier_data->count() > 0 ){
+        $courier_msg = "";
+        foreach( $assigned_courier_data as $key => $cvalue ){
+            $courier_msg .= $cvalue->order_id." is Assigned to ".@$cvalue->assigned_courier->name.", can't generate to $shippingProviders<br>";
+        }
+        return response()->json(array(
+                    'success' => false,
+                    'data' => "<div class=\"alert bg-red\">{$courier_msg}</div>",
+                ));
+        }
+        //further processing
+		Session::push('orderIdsForAWBGenerate', $orderIDs);
+		try
+		{
+			$openCartOrderStatus = RequestFacad::get('open_cart_order_status') ? RequestFacad::get('open_cart_order_status') : 15; // Status to be updated in opencart
+			// Value from Ajax form
+			if (empty($shippingProviders)) {
+				throw new \Exception("Please select Shipping Provider");
+			}
+			if (empty($orderIDs)) {
+				throw new \Exception("Please select an Order to Generate AWB");
+			}
+
+			// echo "<pre>"; print_r($shippingProviderInput); die;
+
+			if (!empty($openCartOrderStatus) && !empty($shippingProviders)) {
+				// Get orders from OMS table where oms status is processing
+				$omsOrders = OmsOrdersModel::whereIn(OmsOrdersModel::FIELD_ORDER_ID, $orderIDs)->get();
+				// Map Opencart Order id to Oms order id
+				$omsOrderIDtoOpencarOrderIDMap = $omsOrders->mapWithKeys(function ($item) {
+					return [$item[OmsOrdersModel::FIELD_ORDER_ID] => $item[OmsOrdersModel::FIELD_OMS_ORDER_ID]];
+				});
+
+				$omsOrderIDtoOpencarOrderIDMap = $omsOrderIDtoOpencarOrderIDMap->toArray();
+				// echo "<pre>"; print_r($omsOrderIDtoOpencarOrderIDMap); die;
+
+				// Get Order Details from Opencart
+				$orders = OrdersModel::with(['status', 'orderd_products'])->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIDs)->get();
+				// dd($orders->toArray());
+
+				$ordersGolemArray = [];
+				foreach ($orders as $order) {
+					// echo "<pre>"; print_r($order->toArray()); die;
+					$omsOrder = OmsOrdersModel::select('oms_order_status','last_shipped_with_provider',"order_id")->where(OmsOrdersModel::FIELD_ORDER_ID, $order->order_id)->where('store',$this->store)->first();
+					if($omsOrder->oms_order_status != OmsOrderStatusInterface::OMS_ORDER_STATUS_PACKED){
+						throw new \Exception("AWB only Generate in 'Packed' Status, $omsOrder->order_id");
+					}
+
+                    if( $omsOrder->last_shipped_with_provider == $shippingProviderID ){
+                                    throw new \Exception("AWB already Generated for order # $omsOrder->order_id");
+                    }
+
+					$shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $shippingProviders;
+					if (!class_exists($shippingCompanyClass)) {
+						throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
+					}
+
+
+					$shipping = new $shippingCompanyClass();
+
+					// Initialize Order Golem to make a unified order object representation in order to send data to all shipping providers
+					$orderGolem = new OrderGolem();
+					$orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
+					if ($shippingProviders === 'ShamilExpress') {
+						if ($order->invoice_no != 0) {
+							$orderGolem->setInvoiceNumber($order->{'invoice_prefix'} . $order->{'invoice_no'} . '-BA');
+						} else {
+							$data = file_get_contents($this->APP_OPENCART_URL . 'index.php?route=account/order/createinvoiceno&order_id=' . $order->order_id . '&type=order');
+							$invoice_no = json_decode($data, true);
+							$orderGolem->setInvoiceNumber($invoice_no['invoice_no'] . '-BA');
+						}
+						$orderGolem->setOrderDate($order->{'date_added'});
+					} else if ($shippingProviders === 'LeopardsExpress') {
+						$orderGolem->setCustomerCoutry($order->{'payment_country'});
+						$orderGolem->setToCompany($order->{'payment_company'});
+					} else if ($shippingProviders === 'FetchrExpress') {
+						$orderGolem->setCustomerCoutry($order->{'payment_country'});
+					} else if ($shippingProviders === 'Jeebly') {
+						$orderGolem->setcustomerPincode($order->{'shipping_postcode'});
+					}
+					$orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
+					$name = $order->{OrdersModel::FIELD_CUSTOMER_FIRST_NAME} . " " . $order->{OrdersModel::FIELD_CUSTOMER_LAST_NAME};
+					$orderGolem->setCustomerName($name);
+
+					$orderGolem->setCustomerMobileNumber($order->{OrdersModel::FIELD_CUSTOMER_MOBILE_NUMBER});
+					$orderGolem->setOrderTotalAmount($order->{OrdersModel::FIELD_ORDER_TOTAL});
+
+					$shppingAddress = $order->{OrdersModel::FIELD_SHIPPING_ADDRESS_1} . " " .
+					$order->{OrdersModel::FIELD_SHIPPING_ADDRESS_2};
+
+					$orderGolem->setCustomerAddress($shppingAddress);
+					$orderGolem->setCustomerCity($order->{OrdersModel::FIELD_SHIPPING_ZONE});
+					$orderGolem->setPaymentMethod($order->{OrdersModel::FIELD_PAYMENT_METHOD});
+					$orderGolem->setCashOnDeliveryAmount($order->{OrdersModel::FIELD_ORDER_TOTAL});
+					$orderGolem->setSpecialInstructions($order->{OrdersModel::FIELD_ORDER_COMMENTS});
+					$orderGolem->setCustomerEmail($order->{OrdersModel::FIELD_CUSTOMER_EMAIL});
+					$orderGolem->setCustomerArea($order->{OrdersModel::FIELD_SHIPPING_AREA});
+					$orderGolem->setCustomerAlternateNumber($order->alternate_number);
+					$productDesc = "";
+					$qty = 0;
+					foreach ($order->orderd_products as $product) {
+						$productDesc .= "[" . $product['model'];
+						$productDesc .= " (QTY:{$product['quantity']})";
+						if (count($product['order_options']) > 0) {
+							foreach ($product['order_options'] as $option) {
+								if ($product['order_product_id'] == $option['order_product_id']) {
+									$productDesc .= " (" . $option['name'] . ":" . $option['value'] . ")";
+								}
+							}
+						}
+						$productDesc .= "] ";
+						$qty = $qty + $product['quantity'];
+					}
+					// echo $shippingProviders; die;
+					if ($shippingProviders === 'FetchrExpress' || $shippingProviders === 'Jeebly' ||  $shippingProviders === 'RisingStar') {
+						$orderItems = array();
+						foreach ($order->orderd_products as $product) {
+							$productDesc = '';
+							$productDesc .= "[" . $product['model'];
+							$productDesc .= " (QTY:{$product['quantity']})";
+							if (count($product['order_options']) > 0) {
+								foreach ($product['order_options'] as $option) {
+									if ($product['order_product_id'] == $option['order_product_id']) {
+										$productDesc .= " (" . $option['name'] . ":" . $option['value'] . ")";
+									}
+								}
+							}
+							$productDesc .= "]";
+							$orderItems[] = array(
+								'description' => $productDesc,
+								'sku' => $product['model'],
+								'quantity' => $product['quantity'],
+								'order_value_per_unit' => $product['price'],
+								'weight' => $product->product_details->weight,
+								'height' => $product->product_details->height,
+								'length' => $product->product_details->length,
+								'width' => $product->product_details->width,
+							);
+						}
+						$orderGolem->setOrderItems($orderItems);
+					}
+
+					$orderGolem->setTotalItemsQuantity($qty);
+					$orderGolem->setGoodsDescription($productDesc);
+					$orderGolem->setStore($this->store);
+					$ordersGolemArray[] = $orderGolem;
+				}
+				$response = $shipping->forwardOrder($ordersGolemArray);
+				// echo "<pre>"; print_r($response); die("on main page");
+				$shippingProviderResposne = [];
+				foreach ($response as $orderID => $airwayBillNumber) {
+					if (!empty($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER])) {
+						$awbTracking = new AirwayBillTrackingModel();
+						// Store Oms ID
+						$awbTracking->{AirwayBillTrackingModel::FIELD_OMS_ORDER_ID} = $omsOrderIDtoOpencarOrderIDMap[$orderID];
+						// Store Opencart Order IDs
+						$awbTracking->{AirwayBillTrackingModel::FIELD_ORDER_ID} = $orderID;
+						// Store Shipping Provider ID
+						$awbTracking->{AirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID} = $shippingProviderID;
+						$awbTracking->{AirwayBillTrackingModel::FIELD_AIRWAY_BILL_NUMBER} = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+						$awbTracking->{AirwayBillTrackingModel::FIELD_AIRWAY_BILL_CREATION_ATTEMPT} = 1;
+                        if( isset( $airwayBillNumber['pdf_print_link'] ) ){
+                                    $awbTracking->pdf_print_link = $airwayBillNumber['pdf_print_link'];
+                        }
+                        if( isset( $airwayBillNumber['sortingCode'] ) ){
+                                    $awbTracking->sortingCode = $airwayBillNumber['sortingCode'];
+                        }
+						$awbTracking->store = $this->store;
+						$awbTracking->save(); // save the tracking information in table
+						// Change the OMS Order STATUS TO AIRWAY_BILL_GENERATED
+						$omsUpdateStatus = OmsOrdersModel::find($omsOrderIDtoOpencarOrderIDMap[$orderID]);
+						$omsUpdateStatus->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_AIRWAY_BILL_GENERATED;
+						$omsUpdateStatus->{OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = $shippingProviderID;
+						$omsUpdateStatus->save();
+						// Chnage the OpenCart Order Status to the status selected
+						$openCartStatusUpdate = OrdersModel::find($orderID);
+						$openCartStatusUpdate->{OrdersModel::FIELD_ORDER_STATUS_ID} = $openCartOrderStatus;
+						$openCartStatusUpdate->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
+						$openCartStatusUpdate->save();
+						// Store the Order History in Order history table
+
+						$orderHistory = new OrderHistory();
+						$orderHistory->{OrderHistory::FIELD_COMMENT} = "Tracking Link: " . $shippingCompanyClass::getTrackingUrl($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER]);
+						$orderHistory->{OrderHistory::FIELD_ORDER_ID} = $orderID;
+						$orderHistory->{OrderHistory::FIELD_ORDER_STATUS_ID} = $openCartOrderStatus;
+						$orderHistory->{OrderHistory::FIELD_DATE_ADDED} = \Carbon\Carbon::now();
+						$orderHistory->{OrderHistory::FIELD_NOTIFY} = OrderHistory::NOTIFY_CUSTOMER;
+						$orderHistory->save();
+						OmsActivityLogModel::newLog($orderID,4,$this->store); //4 is for Generate Airwaybill order
+						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+					} else {
+						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::MESSAGE_FROM_PROVIDER];
+					}
+				}
+			} else {
+				throw new \Exception("Please select the status to update after airwaybill Generation");
+			}
+		} catch (\Exception $ex) {
+			return response()->json(array(
+				'success' => false,
+				'data' => "<div class=\"alert bg-red\">{$ex->getMessage()}</div>",
+			));
+		}
+		// dd($shippingProviderResposne);
+
+		return response()->json(array(
+			'success' => true,
+			'data' => view(self::VIEW_DIR . ".shipping_providers_response", ["response" => $shippingProviderResposne])->render(),
+		));
 	}
 }
