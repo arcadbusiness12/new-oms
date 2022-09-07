@@ -242,3 +242,6 @@ input[type="checkbox"] {
     border-style: hidden !important;
     border-top: none !important;
 }
+.instruction_row .supplier_link {
+    margin-left: 20px;
+}

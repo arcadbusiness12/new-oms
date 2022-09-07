@@ -189,7 +189,7 @@
                                     <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
                                     <div class="row instruction_row ">
                                         <div class="col-xs-12 col-sm-8">
-                                            <div>
+                                            <div class="supplier_link">
                                                 <input type="text" name="supplier_link" <?php if($order['status'] == 'update') { ?> value="<?php echo $order['link'] ?>" <?php } ?> class="form-control" placeholder="Supplier/Purchase Link" required/>
                                             </div>
                                             <div class="row button-row mt-4 mb-4">
@@ -233,10 +233,10 @@
                                         </div>
                                         <div class="col-xs-12 col-sm-4 total_column">
                                             <div class="row">
-                                                <div class="col-xs-7 col-sm-6">
-                                                    <label>Sub Total</label>
-                                                    <label>Local Express Cost</label>
-                                                    <label>Total</label>
+                                                <div class="col-xs-7 col-sm-6 text-black">
+                                                    <label><b> Sub Total </b></label>
+                                                    <label><b> Local Express Cost </b></label>
+                                                    <label><b> Total </b></label>
                                                 </div>
                                                 <div class="col-xs-5 col-sm-6">
                                                     <input type="86text" name="totals[Sub Total][sub_total]" <?php if($order['status'] == 'update') { ?> value="<?php echo @$order['order_totals'][0]['value'] ?>" <?php } ?> class="form-control sub_total" readonly/>
