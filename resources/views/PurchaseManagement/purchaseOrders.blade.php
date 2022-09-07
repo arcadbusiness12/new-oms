@@ -97,7 +97,7 @@
                                                         </div>
                                                         <?php if($order['order_status_id'] < 1) { ?>
                                                         <div>
-                                                            <a href="" class="btn btn-info"><i class="icon icon-pencil"></i></a>
+                                                            <a href="<?php echo route('edit.purchase.orders', $order['order_id']) ?>" class="btn btn-info"><i class="icon icon-pencil"></i></a>
                                                         </div>
                                                         <?php } ?>
                                                     </div>

@@ -160,7 +160,7 @@
                                     <a href="{{route('purchase.orders')}}"><i class="icon icon-circle-o"></i>All
                                     Orders</a>
                                 </li>
-                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/new/purchase/orders') !== false) active @endif">
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/new/purchase/order') !== false) active @endif">
                                     <a href="{{route('new.purchase.orders')}}"><i class="icon icon-add"></i>New Order</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-pause"></i>Awaiting Approval</a>

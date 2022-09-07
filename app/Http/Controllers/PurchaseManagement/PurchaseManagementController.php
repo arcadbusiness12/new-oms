@@ -21,14 +21,17 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductOptionModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductQuantityModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersStatusModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersTotalModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseProductModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseShippedOrdersProductModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseTabsModel;
+use App\Models\OpenCart\Products\OptionValueDescriptionModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use App\Platform\Helpers\ToolImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Session;
 
 class PurchaseManagementController extends Controller
@@ -184,6 +187,7 @@ class PurchaseManagementController extends Controller
                 $cancelled_status = OmsPurchaseAwaitingActionCancelledModel::select('reason','status')->where('order_id', $order['order_id'])->where('supplier', $order['supplier'])->first();
                 $order['cancelled_status'] = $cancelled_status;
                 foreach($order->orderProducts as $product) {
+                    $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
                     $listing_link = OmsInventoryProductModel::where('sku',$product['model'])->first();
                     $product['listing_status'] = $listing_link;
                     $new_arrival_check = OmsPurchaseShippedOrdersProductModel::where('model',$product['model'])->first();
@@ -512,6 +516,270 @@ class PurchaseManagementController extends Controller
         }
     }
 
+    public function updateAwaitingActionArder(Request $request) {
+        $order_id = $request->order_id;
+        if($request->submit == 'update_awaiting_action') {
+            // Check Qauntities
+            $error = false;
+            $error = $this->checkOrderQuantity($request->quantity);
+            if($error) {
+                return Redirect::back()->with('error_message', 'Do not enter greater than order quantity!');
+            }
+            $exist = OmsPurchaseOrdersModel::where('order_id', $order_id)->where('order_status_id', 1)->exists();
+            if(!$exist) {
+                $this->updateOrderQuantityPrice($request, $order_id);
+                return Redirect::back()->with('message', 'Your Order #'.$order_id.' actioned successfully.');
+            }else {
+                return Redirect::back()->with('message', 'You have already actioned your order!');   
+            }
+        }elseif($request->submit == 'update_quantity_price') {
+            $error = false;
+            $error = $this->checkOrderQuantity($request->quantity);
+            if($error) {
+                return Redirect::back()->with('error_message', 'Do not enter greater than order quantity!');
+            }
+            $this->updateOrderQuantityPrice($request, $order_id);
+            return Redirect::back()->with('message', 'Your Order #'.$order_id.' updated successfully.');
+
+        }elseif($request->submit == 'cancel') {
+            $purchaseOrder = OmsPurchaseOrdersModel::where('order_id', $order_id)->where('order_status_id', 7)->exists();
+           if(!$purchaseOrder) {
+               $updateData = array(
+                   'total' => $request->total,
+                   'link'  => $request->supplier_link,
+                   'order_status_id' => 7
+               );
+               OmsPurchaseOrdersModel::where('order_id', $order_id)->update($updateData);
+               return response()->json([
+                   'success' => true,
+                   'message' => 'Your Order #'.$order_id.' cancelled successfully.'
+               ]);
+           }else {
+            return response()->json(array('success' => false, 'message' => 'You have already cancelled your order!'));
+           }
+        }elseif($request->submit == 'delete-order') {
+            $exist = OmsPurchaseOrdersModel::where('order_id', $order_id)->exists();
+            if($exist){
+                OmsPurchaseOrdersModel::where('order_id', $order_id)->delete();
+                OmsPurchaseOrdersHistoryModel::where('order_id', $order_id)->delete();
+                OmsPurchaseOrdersProductModel::where('order_id', $order_id)->delete();
+                OmsPurchaseOrdersProductOptionModel::where('order_id', $order_id)->delete();
+                OmsPurchaseOrdersProductQuantityModel::where('order_id', $order_id)->delete();
+                OmsPurchaseOrdersTotalModel::where('order_id', $order_id)->delete();
+
+                return response()->json(array('success' => true, 'message' => 'Your Order deleted successfully.'));
+            }else{
+                return response()->json(array('success' => false, 'message' => 'You have already deleted your order!'));
+            }
+        }elseif($request->submit == 'save-comment') {
+            if($request->instruction && !empty($request->instruction)){
+                $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+                  $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+                  $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = session('user_group_id')==2 ? 'Supplier' : 'Admin';
+                  $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
+                  $OmsPurchaseOrdersHistoryModel->save();
+
+                  return Redirect::back()->with('message', 'Comment Added Your Order #'.$order_id.' successfully.');
+            }else{
+                return Redirect::back()->with('error_message', 'Enter comment and submit!');
+            }
+        }else{
+            return Redirect::back()->with('error_message', 'Something went wrong, please try again!');
+        }  
+    }
+
+    public function editPurchaseOrders($order_id) {
+        // dd($ordesssr_id);
+        $order = OmsPurchaseOrdersModel::with(['orderProducts', 'orderHistories', 'orderTotals','orderSupplier', 'orderProducts.orderProductQuantities' => function($qu) {
+            $qu->orderBy('order_product_quantity_id', 'ASC');
+        },
+        'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+            $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+        }])->where('order_id', $order_id)->first();
+        // dd($order->orderProducts);
+        foreach($order->orderProducts as $product) {
+            $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+            foreach($product->orderProductQuantities as $quantity) {
+                foreach($quantity->productOptions as $option) {
+                    if($this->static_option_id != $option['product_option_id']){
+                        $option_dropdown = OptionValueDescriptionModel::select('option_value_id','name')->where('option_id', $option['product_option_id'])->groupBy('name')->get()->toArray();
+                        $option['options'] = $option_dropdown;
+                    }
+                }
+            }
+        }
+        // dd($order->order_id);
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->where('status', 1)->get()->toArray();
+        return view(self::VIEW_DIR. '.editPurchaseOorder', ["order" => $order, "suppliers" => $suppliers, "status_cancel" => 7]);
+    }
+
+    public function updatePurchaseOrders(Request $request) {
+        $order_id = $request->order_id;
+        $products = $request->product;
+        if(count($products) > 0) {
+            foreach($products as $product_id => $product) {
+                if(isset($product['name'])) {
+                    $updateProduct = ['name' => $product['name']];
+                }
+                if(isset($product['model'])) {
+                    $updateProduct = ['model' => $product['model']];
+                }
+                OmsPurchaseOrdersProductModel::where('order_id', $order_id)->where('product_id', $product_id)->update($updateProduct);
+                foreach ($product['quantity'] as $order_product_quantity_id => $value) {
+					OmsPurchaseOrdersProductQuantityModel::where('order_id', $order_id)->where('order_product_quantity_id', $order_product_quantity_id)->update(array('quantity' => $value));
+		        }
+
+                if(isset($product['option'])) {
+                    foreach($product['option'] as $order_product_option_id => $option) {
+                        $option_name = OptionValueDescriptionModel::select('name')->where('option_value_id', $option)->first();
+                        OmsPurchaseOrdersProductOptionModel::where('order_id', $order_id)->where('order_product_option_id', $order_product_option_id)
+                                                             ->update(['product_option_value_id' => $option, 'value' => $option_name->name]);
+                    }
+                }
+            }
+            OmsPurchaseOrdersModel::where('order_id', $order_id)->update(['supplier' => $request->supplier]);
+            return redirect()->route('purchase.orders')->with('message', 'Your Order #'. $order_id .' updated successfully.');
+        }else {
+
+            return redirect()->route('purchase.orders')->with('error_message', 'Something went wrong!');
+        }
+    }
+
+    public function supplierCancelledAwaitingActionOrderRequest(Request $request) {
+        if($request->order_id && $request->supplier && $request->comment) {
+            $exist = OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->where('supplier', $request->supplier)->exists();
+            if($exist) {
+                OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->where('supplier', $request->supplier)->update(array('reason' => $request->comment, 'status' => 0));
+            }else {
+                $OmsPurchaseAwaitingActionCancelledModel = new OmsPurchaseAwaitingActionCancelledModel();
+	    		$OmsPurchaseAwaitingActionCancelledModel->{OmsPurchaseAwaitingActionCancelledModel::FIELD_ORDER_ID} = $request->order_id;
+	    		$OmsPurchaseAwaitingActionCancelledModel->{OmsPurchaseAwaitingActionCancelledModel::FIELD_SUPPLIER} = $request->supplier;
+	    		$OmsPurchaseAwaitingActionCancelledModel->{OmsPurchaseAwaitingActionCancelledModel::FIELD_REASON} = $request->comment;
+	    		$OmsPurchaseAwaitingActionCancelledModel->{OmsPurchaseAwaitingActionCancelledModel::FIELD_STATUS} = 0;
+	    		$OmsPurchaseAwaitingActionCancelledModel->save();
+            }
+            return Redirect::back()->with('message', 'Your Order #'. $request->order_id .' cancelled request send successfully.');
+        }else {
+            return Redirect::back()->with('message', 'Something went wrong!');
+        }
+    }
+
+    public function updateAwaitingActionCancelled(Request $request) {
+        if($request->action == 'accept') {
+            OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(['order_status_id' => 7]);
+            OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->update(['status' => 2]);
+            Session::flash('message', 'Your Order #'. $request->order_id .' cancelled successfully.');
+			Session::flash('alert-class', 'alert-success');
+	    	return response()->json(array('redirect' => true));
+        }elseif($request->action == 'reject') {
+            OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->update(['status' => 2]);
+            Session::flash('message', 'Your Order #'. $request->order_id .' request rejected successfully.');
+			Session::flash('alert-class', 'alert-success');
+	    	return response()->json(array('redirect' => true));
+        }else{
+            Session::flash('message', 'Something went wrong!');
+            Session::flash('alert-class', 'alert-danger');
+            return response()->json(array('redirect' => true));
+        }
+    }
+
+    public function addApprovalComment(Request $request) {
+        if($request->order_id) {
+            $order_id = $request->order_id;
+            $comment = $request->comment;
+            $from = $request->type;
+            $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = $from;
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $comment;
+            $OmsPurchaseOrdersHistoryModel->save();
+
+            $json['success'] = true;
+        }
+        return response()->json($json);
+    }
+
+    private function checkOrderQuantity($quantity) {
+        $error = false;
+        foreach($quantity as $opqid => $value) {
+            if($value['order_quantity'] > $value['old_order_quantity']) {
+                $error = true;
+            }
+        }
+        return $error;
+    }
+
+    public function updateOrderQuantityPrice($request, $order_id) {
+        if($request->submit == 'update_awaiting_action') {
+            $updateData = array(
+                'total'             => $request->total,
+                'link'              => $request->supplier_link,
+                'order_status_id'   => 1
+            );
+        }else {
+            $updateData = array(
+                'total'             => $request->total,
+                'link'              => $request->supplier_link
+            );
+        }
+        OmsPurchaseOrdersModel::where('order_id', $order_id)->update($updateData);
+        $this->addOrderStatusHistory($order_id, 1);
+
+        if($request->instruction) {
+            $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Supplier';
+            $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
+            $OmsPurchaseOrdersHistoryModel->save();
+        }
+        foreach($request->quantity as $order_product_qty_id => $value) {
+            $update_array = ['order_quantity' => $value['order_quantity'], 'price' => $value['price'], 'total' => $value['total']];
+            OmsPurchaseOrdersProductQuantityModel::where('order_id', $order_id)->where('order_product_quantity_id', $order_product_qty_id)->update($update_array);
+        }
+        if($request->totals) {
+            $sortOrder = 0;
+            if($request->submit == 'update_awaiting_action') {
+                foreach($request->totals as $code => $value) {
+                    $sortOrder++;
+                    $orderTotal = new OmsPurchaseOrdersTotalModel();
+                    $orderTotal->order_id = $order_id;
+                    $orderTotal->code = $code;
+                    foreach($value as $title => $va) {
+                        $orderTotal->title = $title;
+                        $orderTotal->value = $va;
+                    }
+                    $orderTotal->sort_order = $sortOrder;
+                    $orderTotal->save();
+                }
+            }else { // update price
+                foreach ($request->totals as $code => $value) {
+                    foreach ($value as $title => $val) {
+                        if(OmsPurchaseOrdersTotalModel::where('order_id', $order_id)->where('title', $title)->exists()){
+                            OmsPurchaseOrdersTotalModel::where('order_id', $order_id)->where('title', $title)->update(array('value' => $val));
+                        }else{
+                            $sortOrder++;
+                            $OmsPurchaseOrdersTotalModel = new OmsPurchaseOrdersTotalModel();
+                            $OmsPurchaseOrdersTotalModel->{OmsPurchaseOrdersTotalModel::FIELD_ORDER_ID} = $order_id;
+                            $OmsPurchaseOrdersTotalModel->{OmsPurchaseOrdersTotalModel::FIELD_CODE} = $code;
+                            $OmsPurchaseOrdersTotalModel->{OmsPurchaseOrdersTotalModel::FIELD_TITLE} = $title;
+                            $OmsPurchaseOrdersTotalModel->{OmsPurchaseOrdersTotalModel::FIELD_VALUE} = $val;
+                            $OmsPurchaseOrdersTotalModel->{OmsPurchaseOrdersTotalModel::FIELD_SORT_ORDER} = $sortOrder;
+                            $OmsPurchaseOrdersTotalModel->save();
+                        }
+                    }
+                }
+            }
+        }
+        $product_listing_link = $request->product_listing_link;
+        //update product listing link in inventory_product table
+        if($product_listing_link) {
+            foreach($product_listing_link as $sku => $link) {
+                OmsInventoryProductModel::where('sku', $sku)->update(['supplier_link' => $link]);
+            }
+        }
+        //update product listing link in inventory_product table end
+    }
+
     public function getGroupName($sku) {
         
         if(strpos($sku,"-") !== false) {
@@ -637,5 +905,15 @@ class PurchaseManagementController extends Controller
             }
         }
         return $counter;
+    }
+
+    protected function addOrderStatusHistory($order_id, $order_status_id){
+    	if(!OmsPurchaseOrdersStatusHistoryModel::where('order_id', $order_id)->where('order_status_id', $order_status_id)->exists()){
+			$OmsPurchaseOrdersStatusHistoryModel = new OmsPurchaseOrdersStatusHistoryModel();
+			$OmsPurchaseOrdersStatusHistoryModel->{OmsPurchaseOrdersStatusHistoryModel::FIELD_ORDER_ID} = $order_id;
+			$OmsPurchaseOrdersStatusHistoryModel->{OmsPurchaseOrdersStatusHistoryModel::FIELD_ORDER_STATUS_ID} = $order_status_id;
+			$OmsPurchaseOrdersStatusHistoryModel->created_by = session('user_id');
+			$OmsPurchaseOrdersStatusHistoryModel->save();
+    	}
     }
 }

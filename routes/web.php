@@ -142,7 +142,12 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/add/purchase/order', 'addOrder')->name('add.purchase.order');
         Route::any('/place/purchase/order', 'placePurchaseOrder')->name('place.purchase.order');
         Route::any('/new/purchase/order', 'newPurchaseOrder')->name('new.purchase.orders');
-
+        Route::post('/update/awaiting/action/order', 'updateAwaitingActionArder')->name('update.awaiting.action.order');
+        Route::post('/awaiting/action/update/request', 'updateAwaitingActionCancelled')->name('awaiting.action.update.request');
+        Route::post('/add/approval/comment', 'addApprovalComment')->name('add.approval.comment');
+        Route::post('/supplier/cancelled/awaiting/action/order/request', 'supplierCancelledAwaitingActionOrderRequest')->name('supplier.cancelled.awaiting.action.order.request');
+        Route::get('/edit/purchase/orders/{order}', 'editPurchaseOrders')->name('edit.purchase.orders');
+        Route::post('/update/purchase/order', 'updatePurchaseOrders')->name('update.purchase.order');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
