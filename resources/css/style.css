@@ -153,6 +153,9 @@ input[type="checkbox"] {
 .sw-theme-circles>ul.step-anchor>li.active>a {
     background: #11e531;
 }
+.sw-theme-circles>ul.step-anchor>li.next-active>a {
+    background: #11ace5;
+}
 .sw-theme-circles>ul.step-anchor {
     margin-bottom: 19px !important;
     z-index: 1;
