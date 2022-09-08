@@ -883,7 +883,7 @@ class PurchaseManagementController extends Controller
         $counter = array();
         $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
         
-        if(session('role') != 'ADMIN' || session('role') != 'STAFF'){
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF'){
             $whereClause[] = array('supplier', session('user_id'));
         }
         // dd($tabs);
