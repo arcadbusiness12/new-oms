@@ -7,7 +7,7 @@
         <div class="col-md-12">
             <div class="row mb-4">
                 <div class="col-md-12 col-sm-12">
-                    @include('purchaseManagement.orderTabs')
+                    @include('PurchaseManagement.orderTabs')
                     
                 </div>
             </div>
