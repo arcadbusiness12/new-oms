@@ -200,7 +200,7 @@ class PurchaseManagementController extends Controller
                     $order['status'] = 'update';
                 }
             }
-         $counter = '';
+         $counter = $this->productCount();
         //  dd($orders->toArray());
          $search_form_action = \URL::to('/PurchaseManagement/new/purchase/order');
          $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
@@ -878,31 +878,18 @@ class PurchaseManagementController extends Controller
     }
 
     public function productCount(){
+        // dd(session('role'));
+        $whereClause = [];
         $counter = array();
         $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
         
-        if(session('role') == 'ADMIN' || session('role') == 'STAFF'){
-            $skip_url = array(
-                'PurchaseManagement/purchase/orders',
-                'purchase_manage/confirmed',
-                'purchase_manage/to_be_shipped',
-                'purchase_manage/delivered',
-            );
-        }else{
-            $skip_url = array(
-                'PurchaseManagement/purchase/orders',
-                'purchase_manage/shipped',
-                'purchase_manage/delivered',
-            );
+        if(session('role') != 'ADMIN' || session('role') != 'STAFF'){
+            $whereClause[] = array('supplier', session('user_id'));
         }
-        foreach ($tabs as $tab) {
-            // dd($tab);
-            if(!in_array($tab['url'], $skip_url)){
-                $function = explode('/', $tab['url']);
-                $u = $function[1].' '.$function[2].' '.$function[3];
-                dd($counter[$tab['name']]);
-                $counter[$tab['name']] = $this->{$u}(true);
-            }
+        // dd($tabs);
+        foreach($tabs as $tab) {
+            $orders = OmsPurchaseOrdersModel::where('order_status_id', $tab['order_status'])->where($whereClause)->get();
+            $counter[$tab['name']] = count($orders);
         }
         return $counter;
     }

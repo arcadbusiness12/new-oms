@@ -7,49 +7,8 @@
         <div class="col-md-12">
             <div class="row mb-4">
                 <div class="col-md-12 col-sm-12">
-                    <div class="card no-b">
-                        <div class="card-header white">
-                            <form name="form_stock_level" id="form_stock_level" action="{{route('purchase.orders')}}" method="get">
-                                {{ csrf_field() }}
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label class="control-label">Order ID</label>
-                                        <input type="text" name="order_id" id="order_id" class="form-control" value="<?php if(isset($old_input['order_id'])) { echo $old_input['order_id']; } ?>" autocomplete="off" placeholder="Order ID">
-                                        
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="control-label">Product Title</label>
-                                        <input type="text" name="product_title" id="product_title" class="form-control" value="<?php if(isset($old_input['product_title'])) { echo $old_input['product_title']; } ?>" autocomplete="off" placeholder="Product Title">
-                                        
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="control-label">Product SKU</label>
-                                        <input type="text" name="product_sku" id="product_sku" class="form-control" value="<?php if(isset($old_input['product_sku'])) { echo $old_input['product_sku']; } ?>" autocomplete="off" placeholder="Product SKU">
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="form-label" for="status">Product Model</label>
-                                        <input type="text" name="product_model" id="product_model" class="form-control" autocomplete="off" value="<?php if(isset($old_input['product_model'])) {echo $old_input['product_model']; } ?>" placeholder="Product Model">
-                                    </div>
-                                    <div class="clearfix"></div>
-                                    <div class="col-sm-6">
-                                        <label class="control-label">Order Type</label>
-                                        <select name="order_type" class="form-control">
-                                            <option value="">Select Type</option>
-                                            <option value="1" <?php if(isset($old_input['order_type']) && $old_input['order_type'] == '1') { ?> selected="selected" <?php } ?> >Urgent</option>
-                                            <option value="0" <?php if(isset($old_input['order_type']) && $old_input['order_type'] == '0') { ?> selected="selected" <?php } ?> >Normal</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-12 text-right">
-                                        <br>
-                                        <button type="submit" id="search_filter" class="btn btn-primary">Search</button>
-                                        <!-- <button type="button" onclick="$('#add_product_to_order').attr('action', '<?php echo URL::to('/inventory_manage/reportExport'); ?>').submit();" class="btn btn-danger">Export</button> -->
-                                        <!-- <button type="button" id="subimt-place-order" class="btn btn-info">Order</button> -->
-                                    </div>
-                            </div>
-                           
-                            </form>
-                        </div>
-                    </div>
+                    @include('purchaseManagement.orderTabs')
+                    
                 </div>
             </div>
 
@@ -163,13 +122,13 @@
                                                     </td>
                                                     <td class="col-xs-2">
                                                         <?php if($i == 1) { ?>
-                                                        <label class="control-label">Price</label>
+                                                        <label class="control-label"><strong> Price </strong></label>
                                                         <?php } ?>
                                                         <div><input type="text" pattern="^(\d*\.)?\d+$" title="Enter valid price" name="quantity[<?php echo $quantity['order_product_quantity_id'] ?>][price]" <?php if($order['status'] == 'update') { ?> value="<?php echo $quantity['price'] ?>" <?php } ?> class="form-control price" required/></div>
                                                     </td>
                                                     <td class="col-xs-2">
                                                         <?php if($i == 1) { ?>
-                                                        <label class="control-label">Sum</label>
+                                                        <label class="control-label"><strong> Sum </strong></label>
                                                         <?php } ?>
                                                         <div><input type="text" name="quantity[<?php echo $quantity['order_product_quantity_id'] ?>][total]" <?php if($order['status'] == 'update') { ?> value="<?php echo $quantity['total'] ?>" <?php } ?> class="form-control sum" readonly/></div>
                                                     </td>

@@ -245,3 +245,39 @@ input[type="checkbox"] {
 .instruction_row .supplier_link {
     margin-left: 20px;
 }
+
+.container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.block-header ul {
+    list-style-type: none;
+    padding: 0;
+}
+.block-header ul.tabs li {
+    position: relative;
+}
+.block-header ul li.active {
+    border: 2px solid green;
+    color: green;
+    font-weight: bold;
+}
+.block-header ul li {
+    display: inline-block;
+    float: left;
+    padding: 10px 15px 10px 15px;
+    margin: 0px 10px 10px 0px;
+    border: 2px solid #c1c1c1;
+}
+.block-header ul li a {
+    color: #000;
+    text-decoration: none;
+}
+.block-header ul.tabs li div.badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translate(-50%);
+}
