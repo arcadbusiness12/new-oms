@@ -302,7 +302,7 @@ class PurchaseManagementController extends Controller
             'orderHistories','orderSupplier','orderTotals'
             ])->where('order_status_id', 2)->where($whereClause)
             ->orderBy('oms_purchase_order.order_id', 'DESC')
-            ->paginate(5)
+            ->paginate(self::PER_PAGE)
             ->appends($request->all());
             if($count == true){ return $confirmed_orders->total(); }
             

@@ -44,24 +44,27 @@
                            
                            <?php if($orders) { ?>
                             <?php foreach ($orders['data'] as $order) { ?>
-                            <div class="card order_list">
+                            <div class="card order_list mb-4">
                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                 <div class="row top_row">
-                                    <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
-                                    <div class="col-xs-4 text-center">
+                                    <div class="col-sm-4 col-grid text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    </b>
+                                    </div>
+                                    <div class="col-sm-4 text-center col-grid text-black mb-4 mt-2">
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                        <div class="badge"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
+                                        <div class="badge badge-secondary"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                         <?php } ?>
                                     </div>
-                                    <div class="col-xs-4 text-right">
+                                    <div class="col-sm-4 text-right col-grid text-black mb-4 mt-2">
                                         <?php if($order['urgent']) { ?>
-                                            <div class="label label-warning">Urgent</div>
+                                            <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge"><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></div>
+                                            <div class="badge badge-secondary"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                         </div>
                                     </div>
                                 </div>
+
                                 <?php foreach ($order['order_products'] as $product) { ?>
                                 <div class="product_list_row">
                                     <div class="row product_row">
@@ -83,12 +86,12 @@
                                                         if($option['static'] !== 'static') { 
                                                             $units += $quantity['order_quantity'];
                                                             ?>
-                                                        <div class="box-label">
+                                                        <div class="box-label text-black">
                                                             <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity']; ?>
                                                         </div>
                                                     <?php } } ?>
                                                 <?php } ?>
-                                                <div class="box-label">
+                                                <div class="box-label text-black">
                                                     T. Units = <?php echo $units ?>
                                                 </div>
                                             </div>
@@ -117,7 +120,7 @@
             
                                     if($order['cancelled_status'] && $order['cancelled_status']['status'] == 0){ 
                                         $class = 'col-xs-6 col-sm-8'; ?>
-                                    <div class="col-xs-6 col-xs-4">
+                                    <div class="col-xs-6 col-sm-4">
                                         <label class="btn-block text-danger">Supplier Cancelled Order</label>
                                         <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
                                         <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ URL::to('/purchase_manage/confirmed/update_request') }}"><b>Accept</b></button>
@@ -138,20 +141,20 @@
                                     </div>
                                     <?php }else if(@$order['cancelled_status']['status'] == 2){
                                         $class = 'col-xs-6 col-sm-8'; ?>
-                                    <div class="col-xs-6 col-xs-4">
+                                    <div class="col-xs-6 col-sm-4">
                                         <button type="button" class="btn btn-danger disabled" disabled>Request Rejected</button>
                                     </div>
                                     <?php } ?>
                                     
                                     <div class="<?php echo $class ?> text-right">
-                                        <button type="button" class="btn btn-default collapse-comment" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'],2); ?></b></button>
+                                        <button type="button" class="btn btn-default collapse-comment mr-4"><b><?php echo number_format($order['total'],2); ?></b></button>
                                     </div>
                                     <?php } ?>
                                 </div>
                                 <!--  comment code start here  -->
                                 <?php foreach ($order['order_histories'] as $history) { ?>
-                                    <div>
-                                        <label><?php echo $history['name'] ?>:</label>
+                                    <div class="pl-4 pr-4 text-black">
+                                        <label><strong><?php echo $history['name'] ?>:</strong></label>
                                         <i><?php echo $history['comment'] ?></i>
                                         <i style="float: right;"><?php echo $history['created_at']; ?></i>
                                     </div>
@@ -159,19 +162,25 @@
                                 <form action="<?php echo URL::to('/purchase_manage/update_awaiting_action_order') ?>" method="post">
                                   {{csrf_field()}}
                                   <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
-                                  <div class="row approval-comment" style="-webkit-display:-webkit-flex;-webkit-flex-wrap:wrap;-ms-display:-ms-flexbox;-ms-flex-wrap:wrap;display:flex;flex-wrap:wrap;flex-direction:row;">
-                                    <div class="col-xs-10">
-                                      <label class="control-label">Admin Reply:</label>
+                                  <div class="row approval-comment pl-4 pr-4 pb-4" style="-webkit-display:-webkit-flex;-webkit-flex-wrap:wrap;-ms-display:-ms-flexbox;-ms-flex-wrap:wrap;display:flex;flex-wrap:wrap;flex-direction:row;">
+                                    <div class="col-sm-10 text-black">
+                                      <label class="control-label"><strong> Admin Reply: </strong></label>
                                       <textarea name="instruction" class="form-control" cols="5" rows="3" required=""></textarea>
                                       <div class="error-message text-danger"></div>
                                     </div>
-                                    <div class="col-xs-2">
+                                    <div class="col-sm-2 text-black">
                                       <button type="submit" name="submit" value="save-comment" class="btn btn-block btn-success" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
                                     </div>
                                   </div>
                                 </form>
                                 <!--  comment code start here  -->
-                                <div id="summary<?php echo $order['order_id'] ?>" class="summary-panel">
+                                <div class="col-sm-12 mb-4">
+                                    <div class="col-sm-4">
+
+                                        <button type="button" class="btn btn-secondary collapse-comment mr-4" data-target="summary<?php echo $order['order_id'] ?>"><b>Summary</b></button>
+                                    </div>
+                                </div>
+                                <div id="summary<?php echo $order['order_id'] ?>" class="summary-panel collapse ml-4 mr-4">
                                     <div class="row">
                                         <div class="col-xs-12">
                                             <table class="table">
@@ -209,7 +218,7 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-xs-5 col-xs-offset-7">
+                                        <div class="col-sm-5 offset-7">
                                             <table class="table">
                                                 <?php foreach ($order['order_totals'] as $value) { ?>
                                                 <tr>
