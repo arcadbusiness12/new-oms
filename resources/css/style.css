@@ -237,3 +237,11 @@ input[type="checkbox"] {
 .purchase-order-progress .order_progress_bar_new .step-anchor .h-class {
     height: 99px !important;
 }
+.options_row .table td, .table th {
+    padding: 7px !important;
+    border-style: hidden !important;
+    border-top: none !important;
+}
+.instruction_row .supplier_link {
+    margin-left: 20px;
+}
