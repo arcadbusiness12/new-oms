@@ -10,13 +10,14 @@ use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\OmsActivityLogModel;
+use Illuminate\Support\Facades\Http;
 /**
  * Description of TcsCourier
  *
  * @author Tariq
  */
 class TcsCourier implements ShippingProvidersInterface
-{ 
+{
     const DUMMY_AWB = 'TCS_';
     const API_AWB_NUMBER = 'orderID';
     const API_KEY = 'apiKey';
@@ -36,7 +37,7 @@ class TcsCourier implements ShippingProvidersInterface
         $this->apiKey = config('services.tcsCourier')['apiKey'];
         $this->username = config('services.tcsCourier')['username'];
         $this->password = config('services.tcsCourier')['password'];
-        $this->httpClient = \App::make('httpClient');
+        // $this->httpClient = \App::make('httpClient');
 
         if (null == $this->apiKey || null == $this->apiUrl || null == $this->accountNumber){
             throw new \Exception("ApiKey, Account Number and user Name for TCS Courier is required");
@@ -55,14 +56,14 @@ class TcsCourier implements ShippingProvidersInterface
                 throw new \Exception("Order needs to be an instance of orderGolem");
             }
 
-            try{ 
+            try{
               // dd(trim($order->getPaymentMethod()));
               if(trim($order->getPaymentMethod()) == 'cod' || trim($order->getPaymentMethod()) == 'cod_order_fee' || trim($order->getPaymentMethod()) == ''){
                 // $payment_method = "Cash";
-                $COD_AMOUNT = $order->getOrderTotalAmount(); 
+                $COD_AMOUNT = $order->getOrderTotalAmount();
               }else if( trim($order->getPaymentMethod()) == 'ccavenuepay' ){
                 // $payment_method = "0";
-                $COD_AMOUNT = "0.00"; 
+                $COD_AMOUNT = "0.00";
               }else{
                 $COD_AMOUNT = $order->getOrderTotalAmount();
               }
@@ -93,13 +94,13 @@ class TcsCourier implements ShippingProvidersInterface
                 curl_close($curl);
                 $response_data = json_decode($response, true);
                 // echo "<pre>";print_r($response_data);echo "</pre>";die;
-                
+
                 if(empty($response_data['ERROR'])){
                 	$returnResponse[$order->getOrderID()] = [ self::AIRWAYBILL_NUMBER => $response_data['CN_NO'],
 					    self::MESSAGE_FROM_PROVIDER => 'Order Moved to Next stage'
 					];
                 }else{
-                	throw new \Exception($response_data['ERROR']);	
+                	throw new \Exception($response_data['ERROR']);
                 }
             }
             catch (\Exception $ex){
@@ -268,7 +269,7 @@ class TcsCourier implements ShippingProvidersInterface
                 'datetime'=>$val['dateTime'],
                 'status'=>$val['status'],
                 'details'=>$val['recievedBy']."-".$val['station'],
-              ); 
+              );
             }
           }
           $returnResponse = ['awb_number' => '','current_status' => '','status_datetime' => '',

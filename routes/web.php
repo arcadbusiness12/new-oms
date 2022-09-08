@@ -89,11 +89,15 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::get('/pack/order', 'packOrder')->name('orders.pack.order');
         Route::post('/get/pack/order', 'getPackOrder')->name('orders.get.pack.order');
         Route::post('/update/pack/order', 'updatePackOrder')->name('orders.update.pack.order');
+        Route::get('/generate/awb', 'generateAwb')->name('orders.generate.awb');
+        Route::get('/awb', 'awb')->name('orders.awb');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
         Route::post('/reship', 'reship')->name('orders.reship');
         Route::any('/activity-details', 'activityDetails')->name('orders.activity-details');
+        Route::post('/get/order/detail', 'getOrderDetail')->name('orders.get.order.detail');
+        Route::post('/forward/for/shipping', 'forwardForShipping')->name('orders.forward.for.shipping');
     });
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {

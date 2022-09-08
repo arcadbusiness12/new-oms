@@ -29,6 +29,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\DressFairOpenCart\Products\ProductOptionValueModel AS DFProductOptionValueModel;
+use App\Models\Oms\AirwayBillTrackingModel;
 use DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Request AS RequestFacad;
@@ -790,4 +791,35 @@ class OrdersController extends Controller
                 return redirect('/orders/pack/order');
             }
         }
+    public function generateAwb(){
+      $ordersStatus = OrderStatusModel::all();
+      $shippingProviders = ShippingProvidersModel::where('is_active', 1)->get();
+      return view(self::VIEW_DIR . ".generate_awb", ["orderStatus" => $ordersStatus, "shippingProviders" => $shippingProviders]);
+    }
+    public function awb(){
+        $orderIds = Session::get('orderIdsForAWBGenerate')[0];
+        Session::put('orderIdsForAWBGenerate', array());
+        $orders = [];
+        if( is_array($orderIds) && count($orderIds) > 0 ){
+            foreach( $orderIds as $order_id ){
+                $data = OmsOrdersModel::where("order_id",$order_id )->first();
+                if( $data->store == 1 ){
+                    $orders[] = $orders = OrdersModel::with(['status', 'orderd_products'])
+                    ->whereIn(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
+                }else if( $data->store == 2 ){
+                    $orders[] = $orders = DFOrdersModel::with(['status', 'orderd_products'])
+                      ->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
+                }
+            }
+        }
+        $orders = DFOrdersModel::with(['status', 'orderd_products'])
+        ->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
+        ->get();
+        //// Need enhancement
+        $order_tracking = AirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
+        $order_tracking_ids = $order_tracking->pluck(AirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
+        $shipping_providers = ShippingProvidersModel::whereIn('shipping_provider_id', $order_tracking_ids)->get();
+
+        return view(self::VIEW_DIR . ".awb", ['orders' => $orders, 'order_tracking' => $order_tracking, 'shipping_providers' => $shipping_providers]);
+    }
 }
