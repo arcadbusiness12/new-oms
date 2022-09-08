@@ -7,6 +7,7 @@ use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\OmsActivityLogModel;
+use Illuminate\Support\Facades\Http;
 /**
  * Description of TfmExpress
  *
@@ -31,7 +32,7 @@ class TfmExpress implements ShippingProvidersInterface
 		$this->apiUrl = config('services.tfmExpress')['url'];
 		$this->userName = config('services.tfmExpress')['userName'];
 		$this->password = config('services.tfmExpress')['password'];
-		$this->httpClient = \App::make('httpClient'); // Http Client
+		//$this->httpClient = \App::make('httpClient'); // Http Client
 
 		if (null == $this->accountNumber || null == $this->apiUrl || $this->userName == null)
 		{
@@ -57,8 +58,11 @@ class TfmExpress implements ShippingProvidersInterface
 				"consignee_loc" => '',
 			]];
 
-			$response = $this->httpClient->post($this->apiUrl . "/rest/savenewbooking", $bookingData);
+			// $response = $this->httpClient->post($this->apiUrl . "/rest/savenewbooking", $bookingData);
+			$response = Http::post($this->apiUrl . "/rest/savenewbooking", $bookingData);
+            // echo "<pre>"; print_r($response); die("<br>testing");
 			$booking = json_decode($response->getBody()->getContents(), true);
+            // echo "<pre>"; print_r($booking); die("<br>testingsdfd");
 			$bookingNumber = $booking["message"];
 
 			$datas = "\n\nsavenewbooking\n" . json_encode($booking);
@@ -208,7 +212,7 @@ class TfmExpress implements ShippingProvidersInterface
 		      }
 		    }
 
-    	return $returnResponse; // Details of order with response 
+    	return $returnResponse; // Details of order with response
     }
     public function cleanText($text = ''){
     	if($text){
@@ -245,7 +249,7 @@ class TfmExpress implements ShippingProvidersInterface
     	return self::HASH_LINK;
     }
     public function getOrderTrackingHistory($awb_data,$awb_type=0){
-		
+
       $awbNumber = $awb_data->airway_bill_number;
       $order_id  = $awb_data->order_id;
       $store_id  = $awb_data->store;
@@ -262,8 +266,8 @@ class TfmExpress implements ShippingProvidersInterface
       if( is_array($response_data) && count($response_data) > 0 ){
         $response_data = $response_data['trackingbyawbResult'];
       }
-      
-  
+
+
       // echo "<pre>"; print_r($response_data); die("test");
       if($response_data['status'] == 1) {
         $TrackResponse = $response_data['response'];
@@ -309,7 +313,7 @@ class TfmExpress implements ShippingProvidersInterface
         'shipment_address' => $shipment_address,'activity'=>$activity];
         return $returnResponse;
       }else{
-        // throw new \Exception($response_data['message']);	
+        // throw new \Exception($response_data['message']);
       }
     }
   }

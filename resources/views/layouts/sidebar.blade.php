@@ -70,7 +70,7 @@
                                         </li>
                                         <li class="@if( Request::url() == route('orders.pack.order') ) active @endif"><a href="{{ route('orders.pack.order') }}">Pack Orders </a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Generate & Print AWB </a>
+                                        <li class="@if( Request::url() == route('orders.generate.awb') ) active @endif"><a href="{{ route('orders.generate.awb') }}">Generate & Print AWB </a>
                                         </li>
                                        <li><a href="panel-page-blank-tabs.html">Ship Orders  </a>
                                         </li>
