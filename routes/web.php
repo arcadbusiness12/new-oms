@@ -10,6 +10,7 @@ use App\Http\Controllers\PlaceOrder\PlaceOrderController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
+use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
 
 /*
