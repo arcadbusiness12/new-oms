@@ -7,7 +7,8 @@ use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\OmsActivityLogModel;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request AS RequestFacad;
+
 /**
  * Description of TfmExpress
  *
@@ -273,7 +274,7 @@ class JTExpress implements ShippingProvidersInterface
 
     public function printAirwaybill()
     {
-      $awb_number = Input::get('awb');
+      $awb_number = RequestFacad::get('awb');
       $allParameter = array(
         "billCode" => $awb_number,
         "needLogo" => 0
