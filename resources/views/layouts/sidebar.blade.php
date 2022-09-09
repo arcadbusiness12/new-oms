@@ -163,9 +163,11 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/new/purchase/order') !== false) active @endif">
                                     <a href="{{route('new.purchase.orders')}}"><i class="icon icon-add"></i>New Order</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-pause"></i>Awaiting Approval</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/awaiting/approval') !== false) active @endif">
+                                    <a href="{{route('awaiting.approval.purchase.orders')}}"><i class="icon icon-pause"></i>Awaiting Approval</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-check-circle"></i>Confirm</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/confirmed') !== false) active @endif">
+                                    <a href="{{route('confirmed.purchase.orders')}}"><i class="icon icon-check-circle"></i>Confirm</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-ship"></i>To Be Shipped</a>
                                 </li>

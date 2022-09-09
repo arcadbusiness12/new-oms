@@ -14,6 +14,7 @@ use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseAwaitingActionCancelledModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseConfirmedCancelledModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersProductModel;
@@ -200,16 +201,139 @@ class PurchaseManagementController extends Controller
                     $order['status'] = 'update';
                 }
             }
-         $counter = '';
+         $counter = $this->productCount();
         //  dd($orders->toArray());
          $search_form_action = \URL::to('/PurchaseManagement/new/purchase/order');
          $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
          return view(self::VIEW_DIR.".newOrders", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "search_form_action" => $search_form_action, "old_input" => $request->all()]);   
     }
 
+    public function awaitingApproval(Request $request, $count = false) {
+        $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+        $whereClause = [];
+        $relationWhereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+        }
+        if($request->supplier) {
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+            $whereClause[] = ['supplier', session('user_id')];
+        }
+        $awaiting_approval_orders = OmsPurchaseOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },
+            'orderProducts.orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderHistories','orderSupplier','orderTotals'
+            ])->where('order_status_id', 1)->where($whereClause)
+            ->orderBy('oms_purchase_order.order_id', 'DESC')
+            ->paginate(self::PER_PAGE)
+            ->appends($request->all());
+            if($count == true){ return $awaiting_approval_orders->total(); }
+            
+            foreach($awaiting_approval_orders as $order) {
+                $cancelled_status = OmsPurchaseAwaitingActionCancelledModel::select('reason','status')->where('order_id', $order['order_id'])->where('supplier', $order['supplier'])->first();
+                $order['cancelled_status'] = $cancelled_status;
+                foreach($order->orderProducts as $product) {
+                    $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+                    $listing_link = OmsInventoryProductModel::where('sku',$product['model'])->first();
+                    $product['listing_status'] = $listing_link;
+                    $new_arrival_check = OmsPurchaseShippedOrdersProductModel::where('model',$product['model'])->first();
+                    $product['new_arrival_check'] = $new_arrival_check;
+                }
+
+                if($order['order_status_id'] == 0){
+                    $order['status'] = 'insert';
+                }else if($order['order_status_id'] == 1){
+                    $order['status'] = 'update';
+                }
+            }
+         $counter = $this->productCount();
+        //  dd($awaiting_approval_orders->toArray());
+        $search_form_action = \URL::to('/PurchaseManagement/awaiting/approval');
+         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+         return view(self::VIEW_DIR.".awaitingApproval", ["orders" => $awaiting_approval_orders->toArray(), "pagination" => $awaiting_approval_orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
+    }
+
+    public function confirmedOrders(Request $request, $count = false) {
+        // dd($request->all());
+        $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+        $option_id = OmsSettingsModel::get('product_option','color');
+        $whereClause = [];
+        $relationWhereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+        }
+        if($request->supplier) {
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+            $whereClause[] = ['supplier', session('user_id')];
+        }
+        $confirmed_orders = OmsPurchaseOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },
+            'orderProducts.orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderHistories','orderSupplier','orderTotals'
+            ])->where('order_status_id', 2)->where($whereClause)
+            ->orderBy('oms_purchase_order.order_id', 'DESC')
+            ->paginate(self::PER_PAGE)
+            ->appends($request->all());
+            if($count == true){ return $confirmed_orders->total(); }
+            
+        //  dd($confirmed_orders->toArray());
+            foreach($confirmed_orders as $order) {
+                $cancelled_status = OmsPurchaseConfirmedCancelledModel::select('reason','status')->where('order_id', $order['order_id'])->where('supplier', $order['supplier'])->first();;
+                $order['cancelled_status'] = $cancelled_status;
+                foreach($order->orderProducts as $product) {
+                    $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+                    foreach($product->orderProductQuantities as $quantity) {
+                        $confirmed_options = array();
+                        foreach($quantity->productOptions as $option) {
+                            if($option['product_option_id'] == $option_id){
+                                $option['static'] = 'static';
+                            }else{
+                                $option['static'] = 'size';
+                            }
+                            
+                        }
+                    }
+                }
+            }
+         $counter = $this->productCount();
+        $search_form_action = \URL::to('/PurchaseManagement/confirmed');
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        return view(self::VIEW_DIR.".confirmed", ["orders" => $confirmed_orders->toArray(), "pagination" => $confirmed_orders->render(), "tabs" => $tabs, "counter" => $counter, "search_form_action" => $search_form_action, "old_input" => $request->all(), 'suppliers' => $suppliers]);
+    }
+
     public function shippedOrderStatuses(){
         return array(
-            1  =>  'Forward',
+            1 =>  'Forward',
             2 =>  'Shipped',
             3 =>  'Delivered',
             5 =>  'Cancelled',
@@ -878,31 +1002,18 @@ class PurchaseManagementController extends Controller
     }
 
     public function productCount(){
+        // dd(session('role'));
+        $whereClause = [];
         $counter = array();
         $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
         
-        if(session('role') == 'ADMIN' || session('role') == 'STAFF'){
-            $skip_url = array(
-                'PurchaseManagement/purchase/orders',
-                'purchase_manage/confirmed',
-                'purchase_manage/to_be_shipped',
-                'purchase_manage/delivered',
-            );
-        }else{
-            $skip_url = array(
-                'PurchaseManagement/purchase/orders',
-                'purchase_manage/shipped',
-                'purchase_manage/delivered',
-            );
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF'){
+            $whereClause[] = array('supplier', session('user_id'));
         }
-        foreach ($tabs as $tab) {
-            // dd($tab);
-            if(!in_array($tab['url'], $skip_url)){
-                $function = explode('/', $tab['url']);
-                $u = $function[1].' '.$function[2].' '.$function[3];
-                dd($counter[$tab['name']]);
-                $counter[$tab['name']] = $this->{$u}(true);
-            }
+        // dd($tabs);
+        foreach($tabs as $tab) {
+            $orders = OmsPurchaseOrdersModel::where('order_status_id', $tab['order_status'])->where($whereClause)->get();
+            $counter[$tab['name']] = count($orders);
         }
         return $counter;
     }
