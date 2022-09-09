@@ -39,8 +39,8 @@ class JTExpress implements ShippingProvidersInterface
 		// $this->privatekey = "a0a1047cce70493c9d5d29704f05d0d9";
 		// $this->body_digest = "mGUfPbWDv9xXncsyOZLdPg==";
     //for production envirnment
-    
-    $this->apiUrl     = "https://openapi.jtjms-sa.com/webopenplatformapi/api";                         
+
+    $this->apiUrl     = "https://openapi.jtjms-sa.com/webopenplatformapi/api";
 		$this->customerCode = "J0086001319";
 		$this->password = "GBu0u0v9";
 		$this->apiAccount = "415438963793199107";
@@ -58,20 +58,20 @@ class JTExpress implements ShippingProvidersInterface
 		// dd($orders);
 		$returnResponse = [];
 		// dd($orders);
-    
+
 
 						// "commodity_id":"1",
 		foreach ($orders as $key => $order) {
-			
+
       if( trim($order->getPaymentMethod()) == 'ccavenuepay' ){
 				// $payment_method = "Cash";
-				$NcndAmount = "0.00"; 
+				$NcndAmount = "0.00";
 			}else{
 				// $payment_method = "0";
-				$NcndAmount = $order->getOrderTotalAmount(); 
+				$NcndAmount = $order->getOrderTotalAmount();
 			}
-      
-     
+
+
       if($order->getStore()==2){
         $FromCompany   = "DressFair";
         $FromAddress   = "IndustrialArea 11";
@@ -139,7 +139,7 @@ class JTExpress implements ShippingProvidersInterface
           "serviceType" => "01",
 					"deliveryType" => "04",
 					"payType" => "PP_PM",
-					"sender" => $sender_info,  
+					"sender" => $sender_info,
 					"receiver" =>$reciever_info,
 					"goodsType" => "ITN4",  //customer name
 					"weight" => 1,
@@ -153,8 +153,8 @@ class JTExpress implements ShippingProvidersInterface
 					//"NcndAmount" => $NcndAmount, /* Decimal Only */
 					//"ItemDescription" => $ItemDescription,
 					//"SpecialInstruction" => $SpecialInstruction,
-					//"BranchName" => "Dubai" 
-					); 
+					//"BranchName" => "Dubai"
+					);
               $response_json = $this->createOrder($bookingData);
 
 							$response = json_decode($response_json, true);
@@ -190,7 +190,7 @@ class JTExpress implements ShippingProvidersInterface
         // $allParameter = $request->toArray();
         // echo "<pre>"; print_r($allParameter);
         // $privatekey = "a0a1047cce70493c9d5d29704f05d0d9";
-        
+
         // initial exchange request
         $curl = curl_init($this->apiUrl."/order/addOrder");
 
@@ -199,10 +199,10 @@ class JTExpress implements ShippingProvidersInterface
 
         // MD5 first and then uppercase
         $pwd = strtoupper(md5($this->password.'jadada236t2'));
-        
+
         // md5 business data
         $digstr = md5($this->customerCode.$pwd.$this->privatekey);
-        
+
         // business data signature
         $body_digest = base64_encode(pack('H*',$digstr));
         // echo $body_digest; die("digeest test");
@@ -211,7 +211,7 @@ class JTExpress implements ShippingProvidersInterface
         // $allParameter['digest']= $this->body_digest;
 
         $biz = json_encode($allParameter, JSON_UNESCAPED_UNICODE);
-        
+
         $post_content = array(
             'bizContent' => $biz
         );
@@ -221,20 +221,20 @@ class JTExpress implements ShippingProvidersInterface
 
         $header = array(
             // "Content-type: application/x-www-form-urlencoded",
-            "apiAccount:$this->apiAccount", 
+            "apiAccount:$this->apiAccount",
             "digest:".$header_digest,
             "timestamp:".time()
         );
         // echo "<pre>"; print_r($header);
         //SSL certificate verification
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); 
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         //whether to return data
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         //set to POST method
-        curl_setopt($curl, CURLOPT_POST, true);          
+        curl_setopt($curl, CURLOPT_POST, true);
         //set POST request parameters
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content); 
-        //set http header 
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content);
+        //set http header
         curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 
         // execute request
@@ -242,7 +242,7 @@ class JTExpress implements ShippingProvidersInterface
 
         //close request
        curl_close($curl);
-        
+
         return $result;
     }
   public function cleanText($text = ''){
@@ -263,7 +263,7 @@ class JTExpress implements ShippingProvidersInterface
     public function getAirwayBillUrl($awbNumber = null)
     {
 			// return self::HASH_LINK;
-			return route('jtexpress_invoice', $awbNumber);
+			return route('jtexpress.invoice', $awbNumber);
     }
 
     public function getOrderStatus()
@@ -282,10 +282,10 @@ class JTExpress implements ShippingProvidersInterface
 
       // MD5 first and then uppercase
       $pwd = strtoupper(md5($this->password.'jadada236t2'));
-      
+
       // md5 business data
       $digstr = md5($this->customerCode.$pwd.$this->privatekey);
-      
+
       // business data signature
       $body_digest = base64_encode(pack('H*',$digstr));
       // echo $body_digest; die("digeest test");
@@ -294,7 +294,7 @@ class JTExpress implements ShippingProvidersInterface
       // $allParameter['digest']= $this->body_digest;
 
       $biz = json_encode($allParameter, JSON_UNESCAPED_UNICODE);
-      
+
       $post_content = array(
           'bizContent' => $biz
       );
@@ -304,20 +304,20 @@ class JTExpress implements ShippingProvidersInterface
       // echo "<pre>"; print_r($post_content);
       $header = array(
           // "Content-type: application/x-www-form-urlencoded",
-          "apiAccount:$this->apiAccount", 
+          "apiAccount:$this->apiAccount",
           "digest:".$header_digest,
           "timestamp:".time()
       );
       // echo "<pre>"; print_r($header);
       //SSL certificate verification
-      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); 
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       //whether to return data
       curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
       //set to POST method
-      curl_setopt($curl, CURLOPT_POST, true);          
+      curl_setopt($curl, CURLOPT_POST, true);
       //set POST request parameters
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content); 
-      //set http header 
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content);
+      //set http header
       curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 
       // execute request
@@ -331,7 +331,7 @@ class JTExpress implements ShippingProvidersInterface
       // echo $data->data;
       // echo "<script>window.open('$data->data').focus();</script>";
       echo "<script>location.replace('$data->data');</script>";
-      // echo $result; 
+      // echo $result;
     }
 
     public static function getTrackingUrl($awbNumber = null)
@@ -339,7 +339,7 @@ class JTExpress implements ShippingProvidersInterface
     	return self::HASH_LINK;
     }
     public function getOrderTrackingHistory($awb_data,$awb_type=0){
-      
+
       // echo "<pre>"; print_r($awb_data); die("testing..");s
       // echo $awb_data->airway_bill_number;
       $awbNumber = $awb_data->airway_bill_number;
@@ -352,10 +352,10 @@ class JTExpress implements ShippingProvidersInterface
 
       // MD5 first and then uppercase
       $pwd = strtoupper(md5($this->password.'jadada236t2'));
-      
+
       // md5 business data
       $digstr = md5($this->customerCode.$pwd);
-      
+
       // business data signature
       $body_digest = base64_encode(pack('H*',$digstr));
       // echo $body_digest; die("digeest test");
@@ -364,7 +364,7 @@ class JTExpress implements ShippingProvidersInterface
       $allParameter['digest']= $this->body_digest;
 
       $biz = json_encode($allParameter, JSON_UNESCAPED_UNICODE);
-      
+
       $post_content = array(
           'bizContent' => $biz
       );
@@ -374,20 +374,20 @@ class JTExpress implements ShippingProvidersInterface
 
       $header = array(
           // "Content-type: application/x-www-form-urlencoded",
-          "apiAccount:$this->apiAccount", 
+          "apiAccount:$this->apiAccount",
           "digest:".$header_digest,
           "timestamp:".time()
       );
       // echo "<pre>"; print_r($header);
       //SSL certificate verification
-      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); 
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       //whether to return data
       curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
       //set to POST method
-      curl_setopt($curl, CURLOPT_POST, true);          
+      curl_setopt($curl, CURLOPT_POST, true);
       //set POST request parameters
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content); 
-      //set http header 
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $post_content);
+      //set http header
       curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 
       // execute request
@@ -442,7 +442,7 @@ class JTExpress implements ShippingProvidersInterface
         'shipment_address' => '','activity'=>@$activity];
         return $returnResponse;
       }else{
-        //throw new \Exception($response_data['message']);	
+        //throw new \Exception($response_data['message']);
       }
     }
   }

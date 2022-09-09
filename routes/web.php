@@ -109,7 +109,7 @@ Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], func
     // Route::get('/jeebly/invoice/{id}', 'JeeblyCourier@invoice')->name('jeebly.invoice');
     // Route::get('/risingstar/invoice/{id}', 'RisingStar@invoice')->name('risingstar.invoice');
     Route::get('/deliverypanda/invoice/{id}',[DiliveryPanda::class, 'invoice'])->name('deliverypanda.invoice');
-    // Route::get('/JT/invoice/{id}', 'JTCourier@invoice')->name('jtexpress.invoice');
+    Route::get('/JT/invoice/{id}', 'JTCourier@invoice')->name('jtexpress.invoice');
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
     Route::controller(categorySettingController::class)->group(function() {
