@@ -8,7 +8,7 @@
                     <input type="hidden" name="store" value="<?php echo $order['store'] ?>">
                     {{ csrf_field() }}
                     <table class="table">
-                        <tr class="order_list_title_row">
+                        <tr class="order_list_title_row" style="background-color: #3f51b5;color:white">
                             <td class="col-xs-4 text-center order_list_title">Order ID</td>
                             <!-- <td class="col-xs-3 text-center order_list_title">Status</td> -->
                             <td class="col-xs-4 text-center order_list_title">Total</td>

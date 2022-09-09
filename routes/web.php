@@ -9,6 +9,7 @@ use App\Http\Controllers\Orders\OrdersController;
 use App\Http\Controllers\PlaceOrder\PlaceOrderController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
+use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -90,7 +91,9 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/get/pack/order', 'getPackOrder')->name('orders.get.pack.order');
         Route::post('/update/pack/order', 'updatePackOrder')->name('orders.update.pack.order');
         Route::get('/generate/awb', 'generateAwb')->name('orders.generate.awb');
-        Route::get('/awb', 'awb')->name('orders.awb');
+        Route::get('/awb/generated', 'awbGenerated')->name('orders.awb.generated');
+        Route::get('/ship/order', 'shipOrdersToCourier')->name('orders.ship.order');
+        Route::post('/ship/orders/to/courier', 'shipOrders')->name('orders.ship.orders.to.courier');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
@@ -98,7 +101,15 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::any('/activity-details', 'activityDetails')->name('orders.activity-details');
         Route::post('/get/order/detail', 'getOrderDetail')->name('orders.get.order.detail');
         Route::post('/forward/for/shipping', 'forwardForShipping')->name('orders.forward.for.shipping');
+        Route::any('/print/awb', 'printAwb')->name('orders.print.awb');
+        Route::post('/get/order/id/from/airwaybill', 'getOrderIdFromAirwayBill')->name('orders.get.order.id.from.airwaybill');
     });
+});
+Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {
+    // Route::get('/jeebly/invoice/{id}', 'JeeblyCourier@invoice')->name('jeebly.invoice');
+    // Route::get('/risingstar/invoice/{id}', 'RisingStar@invoice')->name('risingstar.invoice');
+    Route::get('/deliverypanda/invoice/{id}',[DiliveryPanda::class, 'invoice'])->name('deliverypanda.invoice');
+    // Route::get('/JT/invoice/{id}', 'JTCourier@invoice')->name('jtexpress.invoice');
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
     Route::controller(categorySettingController::class)->group(function() {

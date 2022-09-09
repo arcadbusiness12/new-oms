@@ -14,6 +14,7 @@ $payment_method = '<span style="border:1px solid black;"  class="badge '.$paymen
     <input type="hidden" id="order_shipping_type" value="{{($order->shipping_type) ? $order->shipping_type : 'all'}}">
     <td>
       <label style="height: 11px;"  for="md_checkbox_{{$order['order_id']}}"><input checked="checked" name="generate-awb-chbx[]"  value="{{$order['order_id']}}" type="checkbox" id="md_checkbox_{{$order['order_id']}}" class="chk-col-green fwd-ordr-generate-awb-checkbox"  /></label>
+      <input type="hidden" value="{{$order['oms_order_store']}}" name="store[{{$order['order_id']}}]" >
     </td>
     <td scope="row" class="col-order_id">{{$order['order_id']}}</td>
     {{--  <td>

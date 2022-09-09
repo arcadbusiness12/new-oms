@@ -34,7 +34,7 @@
                     <div class="circle"></div>
                 </div>
                 </div>
-    
+
                 <div class="spinner-layer spinner-red">
                     <div class="circle-clipper left">
                         <div class="circle"></div>
@@ -44,7 +44,7 @@
                     <div class="circle"></div>
                 </div>
                 </div>
-    
+
                 <div class="spinner-layer spinner-yellow">
                     <div class="circle-clipper left">
                         <div class="circle"></div>
@@ -54,7 +54,7 @@
                     <div class="circle"></div>
                 </div>
                 </div>
-    
+
                 <div class="spinner-layer spinner-green">
                     <div class="circle-clipper left">
                         <div class="circle"></div>
@@ -68,7 +68,7 @@
         </div>
     </div>
     <div id="app">
-        
+
         @include('layouts.sidebar')
         <div class="has-sidebar-left has-sidebar-tabs">
             @include('layouts.header')
@@ -81,6 +81,6 @@
     </div>
     <script src="{{ URL::asset('assets/js/jquery.main.js')}}"></script>
     @stack('scripts')
-   
+
 </body>
 </html>

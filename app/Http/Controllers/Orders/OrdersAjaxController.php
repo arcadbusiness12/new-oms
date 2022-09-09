@@ -23,6 +23,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsOrderReshipHistoryModel;
 use App\Models\Oms\ShippingProvidersModel;
+use App\Models\OpenCart\Orders\OrderedProductModel;
 use App\Platform\Golem\OrderGolem;
 use Carbon\Carbon;
 use Excel;
@@ -557,7 +558,7 @@ class OrdersAjaxController extends Controller {
                         ->orderBy(OmsOrdersModel::FIELD_ORDER_ID, 'desc')
                         ->first();
                 }
-
+                $order->oms_order_store = $omsOrder[0]->store;
 				$order->orderd_products = $this->getOrderProductWithImage($order->orderd_products,$store);
 
 				$omsOrderStatusMap = $omsOrder->mapWithKeys(function ($item) {
@@ -602,4 +603,131 @@ class OrdersAjaxController extends Controller {
 		}
 		return $orderd_products;
 	}
+    public function printAwb() {
+        // dd(RequestFacad::all());
+		if(RequestFacad::get('submit') == 'awb' && RequestFacad::get('order_id')){
+			$orderIds = RequestFacad::get('order_id');
+            $orders = collect();
+            if( is_array($orderIds) && count($orderIds) > 0 ){
+                foreach( $orderIds as $order_id ){
+                    $data = OmsOrdersModel::where("order_id",$order_id )->first();
+                    if( $data->store == 1 ){
+                        $order = OrdersModel::with(['status', 'orderd_products'])
+                        ->where("order_id", $order_id)->first();
+                    }else if( $data->store == 2 ){
+                        $order = DFOrdersModel::with(['status', 'orderd_products'])
+                        ->where("order_id", $order_id)->first();
+                    }
+                    $orders->push($order);
+                }
+            }
+			// $order_data = OrdersModel::with(['status', 'orderd_products'])
+			// ->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
+			// ->get();
+			// echo "<pre>"; print_r($order_data->toArray());
+			$order_tracking = AirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
+			$order_tracking_ids = $order_tracking->pluck(AirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
+			// echo "<pre>"; print_r($order_tracking_ids->toArray()); die;
+			$shipping_providers = ShippingProvidersModel::whereIn('shipping_provider_id', $order_tracking_ids)->get();
+
+			return view(self::VIEW_DIR . ".awb_print", compact('orders','order_tracking','shipping_providers'));
+		}else if(RequestFacad::get('submit') == 'picklist' && count(RequestFacad::all()) > 0){
+			$ship_date = date('Y-m-d');
+			$omsOrders = OmsOrdersModel::select('oms_orders.*', 'oc_order.order_status_id', 'sp.name')
+			->join('airwaybill_tracking AS awb','awb.order_id','=','oms_orders.order_id')
+			->join('shipping_providers as sp','sp.shipping_provider_id','=','awb.shipping_provider_id')
+			->join(DB::raw($this->DB_BAOPENCART_DATABASE . '.oc_order AS oc_order'),'oms_orders.order_id','=','oc_order.order_id')
+			->orderBy(OmsOrdersModel::UPDATED_AT, 'desc')
+			// ->where('oms_orders.store',$this->store)
+			->groupBy('oms_orders.order_id');
+			if(RequestFacad::get('order_id')){
+				$omsOrders = $omsOrders->where('oms_orders.order_id', RequestFacad::get('order_id'));
+			}
+			if(RequestFacad::get('order_status_id')){
+				$omsOrders = $omsOrders->where('oc_order.order_status_id', RequestFacad::get('order_status_id'));
+			}
+			if (RequestFacad::get('shipping_provider_id')){
+				$omsOrders = $omsOrders->where('oms_orders.'.OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER, Input::get('shipping_provider_id'));
+			}
+			if (RequestFacad::get('date_from') && RequestFacad::get('date_to')){
+				$date_from = Carbon::createFromFormat("Y-m-d", RequestFacad::get('date_from'))->toDateString();
+				$date_to = Carbon::createFromFormat("Y-m-d",RequestFacad::get('date_to'))->toDateString();
+				$omsOrders = $omsOrders->whereDate('awb.'.AirwayBillTrackingModel::CREATED_AT, '>=', $date_from)
+				->whereDate('awb.'.AirwayBillTrackingModel::CREATED_AT, '<=', $date_to);
+				if($date_from == $date_to){
+					$ship_date = $date_from;
+				}
+			}
+			if (RequestFacad::get('awb_number')){
+				$omsOrders = $omsOrders->where('awb.'.AirwayBillTrackingModel::FIELD_AIRWAY_BILL_NUMBER, RequestFacad::get('awb_number'));
+			}
+			$omsOrders = $omsOrders->get()->toArray();
+			$orderIds = array_map(function($value){
+				return $value['order_id'];
+			}, $omsOrders);
+
+			$orders = OrdersModel::whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
+			->get();
+
+			$order_details = array();
+			foreach ($orders as $key => $value) {
+				$awb = AirwayBillTrackingModel::select('airway_bill_number','shipping_provider_id')->where('order_id', $value->order_id)
+				->where("store",$this->store)->first();
+				$shipper = ShippingProvidersModel::where('shipping_provider_id', $awb->shipping_provider_id)->first();
+				$qty = OrderedProductModel::select(DB::Raw('SUM(quantity) as total'))->where('order_id', $value->order_id)->first();
+
+				$address = '';
+				if($value->shipping_address_1){
+					$address .= $value->shipping_address_1.($value->shipping_address_2 ? ", ".$value->shipping_address_2 : "");
+				}
+				if($value->shipping_area){
+					$address .= ', ' . $value->shipping_area;
+				}
+				if($value->shipping_city){
+					$address .= ', ' . $value->shipping_city;
+				}
+
+				$order_details[] = array(
+					'order_id'  =>  $value->order_id,
+					'awb'       =>  $awb->airway_bill_number,
+					'name'      =>  $value->firstname . ' ' . $value->lastname,
+					'mobile'    =>  $value->telephone ? : '-',
+					'address'   =>  $address,
+					'qty'       =>  $qty->total,
+					'amount'    =>  $value->total
+				);
+			}
+			$total_orders = count($order_details);
+            $record_limit = 16;
+            $page = ".ship_print";
+            // dd($shipper->toArray());
+            if( $shipper->shipment_print == 1  ){
+                $page = ".ship_print_short";
+                $record_limit = 70;
+            }else if( $shipper->shipment_print == 2 ){
+                $page = ".ship_print";
+                $record_limit = 16;
+            }
+            $order_details = array_chunk($order_details, $record_limit);
+            return view(self::VIEW_DIR . $page, ['orders' => $order_details, 'total_orders' => $total_orders, 'shipper' => $shipper, 'ship_date' => $ship_date]);
+        }
+
+		return redirect('/');
+	}
+    public function getOrderIdFromAirwayBill(Request $request){
+        $airwaybill_number = $request->airwaybillno;
+        $data = AirwayBillTrackingModel::with('shipping_provider')->where("airway_bill_number",$airwaybill_number)->orderBy("tracking_id","DESC")->first();
+        if( $data ){
+          $pickup_start_time = ($data->shipping_provider) ? $data->shipping_provider->pickup_start_time : "";
+          $pickup_end_time   = ($data->shipping_provider) ? $data->shipping_provider->pickup_end_time : "";
+          $courier_name   = ($data->shipping_provider) ? $data->shipping_provider->name : "";
+          if( time() < strtotime($pickup_start_time) && time() < strtotime($pickup_end_time) ){
+            $formatted_from = date('h:i A',strtotime($pickup_start_time));
+            $formatted_to = date('h:i A',strtotime($pickup_end_time));
+            return "<script>alert('$courier_name pickup time is from  $formatted_from to $formatted_to.')</script>";
+          }else{
+            return $this->getOrderDetail($data->order_id);
+          }
+        }
+    }
 }
