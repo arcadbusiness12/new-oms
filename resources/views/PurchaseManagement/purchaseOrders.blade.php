@@ -97,7 +97,7 @@
                                                         </div>
                                                         <?php if($order['order_status_id'] < 1) { ?>
                                                         <div>
-                                                            <a href="<?php echo route('edit.purchase.orders', $order['order_id']) ?>" class="btn btn-info"><i class="icon icon-pencil"></i></a>
+                                                            <a href="<?php echo route('edit.purchase.orders', $order['order_id']) ?>" class="btn btn-primary"><i class="icon icon-pencil"></i></a>
                                                         </div>
                                                         <?php } ?>
                                                     </div>
@@ -196,7 +196,7 @@
                                                                         <?php if($i == 1) { ?>
                                                                         <label class="control-label">Remain Quantity</label>
                                                                         <?php } ?>
-                                                                        <div><input type="text" class="form-control" value="<?php echo $quantity['remain_quantity'] ?>" readonly></div>
+                                                                        <div><input type="text" class="form-control" value="<?php echo @$quantity['remain_quantity'] ?>" readonly></div>
                                                                     </td>
                                                                     <?php } ?>
                                                                     <?php if($quantity['order_quantity'] > 0) { ?>

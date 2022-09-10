@@ -222,7 +222,7 @@
                                         <div class="col-xs-6 col-sm-4" style="padding-bottom: 10px;">
                                             <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
                                             <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('awaiting.action.update.request') }}"><b>Accept</b></button>
-                                            <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('awaiting.action.update.request') }}"><b>Reject</b></button>
+                                            <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-click-action="new" data-action="{{ route('awaiting.action.update.request') }}"><b>Reject</b></button>
 
                                             <label class="btn-block text-danger text-center" style="font-size: 14px;"><strong> Supplier Cancelled Order </strong></label>
                                         </div>
