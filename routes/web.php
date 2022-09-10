@@ -104,6 +104,8 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/forward/for/shipping', 'forwardForShipping')->name('orders.forward.for.shipping');
         Route::any('/print/awb', 'printAwb')->name('orders.print.awb');
         Route::post('/get/order/id/from/airwaybill', 'getOrderIdFromAirwayBill')->name('orders.get.order.id.from.airwaybill');
+        Route::post('/get/user/order/history', 'userOrderHistory')->name('get.user.order.history');
+        Route::post('/orders/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('orders.forword.for.awb.generation');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

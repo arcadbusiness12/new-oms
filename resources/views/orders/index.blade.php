@@ -136,6 +136,24 @@
                                                                 @endif
                                                             </div>
                                                         @endif
+                                                        <div class="col-sm-7">
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                            <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
+                                                                <form action="{{ route('orders.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
+                                                                    {{csrf_field()}}
+                                                                    <input type="hidden" name="order_id" value="{{$order->order_id}}" />
+                                                                    <input type="hidden" name="oms_store" value="{{$order->store}}" />
+                                                                    @if(@$old_input['order_status_id']==1)
+                                                                        @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
+                                                                        <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
+                                                                            class="btn btn-success btn-sm btn-forward-pick-list float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
+                                                                            Forward to Picking</button>
+                                                                        @endif
+                                                                    @endif
+                                                                </form>
+                                                            </a>
+                                                        </div>
                                                     </div>
                                         </td>
                                      </tr>
@@ -262,5 +280,73 @@ thead, tbody, tfoot, tr, td, th {
 
 });
 {{--  reship code end  --}}
+function getOrderHistory(phone) {
+    //$('.history').html('Loading...');
+      $.ajax({
+          method: 'POST',
+          url: APP_URL + '/orders/get/user/order/history',
+          data: {phone:phone},
+          cache: false,
+          headers: {
+              'X-CSRF-Token': $('input[name="_token"]').val()
+          },
+      }).done(function (data) {
+          var html = '';
+          $('.history-order-tab').html('');
+          if(data.length > 0) {
+
+              data.forEach(function (v) {
+                html +=  '<tr><td>'+v.order_id+'</td><td>'+v.address+'</td><td>'+v.courier+'</td><td>'+v.status+'</td><td>'+v.total+'</td><td>'+v.date_added+'</td></tr>'
+              })
+          }else{
+              html += '<tr> <td colspan="6" class="spinner-border text-muted" >No History..</td> </tr>';
+          }
+          $('.history-order-tab').html(html);
+      })
+  }
+  $(".forward_order_to_oms").on('click', function() {
+    console.log("Ok");
+    var id_to_remove = ".row_" + $(this).attr("order_id");
+    var order_id = $(this).attr("order_id");
+    swal({ title: "<h2>Please Wait forwarding order...</h3>", html: true, text: loader, showConfirmButton: false });
+    var courier_id = 0;
+    if ($('#courier_id').length) {
+        var courier_id = $('#courier_id').val();
+    }
+    $.ajax({
+        method: "POST",
+        url: $("#forward_to_queue_form_" + order_id).attr("action"),
+        data: $("#forward_to_queue_form_" + order_id).serialize() + "&courier_id=" + courier_id
+    }).done(function(response) {
+        if(response.status == false && response.courier == 'no') {
+            $('.worning-message').text('Please select courier.');
+            $('.worning-message').css('color', 'red');
+            $('.worning-message').css('font-size', '18px');
+            swal.close();
+            setTimeout(() => {
+                $('.worning-message').text('');
+            },5000);
+            return false;
+        }
+        if (response !== "") {
+            swal({ title: "<h2>Error!</h3>", html: true, text: response, type: "error" });
+            $('[data-toggle="tooltip"]').tooltip('destroy');
+            $('.popup_btn_forword').addClass('hidden');
+            $('#courierModal').modal('hide');
+        } else {
+            $('[data-toggle="tooltip"]').tooltip('destroy');
+            $(id_to_remove).remove();
+            swal("Success!", "Order Forwarded", "success");
+            setTimeout(function() {
+                swal.close();
+            }, 1500);
+            $('.popup_btn_forword').addClass('hidden');
+            $('#courierModal').modal('hide');
+        }
+
+    }); // End of Ajax
+
+
+}); // forward_order_to_oms click
 </script>
 @endpush
