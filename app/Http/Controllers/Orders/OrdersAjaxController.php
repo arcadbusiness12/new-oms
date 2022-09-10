@@ -790,7 +790,7 @@ class OrdersAjaxController extends Controller {
 	                'address'    => $order->payment_area.", ".$order->payment_address_1.", ".$order->shipping_address_2.", ".$order->payment_area.", ".$city,
 					'status'     => $order_status ? $order_status->order_status : "",
 					'date_added' => $order->date_added,
-					'courier'    => ($order->name) ? $order->name : "-",
+					'courier'    => ($order->name != "") ? $order->name : "-",
 					'total'      => $order->total,
 				);
 			}
