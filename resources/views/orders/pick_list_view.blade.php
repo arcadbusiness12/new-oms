@@ -18,14 +18,16 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
-                          @if(session()->has('success'))
-                            <div role="alert" class="alert alert-success">
-                            {{ session()->get('success') }}
+                        <div class="panel-heading">
+                            <div class="col-sm-10 col-grid">
+                                Pick List
                             </div>
-                          @endif
-                        <form method="get" target="_blank">
-                            <button type="submit" class="btn btn-success pull-right">Print Picking list</button>
+                            <div class="col-sm-2 col-grid">
+                                <a href="javascrip:void()" onclick="$('#frm_print_pick_list').submit()" class="btn btn-success btn-sm float-right">Print Picking list</a>
+                            </div>
+                        </div>
+                        <form method="get" target="_blank" id="frm_print_pick_list">
+                            {{--  <<button type="submit" class="btn btn-success pull-right">Print Picking list</button>  --}}
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                             <table class="table" width="100%" style="font-size: 13px !important">

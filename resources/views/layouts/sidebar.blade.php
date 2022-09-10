@@ -72,7 +72,7 @@
                                         </li>
                                         <li class="@if( Request::url() == route('orders.generate.awb') ) active @endif"><a href="{{ route('orders.generate.awb') }}">Generate & Print AWB </a>
                                         </li>
-                                       <li><a href="panel-page-blank-tabs.html">Ship Orders  </a>
+                                       <li class="@if( Request::url() == route('orders.ship.order') ) active @endif"><a href="{{ route('orders.ship.order') }}">Ship Orders  </a>
                                         </li>
                                         {{--  <li><a href="panel-page-blank-tabs.html">Deliver Orders</a>  --}}
                                         </li>
@@ -80,7 +80,7 @@
                                         </li>
                                         <li><a href="panel-page-blank-tabs.html">Return Orders  </a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Airway Bill History  </a>
+                                        <li class="@if( Request::url() == route('orders.awb.generated') ) active @endif"><a href="{{ route('orders.awb.generated') }}">Airway Bill History  </a>
                                         </li>
 
                                     </ul>

@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <title>AWB </title>
-  
+
 </head>
 <body>
   @if($orders->count())
@@ -13,7 +13,7 @@
   <div class="container">
     <table style="width:100%;">
       <tr>
-        @php 
+        @php
         $company_logo = '';
         $company_name = '';
         if($order_tracking->count() > 0)
@@ -42,7 +42,7 @@
           <?php } ?>
         </td>
         <td>
-          @php 
+          @php
           $awb = '' ;
           $sortingCode = '';
           if($order_tracking->count() > 0)
@@ -56,7 +56,7 @@
             endforeach;
           }
           @endphp
-          <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="{{$awb or ''}}" 
+          <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="{{$awb}}"
           jsbarcode-textmargin="0" jsbarcode-height="50"  ></svg>
         </td>
       </tr>
@@ -65,7 +65,7 @@
           <td colspan="2" v-align="middle" style="text-align: center; font-size: 30px; padding:5px">{{ $sortingCode }}</td>
         </tr>
       @endif
-    </table> 
+    </table>
     <table style="width:100%;" class="pure-table pure-table-bordered">
       <tr>
         <td>
@@ -85,7 +85,7 @@
         </td>
       </tr>
 
-    </table> 
+    </table>
 
     <table style="width:100%;" class="pure-table pure-table-bordered">
       <tr>
@@ -97,7 +97,7 @@
           <strong>Mobile:</strong> {{$order['telephone']}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!! ($order['alternate_number'] != "") ? '<strong>Alternate:</strong> '.$order['alternate_number'] : "" !!}
         </td>
       </tr>
-    </table> 
+    </table>
 
     <table class="pure-table" style="width:100%;">
       <thead>
@@ -152,8 +152,8 @@
           @if ($product['order_product_id'] == $option['order_product_id'])
           ({{$option['name']}} : {{$option['value']}})
           @if(!$loop->last)
-          <label>|</label> 
-          @endif 
+          <label>|</label>
+          @endif
           @endif
           @endforeach
           @endif
@@ -161,7 +161,7 @@
           @endforeach
         </td>
       </tr>
-    </table> 
+    </table>
   </div>
   <div class="page-break"></div>
   @endforeach
@@ -183,7 +183,7 @@
   JsBarcode(".barcode").init();
 </script>
 <style type="text/css">
-  
+
   html, body, div, span, applet, object, iframe,
   h1, h2, h3, h4, h5, h6, p, blockquote, pre,
   a, abbr, acronym, address, big, cite, code,
@@ -193,8 +193,8 @@
   dl, dt, dd, ol, ul, li,
   fieldset, form, label, legend,
   table, caption, tbody, tfoot, thead, tr, th, td,
-  article, aside, canvas, details, embed, 
-  figure, figcaption, footer, header, hgroup, 
+  article, aside, canvas, details, embed,
+  figure, figcaption, footer, header, hgroup,
   menu, nav, output, ruby, section, summary,
   time, mark, audio, video {
 /*        margin: 0;

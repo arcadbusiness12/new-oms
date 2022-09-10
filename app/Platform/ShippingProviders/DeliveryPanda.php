@@ -7,6 +7,7 @@ use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\OmsActivityLogModel;
+use Illuminate\Support\Facades\Http;
 /**
  * Description of TfmExpress
  *
@@ -32,7 +33,7 @@ class DeliveryPanda implements ShippingProvidersInterface
 		// $this->userName = config('services.deliveryPanda')['userName'];
 		// $this->password = config('services.deliveryPanda')['password'];
 		$this->apiKey = config('services.deliveryPanda')['apiKey'];
-		$this->httpClient = \App::make('httpClient'); // Http Client
+		//$this->httpClient = \App::make('httpClient'); // Http Client
 
 		if ( null == $this->apiUrl)
 		{
@@ -45,19 +46,19 @@ class DeliveryPanda implements ShippingProvidersInterface
 		// dd($orders);
 		$returnResponse = [];
 		// dd($orders);
-    
+
 
 						// "commodity_id":"1",
 		foreach ($orders as $key => $order) {
-			
+
       if( trim($order->getPaymentMethod()) == 'ccavenuepay' ){
 				// $payment_method = "Cash";
-				$NcndAmount = "0.00"; 
+				$NcndAmount = "0.00";
 			}else{
 				// $payment_method = "0";
-				$NcndAmount = $order->getOrderTotalAmount(); 
+				$NcndAmount = $order->getOrderTotalAmount();
 			}
-		
+
       if($order->getStore()==2){
         $FromCompany   = "DressFair";
         $FromAddress   = "IndustrialArea 11";
@@ -113,8 +114,8 @@ class DeliveryPanda implements ShippingProvidersInterface
 					"NcndAmount" => $NcndAmount, /* Decimal Only */
 					"ItemDescription" => $ItemDescription,
 					"SpecialInstruction" => $SpecialInstruction,
-					"BranchName" => "Dubai" 
-					); 
+					"BranchName" => "Dubai"
+					);
 					$bookingData = json_encode($bookingData);
 							//$dest_url = $this->apiUrl."CustomerBooking";
 							$dest_url = $this->apiUrl."CustomertoCustomerBooking";
@@ -179,7 +180,7 @@ class DeliveryPanda implements ShippingProvidersInterface
     public function getAirwayBillUrl($awbNumber = null)
     {
 			// return self::HASH_LINK;
-			return route('deliverypanda_invoice', $awbNumber);
+			return route('deliverypanda.invoice', $awbNumber);
     }
 
     public function getOrderStatus()
@@ -223,8 +224,8 @@ class DeliveryPanda implements ShippingProvidersInterface
       $err = curl_error($curl);
       curl_close($curl);
       $response_data = json_decode($response, true);
-      
-  
+
+
       // echo "<pre>"; print_r($response_data); die;
       if($response_data['success'] == 1) {
         $TrackResponse = @$response_data['TrackResponse'][0]['Shipment'];
@@ -262,7 +263,7 @@ class DeliveryPanda implements ShippingProvidersInterface
         }
         return $returnResponse;
       }else{
-        //throw new \Exception($response_data['message']);	
+        //throw new \Exception($response_data['message']);
       }
     }
   }

@@ -4,7 +4,7 @@
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
         <div class="col-md-12 col-sm-12 col-grid">
-            <div class="card p-3 text-black" id="pack_order">
+            <div class="card text-black" id="pack_order">
                 <div class="row container-fluid">
                     <?php if(Session::has('message')) { ?>
                     <div class="alert <?php echo Session::get('alert-class', 'alert-info') ?> alert-dismissible">
@@ -17,7 +17,7 @@
                             {{ csrf_field() }}
                             <div class="form-group">
                                 <div class="form-line">
-                                    <input type="text" name="order_id" class="form-control text-center" style="background: none" autofocus="" autocomplete="off" placeholder="Scan By Order ID">
+                                    <input type="text" name="order_id" class="form-control text-center mt-3" style="background: none" autofocus="" autocomplete="off" placeholder="Scan By Order ID">
                                 </div>
                             </div>
                         </form>
@@ -30,6 +30,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="panel-heading">Pack Order</div>
                 <div class="row" id="pack_order_row">
 
                 </div>
@@ -38,17 +39,18 @@
     </div>
 </div>
 @endsection
+@push('scripts')
 @if( session('packed_order_id') > 0 )
-<input type="hidden" value="{{ URL::to('orders/print-awb?submit=awb&order_id[]='.session('packed_order_id')) }}" id="popup_url">
+<input type="hidden" value="{{ URL::to('orders/print/awb?submit=awb&order_id[]='.session('packed_order_id')) }}" id="popup_url">
 <script>
-  var popup_url = $('#popup_url').val();
-  var popup_window = window.open(popup_url, 'Print AWB', 'width=500,height=600');
-  popup_window.focus();
-  popup_window.print();
-  popup_window.focus();
+var popup_url = $('#popup_url').val();
+alert(popup_url);
+var popup_window = window.open(popup_url, 'Print AWB', 'width=500,height=600');
+popup_window.focus();
+popup_window.print();
+popup_window.focus();
 </script>
 @endif
-@push('scripts')
 <script type="text/javascript">
 $(document).delegate('#form_pack_order', 'submit', function(e) {
     e.preventDefault();

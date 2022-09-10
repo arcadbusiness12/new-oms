@@ -16,13 +16,18 @@
                     </div>
                 </div>
             </div>
-            <div class="card no-b p-3 mt-3">
+            <div class="card no-b mt-3">
                 <div class="row clearfix">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div class="panel panel-default">
                             <div class="panel-heading text-right">
                                 <div class="row">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        <div class="pull-left text-left s-16 text-black">
+                                            <strong>Airway Bill Generation</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
                                         <div class="generate-awb-btn pull-right">
                                             <button data-toggle="modal" data-target="#forward_for_awb_generation_options" class="btn btn-success waves-effect pull-left btn-generate-awb">Generate AirwayBills</button>
                                         </div>
@@ -32,7 +37,7 @@
                             <div class="body table-responsive in-process-orders">
                                 <table class="table orders-table">
                                     <thead>
-                                        <tr>
+                                        <tr  style="background-color: #3f51b5;color:white">
                                             <th>&nbsp;</th>
                                             <th>Order ID</th>
                                             <th>Customer</th>

@@ -18,7 +18,7 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
+                        <div class="panel-heading">Online Orders</div>
                           @if(session()->has('success'))
                             <div role="alert" class="alert alert-success">
                             {{ session()->get('success') }}
@@ -61,7 +61,7 @@
                                           <div class="normal-order-progress">
                                             @include('orders.order_progress_bar')</td>
                                           </div>
-                                          
+
                                     </tr>
                                     @if( $order->orderd_products )
                                         <tr style="border-bottom: 7px solid #e9e9e9 !important">
