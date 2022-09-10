@@ -863,12 +863,12 @@ class OrdersAjaxController extends Controller {
 						}
 
 						if($omsProduct && $optionData){
-	//                      dd($omsProduct->product_id,
-	//                              $optionData->option_id,
-	//                              $optionData->option_value_id,
-	//                              $order_product->quantity
-	//
-	//                       );
+                        //                      dd($omsProduct->product_id,
+                        //                              $optionData->option_id,
+                        //                              $optionData->option_value_id,
+                        //                              $order_product->quantity
+                        //
+                        //                       );
                             if( $oms_store == 1 ){
                                 $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($optionData->option_id,$optionData->option_value_id);
                             }elseif( $oms_store == 2 ){
@@ -928,7 +928,7 @@ class OrdersAjaxController extends Controller {
 					$omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_IN_QUEUE_PICKING_LIST;
 					$omsOrder->{OmsOrdersModel::FIELD_ORDER_ID} = $orderID;
 					$omsOrder->{OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = 0;
-					$omsOrder->picklist_courier = RequestFacad::get('courier_id');
+					$omsOrder->picklist_courier = $courierId;
 					$omsOrder->store = $oms_store;
 					$omsOrder->save(); // Save the record and start processing of order.
                     if( $oms_store == 1 ){

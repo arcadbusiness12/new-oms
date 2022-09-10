@@ -27,7 +27,7 @@
                 </select>
             </div>
             <div class="col-sm-3">
-                <button class="btn btn-success forward_order_to_oms popup_btn_forword d-none">Forword</button>
+                <button class="btn btn-success forward_order_to_oms popup_btn_forword d-none active">Forword</button>
             </div>
             <div class="table-responsive p-1 pt-3" style="max-height: 300px;">
                 <table class="table table-bordered table-hover">
@@ -53,7 +53,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger active" data-dismiss="modal">Close</button>
         {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
 
 

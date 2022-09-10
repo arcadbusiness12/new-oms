@@ -44,7 +44,7 @@
 <input type="hidden" value="{{ URL::to('orders/print/awb?submit=awb&order_id[]='.session('packed_order_id')) }}" id="popup_url">
 <script>
 var popup_url = $('#popup_url').val();
-alert(popup_url);
+//alert(popup_url);
 var popup_window = window.open(popup_url, 'Print AWB', 'width=500,height=600');
 popup_window.focus();
 popup_window.print();

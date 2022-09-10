@@ -152,7 +152,7 @@
               </div>
               <div class="col-sm-4">
                 <div class="form-group">
-                    <button type="submit" id="search_filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> Filter</button>
+                    <button type="submit" id="search_filter" class="btn btn-primary active pull-right"><i class="fa fa-filter"></i> Filter</button>
                 </div>
               </div>
           </div>

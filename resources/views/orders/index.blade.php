@@ -105,17 +105,17 @@
                                         <td colspan="11">
                                                     <div class="row">
                                                         <div class="col-1">
-                                                            <a class="btn btn-sm btn-warning darken-1" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</a>
+                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
                                                         </div>
                                                         @if ( $order->oms_order_status < 2 )
                                                              @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
                                                                 <div class="col-1">
-                                                                    <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
+                                                                    <a  href="javascript:void(0)" class="waves-effect waves-blue active" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
                                                                         <form action="{{URL::to('orders/cancel-order')}}" id="cancel_order_form_{{ $order->order_id }}">
                                                                             {{csrf_field()}}
                                                                             <input type="hidden" name="order_id" value="{{ $order->order_id }}" />
                                                                             <input type="hidden" name="store" value="{{ $order->store }}" />
-                                                                            <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm cancel-order">
+                                                                            <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm active cancel-order">
                                                                                 Cancel Order
                                                                             </button>
                                                                         </form>
@@ -123,7 +123,7 @@
                                                                 </div>
                                                                 <div class="col-1">
                                                                     <a data-orderid={{ $order->order_id }} data-store={{ $order->store }} data-toggle="modal" data-target="#addressModal"
-                                                                    class="btn btn-info btn-sm  btn-edit-customer-adress">Edit Details</a>
+                                                                    class="btn btn-info btn-sm active btn-edit-customer-adress">Edit Details</a>
                                                                 </div>
                                                             @endif
                                                         @endif
@@ -132,14 +132,14 @@
                                                                 @if( $order->reship == "-1" )
                                                                     <span class="badge badge-warning orange darken-1">Reship Request</span>
                                                                 @else
-                                                                    <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
+                                                                    <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary active btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
                                                                 @endif
                                                             </div>
                                                         @endif
                                                         <div class="col-sm-7">
                                                         </div>
                                                         <div class="col-sm-2">
-                                                            <a  href="javascript:void(0)" class="waves-effect waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
+                                                            <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
                                                                 <form action="{{ route('orders.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
                                                                     {{csrf_field()}}
                                                                     <input type="hidden" name="order_id" value="{{$order->order_id}}" />
@@ -147,7 +147,7 @@
                                                                     @if(@$old_input['order_status_id']==1)
                                                                         @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
                                                                         <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                            class="btn btn-success btn-sm btn-forward-pick-list float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
+                                                                            class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
                                                                             Forward to Picking</button>
                                                                         @endif
                                                                     @endif
@@ -330,17 +330,17 @@ function getOrderHistory(phone) {
         }
         if (response !== "") {
             swal({ title: "<h2>Error!</h3>", html: true, text: response, type: "error" });
-            $('[data-toggle="tooltip"]').tooltip('destroy');
-            $('.popup_btn_forword').addClass('hidden');
+            //$('[data-toggle="tooltip"]').tooltip('destroy');
+            $('.popup_btn_forword').addClass('d-none');
             $('#courierModal').modal('hide');
         } else {
-            $('[data-toggle="tooltip"]').tooltip('destroy');
+            //$('[data-toggle="tooltip"]').tooltip('destroy');
             $(id_to_remove).remove();
             swal("Success!", "Order Forwarded", "success");
             setTimeout(function() {
                 swal.close();
             }, 1500);
-            $('.popup_btn_forword').addClass('hidden');
+            $('.popup_btn_forword').addClass('d-none');
             $('#courierModal').modal('hide');
         }
 
