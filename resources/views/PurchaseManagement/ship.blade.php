@@ -92,7 +92,7 @@
                                                             <label>&nbsp;</label>
                                                             <?php } ?>
                                                             <div class="">
-                                                            <input type="hidden" name="product[<?php echo $product['product_id'] ?>][type]" value="<?php echo $product['type'] ?>">
+                                                            <input type="hidden" name="product[<?php echo $product['product_id'] ?>][type]" value="<?php echo $product['type'] ?> sdfssd">
                                                             <?php if(isset($product['options'])) {  ?>
                 
                                                             <?php if(isset($product['options']['static']) && count($product['options']) == 1) {  ?>
