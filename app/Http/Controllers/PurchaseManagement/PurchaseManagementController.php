@@ -819,20 +819,35 @@ class PurchaseManagementController extends Controller
                 $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity - shipped_quantity) as unit'),'order_product_quantity_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
                 $product['unit'] = $units['unit'];
                 $options = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','product_option_value_id','name','value')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('product_option_id','product_option_value_id')->orderBy('name', 'ASC')->get()->toArray();
-                
+                $ship_options = array();
                  if($options && is_array($options)){
                     foreach($options as $k => $option) {
                         $quantity = OmsPurchaseOrdersProductQuantityModel::select('order_quantity','shipped_quantity')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
                         
                         if($quantity['order_quantity'] > $quantity['shipped_quantity']){ 
                             if($option['product_option_id'] == $option_id) {
-                                $options[$k]['static'] = 'static';
+                                $ship_options['static'] = array(
+                                    'order_product_quantity_id'     =>  $option['order_product_quantity_id'],
+                                    'product_option_id'             =>  $option['product_option_id'],
+                                    'product_option_value_id'       =>  $option['product_option_value_id'],
+                                    'name'                          =>  $option['name'],
+                                    'value'                         =>  $option['value'],
+                                    'quantity'                      =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                                );
                             }else{
-                                $options[$k]['static'] = 'size';
+                                $ship_options[] = array(
+                                    'order_product_quantity_id'     =>  $option['order_product_quantity_id'],
+                                    'product_option_id'             =>  $option['product_option_id'],
+                                    'product_option_value_id'       =>  $option['product_option_value_id'],
+                                    'name'                          =>  $option['name'],
+                                    'value'                         =>  $option['value'],
+                                    'quantity'                      =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                                );
                             }
                             $options[$k]['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                         }
                   }
+                //   dd($options);
                     $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                     $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
                     
@@ -841,7 +856,7 @@ class PurchaseManagementController extends Controller
                     $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                     $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
                 }
-                $product['options'] = $options;
+                $product['options'] = $ship_options;
                 
             }
         }

@@ -69,7 +69,7 @@
                                                     <div class="options-label">
                                                         <?php if(isset($product['options'])) {  ?>
                                                         <?php foreach ($product['options'] as $key => $option) {  ?>
-                                                        <?php if($option['static'] !== 'static') { ?>
+                                                        <?php if($key !== 'static') { ?>
                                                             <div class="box-label">
                                                                 <?php echo $option['name'] ?> - <?php echo $option['value'] ?>
                                                             </div>
@@ -91,24 +91,24 @@
                                                             <?php } else { ?>
                                                             <label>&nbsp;</label>
                                                             <?php } ?>
-                                                            <div class="">
-                                                            <input type="hidden" name="product[<?php echo $product['product_id'] ?>][type]" value="<?php echo $product['type'] ?> sdfssd">
+                                                            <div>
+                                                            <input type="hidden" name="product[<?php echo $product['product_id'] ?>][type]" value="<?php echo $product['type'] ?>">
                                                             <?php if(isset($product['options'])) {  ?>
                 
                                                             <?php if(isset($product['options']['static']) && count($product['options']) == 1) {  ?>
-                                                                <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][static][order_product_quantity_id]" value="<?php echo $option['order_product_quantity_id'] ?> static">
+                                                                <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][static][order_product_quantity_id]" value="<?php echo $option['order_product_quantity_id'] ?>">
                                                                 <input type="text" value="<?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $option['quantity'] ?>" class="form-control" readonly/>
                                                             <?php }else{ ?>
                                                                 <?php foreach ($product['options'] as $key => $option) { ?>
-                                                                    <?php if($option['static'] !== 'static') { ?>
-                                                                    <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][<?php echo $key ?>][order_product_quantity_id]" value="<?php echo $option['order_product_quantity_id'] ?> not-static">
-                                                                    <input type="text" value="<?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $option['quantity'] ?> " class="form-control" readonly/>
+                                                                    <?php if($key !== 'static') { ?>
+                                                                    <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][<?php echo $key ?>][order_product_quantity_id]" value="<?php echo $option['order_product_quantity_id'] ?>">
+                                                                    <input type="text" value="<?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $option['quantity'] ?>" class="form-control" readonly/>
                                                                     <?php } ?>
                                                                 <?php } ?>
                                                             <?php } ?>
                                                             
                                                             <?php } else { ?>
-                                                                <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][0][order_product_quantity_id]" value="<?php echo $product['order_product_quantity_id'] ?> else">
+                                                                <input type="hidden" name="product[<?php echo $product['product_id'] ?>][option][0][order_product_quantity_id]" value="<?php echo $product['order_product_quantity_id'] ?>">
                                                                 <input type="text" value="<?php echo $product['quantity'] ?>" class="form-control" readonly/>
                                                             <?php } ?>
                                                             </div>
@@ -122,7 +122,7 @@
                                                                 <input type="text" pattern="^[0-9][0-9]*$" title="Enter greater than or equal to 0" name="product[<?php echo $product['product_id'] ?>][option][static][shipped_quantity]" class="form-control" required />
                                                             <?php }else{ ?>
                                                                 <?php foreach ($product['options'] as $key => $value) { ?>
-                                                                    <?php if($option['static'] !== 'static') { ?>
+                                                                    <?php if($key !== 'static') { ?>
                                                                     <input type="text" pattern="^[0-9][0-9]*$" title="Enter greater than or equal to 0" name="product[<?php echo $product['product_id'] ?>][option][<?php echo $key ?>][shipped_quantity]" class="form-control" required />
                                                                     <?php } ?>
                                                                 <?php } ?>
