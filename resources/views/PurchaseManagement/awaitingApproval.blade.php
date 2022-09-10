@@ -45,13 +45,13 @@
                            <?php if($orders['data']) { ?>
                             <?php foreach ($orders['data'] as $order) { ?>
                             <div class="card order_list mb-4">
-                                <form action="<?php echo URL::to('/purchase_manage/update_awaiting_approval_order') ?>" method="post" class="form-awaiting-approval">
+                                <form action="<?php echo route('update.awaiting.approval.order') ?>" method="post" class="form-awaiting-approval">
                                     {{csrf_field()}}
                                     <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                      <div class="row top_row">
                                         <div class="col-sm-4 col-grid text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             
-                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-info"><i class="icon icon-pencil"></i></a>
+                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-primary"><i class="icon icon-pencil"></i></a>
                                             
                                         </b>
                                     </div>

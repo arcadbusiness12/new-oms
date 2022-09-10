@@ -99,7 +99,7 @@
                                     </div>
                                 </div>
                                 <?php } ?>
-                                <div class="row action_row">
+                                <div class="row action_row mt-2">
                                     <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
                                     <div class="col-xs-6 col-sm-8 text-right">
                                         <button type="button" class="btn btn-default collapse-comment" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'], 2); ?></b></button>
@@ -112,7 +112,7 @@
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-6 col-sm-2">
-                                        <a href="<?php echo URL::to('/purchase_manage/ship/' . $order['order_id']) ?>"><button type="button" class="btn btn-success form-control">Ship</button></a>
+                                        <a href="<?php echo route('ship.order', $order['order_id']) ?>"><button type="button" class="btn btn-success form-control">Ship</button></a>
                                     </div>
             
                                     <?php } else { 
@@ -121,17 +121,20 @@
                                     if($order['cancelled_status'] && $order['cancelled_status']['status'] == 0){ 
                                         $class = 'col-xs-6 col-sm-8'; ?>
                                     <div class="col-xs-6 col-sm-4">
-                                        <label class="btn-block text-danger">Supplier Cancelled Order</label>
-                                        <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
-                                        <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ URL::to('/purchase_manage/confirmed/update_request') }}"><b>Accept</b></button>
-                                        <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ URL::to('/purchase_manage/confirmed/update_request') }}"><b>Reject</b></button>
+                                        <div class="ml-4">
+                                            <label class="btn-block text-danger"><strong> Supplier Cancelled Order </strong></label>
+                                            <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
+                                            <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Accept</b></button>
+                                            <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Reject</b></button>
+                                        </div>
                                     </div>
                                     <div class="modal fade" id="modal-oder-comment<?php echo $order['order_id'] ?>">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                                                     <h4 class="modal-title">Reason</h4>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                    
                                                 </div>
                                                 <div class="modal-body">
                                                     <p><?php echo $order['cancelled_status']['reason'] ?></p>
@@ -153,13 +156,13 @@
                                 </div>
                                 <!--  comment code start here  -->
                                 <?php foreach ($order['order_histories'] as $history) { ?>
-                                    <div class="pl-4 pr-4 text-black">
+                                    <div class="pl-4 pr-4 mt-2 text-black">
                                         <label><strong><?php echo $history['name'] ?>:</strong></label>
                                         <i><?php echo $history['comment'] ?></i>
-                                        <i style="float: right;"><?php echo $history['created_at']; ?></i>
+                                        <i style="float: right;"><?php echo date('Y-m-d', strtotime($history['created_at'])); ?></i>
                                     </div>
                                 <?php } ?>
-                                <form action="<?php echo URL::to('/purchase_manage/update_awaiting_action_order') ?>" method="post">
+                                <form action="<?php echo route('update.awaiting.action.order') ?>" method="post">
                                   {{csrf_field()}}
                                   <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                   <div class="row approval-comment pl-4 pr-4 pb-4" style="-webkit-display:-webkit-flex;-webkit-flex-wrap:wrap;-ms-display:-ms-flexbox;-ms-flex-wrap:wrap;display:flex;flex-wrap:wrap;flex-direction:row;">
@@ -248,7 +251,28 @@
     </div>
 </div>
 @endsection
-
+<div class="modal fade" id="model-cancel-order">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('confirmed.order.cancelled') }}" method="post">
+                {{ csrf_field() }}
+            <div class="modal-header">
+                <h4 class="modal-title">Reason For Cancel</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="order_id" />
+                <input type="hidden" name="supplier" />
+                <input type="hidden" name="confirmed_action" />
+                <textarea name="comment" rows="5" class="form-control" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success submit-cancel-confirmed-order">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
 @push('scripts')
 <script type="text/javascript" src="{{URL::asset('assets/js/purchase_management.js') }}"></script>
 @endpush

@@ -769,6 +769,86 @@ class PurchaseManagementController extends Controller
         }
     }
 
+    public function updateAwaitingApprovalOrder(Request $request) {
+        $order_id = $request->order_id;
+            if($request->submit == 'approve') {
+                $exist = OmsPurchaseOrdersModel::where('order_id', $order_id)->where('order_status_id', 2)->exists();
+                if(!$exist) {
+                    OmsPurchaseOrdersModel::where('order_id', $order_id)->update(['order_status_id'=> 2]);
+                    $this->addOrderStatusHistory($order_id, 2);
+                    if($request->instruction) {
+                        $orderHistory = new OmsPurchaseOrdersHistoryModel();
+                        $orderHistory->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+                        $orderHistory->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Admin';
+                        $orderHistory->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
+                        $orderHistory->save();
+                    }
+                    //update product listing link in inventory_product table start
+                    if($request->product_listing_link) {
+                        foreach($request->porudct_listing_links as $sku => $link){
+                            OmsInventoryProductModel::where('sku', $sku)->update(['supplier_link'=>$link]);
+                        }
+                    }
+                    return redirect()->route('awaiting.approval.purchase.orders')->with('message', 'Your Order #'.$order_id.' approved successfully.');
+                }else {
+                    return redirect()->route('awaiting.approval.purchase.orders')->with('error_message', 'You have already approved your order!');
+                }
+            }elseif($request->submit == 'cancel') {
+                $exist = OmsPurchaseOrdersModel::where('order_id', $order_id)->where('order_status_id', 7)->exists();
+                if(!$exist) {
+                    OmsPurchaseOrdersModel::where('order_id', $order_id)->update(['order_status_id' => 7]);
+                    return response()->json(array('success' => true, 'message' => 'Your Order #'.$order_id.' cancelled successfully.'));
+                }else {
+                    return response()->json(array('success' => true, 'message' => 'You have already cancelled your order!'));
+                }
+            }else {
+                return redirect()->route('awaiting.approval.purchase.orders')->with('error_message', 'Something went wrong, please try again!');
+            }
+    }
+
+    public function orderShipping($order_id = '') {
+        if(empty($order_id) || session('role') == 'ADMIN') {
+            return redirect()->route('to.be.ship.order');
+        }
+        $order = OmsPurchaseOrdersModel::with(['orderProducts','orderHistories'])->where('order_id', $order_id)->whereIn('order_status_id', [2,4])
+                                         ->where('supplier', session('user_id'))->first();
+        
+        if($order) {
+            $option_id = OmsSettingsModel::get('product_option','color');
+            foreach($order->orderProducts as $product) {
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity - shipped_quantity) as unit'),'order_product_quantity_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                $product['unit'] = $units['unit'];
+                $options = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','product_option_value_id','name','value')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('product_option_id','product_option_value_id')->orderBy('name', 'ASC')->get()->toArray();
+                
+                 if($options && is_array($options)){
+                    foreach($options as $k => $option) {
+                        $quantity = OmsPurchaseOrdersProductQuantityModel::select('order_quantity','shipped_quantity')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
+                        
+                        if($quantity['order_quantity'] > $quantity['shipped_quantity']){ 
+                            if($option['product_option_id'] == $option_id) {
+                                $options[$k]['static'] = 'static';
+                            }else{
+                                $options[$k]['static'] = 'size';
+                            }
+                            $options[$k]['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                        }
+                  }
+                    $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                    $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+                    
+                }else {
+                    $quantity = OmsPurchaseOrdersProductQuantityModel::select('order_quantity','shipped_quantity')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                    $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                    $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+                }
+                $product['options'] = $options;
+                
+            }
+        }
+        // dd($order->toArray());
+        return view(self::VIEW_DIR.".ship", ["order" => $order]);
+    }
+
     public function supplierCancelledAwaitingActionOrderRequest(Request $request) {
         if($request->order_id && $request->supplier && $request->comment) {
             $exist = OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->where('supplier', $request->supplier)->exists();
@@ -791,12 +871,32 @@ class PurchaseManagementController extends Controller
     public function updateAwaitingActionCancelled(Request $request) {
         if($request->action == 'accept') {
             OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(['order_status_id' => 7]);
-            OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->update(['status' => 2]);
+            OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->update(['status' => 1]);
             Session::flash('message', 'Your Order #'. $request->order_id .' cancelled successfully.');
 			Session::flash('alert-class', 'alert-success');
 	    	return response()->json(array('redirect' => true));
         }elseif($request->action == 'reject') {
             OmsPurchaseAwaitingActionCancelledModel::where('order_id', $request->order_id)->update(['status' => 2]);
+            Session::flash('message', 'Your Order #'. $request->order_id .' request rejected successfully.');
+			Session::flash('alert-class', 'alert-success');
+	    	return response()->json(array('redirect' => true));
+        }else{
+            Session::flash('message', 'Something went wrong!');
+            Session::flash('alert-class', 'alert-danger');
+            return response()->json(array('redirect' => true));
+        }
+    }
+
+    public function updateConfirmedActionCancelled(Request $request) {
+        if($request->action == 'accept') {
+            OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(['order_status_id' => 7]);
+            OmsPurchaseConfirmedCancelledModel::where('order_id', $request->order_id)->update(['status' => 1]);
+            
+            Session::flash('message', 'Your Order #'. $request->order_id .' cancelled successfully.');
+			Session::flash('alert-class', 'alert-success');
+	    	return response()->json(array('redirect' => true));
+        }elseif($request->action == 'reject') {
+                OmsPurchaseConfirmedCancelledModel::where('order_id', $request->order_id)->update(['status' => 2]);
             Session::flash('message', 'Your Order #'. $request->order_id .' request rejected successfully.');
 			Session::flash('alert-class', 'alert-success');
 	    	return response()->json(array('redirect' => true));
@@ -902,6 +1002,27 @@ class PurchaseManagementController extends Controller
             }
         }
         //update product listing link in inventory_product table end
+    }
+
+    public function confirmedOrderCancelled(Request $request) {
+        $order_id = $request->order_id;
+        if($order_id) {
+            $exist = OmsPurchaseConfirmedCancelledModel::where('order_id', $order_id)->where('supplier', $request->supplier)->exists();
+            if($exist) {
+                OmsPurchaseConfirmedCancelledModel::where('order_id', $order_id)->where('supplier', $request->supplier)->update(['reason' => $request->comment, 'status' => 0]);
+            }else {
+                $OmsPurchaseConfirmedCancelledModel = new OmsPurchaseConfirmedCancelledModel();
+	    		$OmsPurchaseConfirmedCancelledModel->{OmsPurchaseConfirmedCancelledModel::FIELD_ORDER_ID} = $order_id;
+	    		$OmsPurchaseConfirmedCancelledModel->{OmsPurchaseConfirmedCancelledModel::FIELD_SUPPLIER} = $request->supplier;
+	    		$OmsPurchaseConfirmedCancelledModel->{OmsPurchaseConfirmedCancelledModel::FIELD_REASON} = $request->comment;
+	    		$OmsPurchaseConfirmedCancelledModel->{OmsPurchaseConfirmedCancelledModel::FIELD_STATUS} = 0;
+	    		$OmsPurchaseConfirmedCancelledModel->save();
+            }
+
+              return redirect()->back()->with('message', 'Your Order #'. $order_id .' cancelled request send successfully.');
+        }else {
+            return redirect()->back()->with('message', 'Something went wrong!');
+        }
     }
 
     public function getGroupName($sku) {

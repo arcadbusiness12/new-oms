@@ -839,6 +839,7 @@ $(document).ready(function() {
             data: {
                 order_id: $this.attr('data-order-id'),
                 action: $this.val(),
+                click_action: $this.attr('data-click-action'),
             },
             beforeSend: function() {
                 $this.prop('disabled', true);
