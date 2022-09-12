@@ -95,6 +95,9 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::get('/awb/generated', 'awbGenerated')->name('orders.awb.generated');
         Route::get('/ship/order', 'shipOrdersToCourier')->name('orders.ship.order');
         Route::post('/ship/orders/to/courier', 'shipOrders')->name('orders.ship.orders.to.courier');
+        Route::get('/return/order', 'returnOrder')->name('orders.return.order');
+        Route::post('/get/return/order', 'getReturnOrder')->name('orders.get.return.order');
+
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
@@ -104,6 +107,8 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/forward/for/shipping', 'forwardForShipping')->name('orders.forward.for.shipping');
         Route::any('/print/awb', 'printAwb')->name('orders.print.awb');
         Route::post('/get/order/id/from/airwaybill', 'getOrderIdFromAirwayBill')->name('orders.get.order.id.from.airwaybill');
+        Route::post('/get/user/order/history', 'userOrderHistory')->name('get.user.order.history');
+        Route::post('/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('orders.forword.for.awb.generation');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

@@ -99,7 +99,7 @@ function fetchOrderDetails(orderID) {
       method: 'POST',
       // url: APP_URL + '/orders/getOrderDetail',
       // data: { orderId: orderId },
-      url: APP_URL + '/orders/get/order/id/from/airwaybill',
+      url: APP_URL + '/get/order/id/from/airwaybill',
       data: { airwaybillno: orderId },
       headers: {
           'X-CSRF-Token': $('input[name="_token"]').val()

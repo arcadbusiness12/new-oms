@@ -18,7 +18,7 @@
                     </div>
                 </div>
                  <div class="body table-responsive">
-                    <table class="table">
+                    <table class="table table-borderd">
                         <thead>
                             <tr style="background-color: #3f51b5;color:white">
                                 <th>

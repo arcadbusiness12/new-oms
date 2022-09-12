@@ -62,8 +62,8 @@
 
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-          <input type="submit" value="Update" class="btn btn-success">
+          <button type="button" class="btn btn-danger active" data-dismiss="modal">Close</button>
+          <input type="submit" value="Update" class="btn btn-success active">
         </div>
       </form>
     </div>
