@@ -1038,7 +1038,7 @@ class PurchaseManagementController extends Controller
                 return redirect()->route('confirmed.purchase.orders')->with('message', 'Your Order #'.$shipped_id.' shipped successfully.');
             }
         }else {
-            return redirect()->route('confirmed.purchase.orders')->with('error_message', 'Something went wrong, please try again!');
+            return redirect()->back()->with('error_message', 'Do not enter greater than order quantity!');
         }
     }
 
