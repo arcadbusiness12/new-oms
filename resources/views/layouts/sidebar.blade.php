@@ -78,7 +78,7 @@
                                         </li>
                                         <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Reshipment Approval</a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Return Orders  </a>
+                                        <li class="@if( Request::url() == route('orders.return.order') ) active @endif" ><a href="{{ route('orders.return.order') }}">Return Orders  </a>
                                         </li>
                                         <li class="@if( Request::url() == route('orders.awb.generated') ) active @endif"><a href="{{ route('orders.awb.generated') }}">Airway Bill History  </a>
                                         </li>
