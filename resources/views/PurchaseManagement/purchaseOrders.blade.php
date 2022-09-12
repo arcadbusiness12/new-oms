@@ -50,7 +50,7 @@
                                     </div>
                                     <div class="col-sm-12 text-right">
                                         <br>
-                                        <button type="submit" id="search_filter" class="btn btn-primary">Search</button>
+                                        <button type="submit" id="search_filter" class="btn btn-primary active">Search</button>
                                         <!-- <button type="button" onclick="$('#add_product_to_order').attr('action', '<?php echo URL::to('/inventory_manage/reportExport'); ?>').submit();" class="btn btn-danger">Export</button> -->
                                         <!-- <button type="button" id="subimt-place-order" class="btn btn-info">Order</button> -->
                                     </div>
@@ -97,7 +97,7 @@
                                                         </div>
                                                         <?php if($order['order_status_id'] < 1) { ?>
                                                         <div>
-                                                            <a href="<?php echo route('edit.purchase.orders', $order['order_id']) ?>" class="btn btn-primary"><i class="icon icon-pencil"></i></a>
+                                                            <a href="<?php echo route('edit.purchase.orders', $order['order_id']) ?>" class="btn btn-primary active"><i class="icon icon-pencil"></i></a>
                                                         </div>
                                                         <?php } ?>
                                                     </div>
@@ -154,7 +154,7 @@
                                                         </div>
                                                         <div class="col-xs-2 col-sm-2 col-grid">
                                                             {{-- <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button> --}}
-                                                            <button class="btn btn-default form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                            <button class="btn btn-default active form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                                 Details
                                                             </button>
                                                         </div>
@@ -236,7 +236,7 @@
                                                         <div class="row button-row">
                                                             <div class="col-xs-12 col-sm-4">
                                                                 
-                                                                <button type="button" class="btn btn-default form-control" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
+                                                                <button type="button" class="btn btn-default active form-control" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                             </div>
                                                             <div class="col-sm-8"></div>
                                                         </div>
@@ -303,7 +303,7 @@
                                                                     <i><?php echo $shipped_product['model'] ?></i>
                                                                 </div>
                                                                 <div class="col-xs-2 col-sm-2">
-                                                                    <button class="btn btn-default form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                                    <button class="btn btn-default active form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                                         Details
                                                                     </button>
                                                                 </div>
@@ -379,7 +379,7 @@
                                                                 <?php } ?>
                                                                 <div class="row button-row">
                                                                     <div class="col-xs-12 col-sm-4">
-                                                                        <button type="button" class="btn btn-default form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] . $shipped_order['shipped_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
+                                                                        <button type="button" class="btn btn-default active form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] . $shipped_order['shipped_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                                     </div>
                                                                     <div class="col-sm-8"></div>
                                                                 </div>

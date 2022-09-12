@@ -169,7 +169,8 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/confirmed') !== false || strpos(Request::url(), 'PurchaseManagement/ship/order') !== false) active @endif">
                                     <a href="{{route('confirmed.purchase.orders')}}"><i class="icon icon-check-circle"></i>Confirm</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-ship"></i>To Be Shipped</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/get/to/be/shipped') !== false) active @endif">
+                                    <a href="{{route('get.to.be.shipped')}}"><i class="icon icon-ship"></i>To Be Shipped</a>
                                 </li>
                                 <li><a href="panel-page-products-create.html"><i class="icon icon-ship"></i>Shipped</a>
                                 </li>

@@ -864,5 +864,15 @@ $(document).ready(function() {
         $('#model-cancel-order').modal('show');
     });
 
+    $('.shippedTo').on('change', function() {
+        if($(this).attr('data-action') == 'forwarder') {
+            $('.amout-input').css('display', 'inline-block');
+            $('.amount-input-field').attr('required', true);
+        }else {
+            $('.amout-input').css('display', 'none');
+            $('.amount-input-field').val('');
+            $('.amount-input-field').attr('required', false);
+        }
+    })
  
 });
