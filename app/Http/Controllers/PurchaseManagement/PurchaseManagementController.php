@@ -298,6 +298,12 @@ class PurchaseManagementController extends Controller
             'orderProducts' => function($q) use($relationWhereClause) {
                 $q->where($relationWhereClause);
             },
+            'orderProductQuantities' => function($oqu) {
+                $oqu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
             'orderProducts.orderProductQuantities' => function($qu) {
                 $qu->orderBy('order_product_quantity_id', 'ASC');
             },
@@ -330,6 +336,7 @@ class PurchaseManagementController extends Controller
                     }
                 }
             }
+            // dd($confirmed_orders->toArray());
          $counter = $this->productCount();
         $search_form_action = \URL::to('/PurchaseManagement/confirmed');
         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();

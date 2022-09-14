@@ -78,6 +78,7 @@
                                                 <?php $units = 0; ?>
                                                 <?php foreach ($product['order_product_quantities'] as $quantity) { 
                                                     if($product['product_id'] != $quantity['order_product_id']) {
+                                                        $units = $quantity['order_quantity'];
                                                                                 continue;
                                                                             } 
                                                     ?>
@@ -122,10 +123,10 @@
                                         $class = 'col-xs-6 col-sm-8'; ?>
                                     <div class="col-xs-6 col-sm-4">
                                         <div class="ml-4">
-                                            <label class="btn-block text-danger"><strong> Supplier Cancelled Order </strong></label>
+                                            <label class="btn-block text-danger"><strong> Supplier Cancelled Order {{session('role')}}</strong></label>
                                             <button type="button" class="btn btn-default active" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
-                                            <button type="button" name="update_request" class="btn btn-success active btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Accept</b></button>
-                                            <button type="button" name="update_request" class="btn btn-danger active btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Reject</b></button>
+                                            <button type="button" name="update_request" class="btn btn-success active btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('update.confirmed.approval.order') }}"><b>Accept</b></button>
+                                            <button type="button" name="update_request" class="btn btn-danger active btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('update.confirmed.approval.order') }}"><b>Reject</b></button>
                                         </div>
                                     </div>
                                     <div class="modal fade" id="modal-oder-comment<?php echo $order['order_id'] ?>">
