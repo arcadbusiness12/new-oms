@@ -1133,7 +1133,7 @@ class PurchaseManagementController extends Controller
             }
             
         }
-        dd($orders->toArray());
+        // dd($orders->toArray());
         $statuses = array(
             'to_be_shipped' =>  4,
             'shipped'       =>  5,
