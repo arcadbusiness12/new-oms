@@ -304,12 +304,6 @@ class PurchaseManagementController extends Controller
             'orderProductQuantities.productOptions' => function($qo) {
                 $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
-            'orderProducts.orderProductQuantities' => function($qu) {
-                $qu->orderBy('order_product_quantity_id', 'ASC');
-            },
-            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
-                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
-            },
             'orderHistories','orderSupplier','orderTotals'
             ])->where('order_status_id', 2)->where($whereClause)
             ->orderBy('oms_purchase_order.order_id', 'DESC')
@@ -323,17 +317,25 @@ class PurchaseManagementController extends Controller
                 $order['cancelled_status'] = $cancelled_status;
                 foreach($order->orderProducts as $product) {
                     $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
-                    foreach($product->orderProductQuantities as $quantity) {
-                        $confirmed_options = array();
-                        foreach($quantity->productOptions as $option) {
-                            if($option['product_option_id'] == $option_id){
-                                $option['static'] = 'static';
-                            }else{
-                                $option['static'] = 'size';
+                    $quantities = OmsPurchaseOrdersProductQuantityModel::with('productOptions')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->get();
+                    $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
+                    // dd($units);
+                    $product['unit'] = $units->unit;    
+                    $confirmed_options = array();
+                        foreach($quantities as $quantity) {
+                            // dd($quantity);
+                            foreach($quantity->productOptions as $option) {
+                                if($option['product_option_id'] == $option_id){
+                                    $option['static'] = 'static';
+                                }else{
+                                    $option['static'] = 'size';
+                                }
+                                
                             }
-                            
                         }
-                    }
+                        
+                        // dd($quantities);
+                    $product['quantities'] = $quantities;
                 }
             }
             // dd($confirmed_orders->toArray());

@@ -76,16 +76,14 @@
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
                                                 <?php $units = 0; ?>
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                <?php foreach ($product['quantities'] as $quantity) { 
                                                     if($product['product_id'] != $quantity['order_product_id']) {
-                                                        $units = $quantity['order_quantity'];
                                                                                 continue;
                                                                             } 
                                                     ?>
-                                                    <?php foreach ($quantity['product_options'] as $key => $option) { 
+                                                    <?php foreach ($quantity['productOptions'] as $key => $option) { 
                                                         
                                                         if($option['static'] !== 'static') { 
-                                                            $units += $quantity['order_quantity'];
                                                             ?>
                                                         <div class="box-label text-black">
                                                             <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity']; ?>
@@ -93,7 +91,7 @@
                                                     <?php } } ?>
                                                 <?php } ?>
                                                 <div class="box-label text-black">
-                                                    T. Units = <?php echo $units ?>
+                                                    T. Units = <?php echo $product['unit'] ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -196,14 +194,14 @@
                                                     <th>Total</th>
                                                 </tr>
                                                 <?php foreach ($order['order_products'] as $product) { ?>
-                                                    <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                    <?php foreach ($product['quantities'] as $quantity) { 
                                                         if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                         ?>
                                                         <tr>
-                                                        <?php if($quantity['product_options']) { ?>
-                                                        <?php foreach ($quantity['product_options'] as $key => $option) { if($option['static'] !== 'static') { ?>
+                                                        <?php if($quantity['productOptions']) { ?>
+                                                        <?php foreach ($quantity['productOptions'] as $key => $option) { if($option['static'] !== 'static') { ?>
                                                             <td><?php echo $option['name'] . ' - ' . $option['value']; ?></td>
                                                         <?php } } ?>
                                                         <?php }else{ ?>
