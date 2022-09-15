@@ -1122,11 +1122,29 @@ class PurchaseManagementController extends Controller
             $order['stock_cancel'] = $stock_cancel;
             foreach($order->orderProducts as $product) {
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+                foreach($product->orderProductQuantities as $quantity) {
+                foreach($quantity->productOptions as $option) {
+                    if($option['product_option_id'] == $option_id){
+                        $option['static'] = 'static';
+                    }else{
+                        $option['static'] = 'size';
+                    }
+                 }
+                }
             }
             if(count((array)$order->shippedOrders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
                     foreach($sorder->orderProducts as $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+                        foreach($sproduct->orderProductQuantities as $squantity) {
+                            foreach($squantity->productOptions as $option) {
+                                if($option['product_option_id'] == $option_id){
+                                    $option['static'] = 'static';
+                                }else{
+                                    $option['static'] = 'size';
+                                }
+                             }
+                            }
                     }
                     
                 }
