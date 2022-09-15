@@ -158,7 +158,7 @@
                                                             <td>-</td>
                                                         <?php } ?>
                                                             <?php if($quantity['order_quantity'] > 0) { ?>
-                                                            <td><?php echo $quantity['order_quantity'] - $quantity['shipped_quantity'] ?></td>
+                                                            <td><?php echo $quantity['order_quantity']?></td>
                                                             <td><?php echo number_format($quantity['price'],2); ?> -- {{$quantity['shipped_quantity']}}</td>
                                                             <td><?php echo number_format($quantity['total'],2); ?></td>
                                                             <?php } ?>
