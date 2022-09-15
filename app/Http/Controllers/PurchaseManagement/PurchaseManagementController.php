@@ -1051,8 +1051,97 @@ class PurchaseManagementController extends Controller
         }
     }
 
-    public function getToBeShipped() {
-        dd("Ok");
+    public function getToBeShipped(Request $request, $count = false) {
+        // dd("Ok");
+        $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+        $option_id = OmsSettingsModel::get('product_option','color');
+        $whereClause = [];
+        $relationWhereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+        }
+        if($request->supplier) {
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+            $whereClause[] = ['supplier', session('user_id')];
+        }
+        $shippedWhereClause = [];
+        if($request->order_status_id) {
+            $shippedWhereClause[] = ['status', $request->order_status_id];
+        }
+        $orders = OmsPurchaseOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },
+            'orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProducts.orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },
+            'shippedOrders' => function($sh) use($shippedWhereClause) {
+                $sh->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC')
+                    ->where('status', 1);
+            },
+            'shippedOrders.orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },
+            'shippedOrders.orderProducts',
+            'shippedOrders.orderProductQuantities' =>function($soproq) {
+                $soproq->orderBy('order_product_quantity_id', 'ASC');
+            },'shippedOrders.orderProducts.orderProductQuantities' =>function($soproq) {
+                $soproq->orderBy('order_product_quantity_id', 'ASC');
+            },
+            'shippedOrders.orderProducts.orderProductQuantities.productOptions' =>function($soproop) {
+                $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },
+            'orderSupplier'
+            
+        ]
+        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')
+        ->paginate(5)->appends($request->all());
+        if($count == true){ return $orders->count(); }
+        foreach($orders as $order) {
+            $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->whereNull('shiped_order_id')->exists();
+            $order['stock_cancel'] = $stock_cancel;
+            foreach($order->orderProducts as $product) {
+                $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+            }
+            if(count((array)$order->shippedOrders) > 0) {
+                foreach($order->shippedOrders as $sorder) {
+                    foreach($sorder->orderProducts as $sproduct) {
+                        $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+                    }
+                    
+                }
+            }
+            
+        }
+        dd($orders->toArray());
+        $statuses = array(
+            'to_be_shipped' =>  4,
+            'shipped'       =>  5,
+            'cancelled'     =>  7,
+        );
+        $counter = $this->productCount();
+        $search_form_action = \URL::to('/purchase_manage/to_be_shipped'); $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
     }
 
     public function supplierCancelledAwaitingActionOrderRequest(Request $request) {

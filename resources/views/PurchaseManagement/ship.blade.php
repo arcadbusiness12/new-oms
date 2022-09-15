@@ -149,10 +149,10 @@
                                                         <button type="submit" class="btn btn-success active form-control" id="submit-ship-order">Ship Order</button>
                                                     </div>
                                                     <div class="col-xs-12 col-sm-4 text-black amout-input" style="display: none;">
-                                                        <label class="control-label text-lable"><strong> Add Local Shipping To Forwarder </strong></label>
                                                         <div>
                                                             <input type="text" pattern="^(\d*\.)?\d+$" title="Enter valid price" name="local_cost" step="any" placeholder="Amount" class="form-control amount-input-field" >
                                                         </div>
+                                                        <label class="control-label text-lable"><strong> Add Local Shipping To Forwarder </strong></label>
                                                     </div>
                                                 </div>
                                                 <div id="history<?php echo $order['order_id'] ?>" class="history-panel mt-2">

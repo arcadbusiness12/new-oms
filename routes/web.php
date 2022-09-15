@@ -179,7 +179,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/confirmed/order/cancelled', 'confirmedOrderCancelled')->name('confirmed.order.cancelled');
         Route::get('/ship/order/{id}', 'orderShipping')->name('ship.order');
         Route::post('/add/to/ship', 'addToShip')->name('add.to.ship');
-        Route::get('/get/to/be/shipped', 'getToBeShipped')->name('get.to.be.shipped');
+        Route::any('/get/to/be/shipped', 'getToBeShipped')->name('get.to.be.shipped');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
