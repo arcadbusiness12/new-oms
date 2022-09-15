@@ -90,7 +90,7 @@
                                                     <?php foreach ($quantity['product_options'] as $key => $option) { 
                                                         if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
                                                         <div class="box-label">
-                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity']; ?>
+                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['shipped_quantity']; ?>
                                                         </div>
                                                     <?php } } ?>
                                                 <?php } ?>
@@ -158,7 +158,7 @@
                                                             <td>-</td>
                                                         <?php } ?>
                                                             <?php if($quantity['order_quantity'] > 0) { ?>
-                                                            <td><?php echo $quantity['order_quantity']?></td>
+                                                            <td><?php echo $quantity['order_quantity'] - $quantity['shipped_quantity'] ?></td>
                                                             <td><?php echo number_format($quantity['price'],2); ?> -- {{$quantity['shipped_quantity']}}</td>
                                                             <td><?php echo number_format($quantity['total'],2); ?></td>
                                                             <?php } ?>
