@@ -83,9 +83,9 @@
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
                                                 <?php foreach ($product['order_product_quantities'] as $quantity) {
-                                                     if($product['product_id'] != $quantity['order_product_id']) {
-                                                                                continue;
-                                                                            } 
+                                                    //  if($product['product_id'] != $quantity['order_product_id']) {
+                                                    //                             continue;
+                                                    //                         } 
                                                     ?>
                                                     <?php foreach ($quantity['product_options'] as $key => $option) { 
                                                         if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
@@ -184,7 +184,7 @@
                                             </div>
                                             <div class="col-xs-4 text-center">
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                                <div class="badge"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
+                                                <div class="badge badge-primary"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
                                             <?php } ?>
                                             </div>
                                             <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
