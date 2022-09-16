@@ -22,12 +22,12 @@
             <div class="tab-content flex-grow-1 menu" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
                     aria-labelledby="v-pills-home-tab">
-                    <div class="relative brand-wrapper sticky b-b">
+                    <div class="relative brand-wrapper sticky b-b sidebar-top-box">
                         <div class="d-flex justify-content-between align-items-center p-3">
                             <div class="text-xs-center">
-                                <span class="font-weight-lighter s-18">Menu</span>
+                                <span class="font-weight-lighter s-18"><?php echo session('firstname'). ' '. session('lastname') ?></span>
                             </div>
-                            <div class="badge badge-danger r-0">New Panel</div>
+                            {{-- <div class="badge badge-danger r-0">New Panel</div> --}}
                         </div>
                     </div>
                     <ul class="sidebar-menu">
@@ -169,7 +169,8 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/confirmed') !== false || strpos(Request::url(), 'PurchaseManagement/ship/order') !== false) active @endif">
                                     <a href="{{route('confirmed.purchase.orders')}}"><i class="icon icon-check-circle"></i>Confirm</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-ship"></i>To Be Shipped</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/get/to/be/shipped') !== false) active @endif">
+                                    <a href="{{route('get.to.be.shipped')}}"><i class="icon icon-ship"></i>To Be Shipped</a>
                                 </li>
                                 <li><a href="panel-page-products-create.html"><i class="icon icon-ship"></i>Shipped</a>
                                 </li>

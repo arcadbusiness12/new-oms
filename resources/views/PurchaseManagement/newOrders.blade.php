@@ -50,7 +50,7 @@
                                     <div class="row top_row">
                                         <div class="col-sm-4 col-grid text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             
-                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-info"><i class="icon icon-pencil"></i></a>
+                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-info active"><i class="icon icon-pencil"></i></a>
                                             
                                         </b>
                                     </div>
@@ -82,7 +82,7 @@
                                             </div>
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF')) { ?>
                                             <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                <button type="button" class="btn btn-default active form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                     Details
                                                 </button>
                                             </div>
@@ -153,20 +153,20 @@
                                             </div>
                                             <div class="row button-row mt-4 mb-4">
                                                 <div class="col-xs-12 col-sm-4">
-                                                    <button type="button" class="btn btn-default form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
+                                                    <button type="button" class="btn btn-default active form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                 </div>
                                                 <div class="col-xs-6 col-sm-4">
                                                     <?php if($order['cancelled_status'] && $order['cancelled_status']['status'] == 0){ ?>
-                                                    <button type="button" class="btn btn-danger form-control disabled" disabled>Requested</button>
+                                                    <button type="button" class="btn btn-danger active form-control disabled" disabled>Requested</button>
                                                     <?php } else { ?>
                                                     <button type="button" data-order-id="<?php echo $order['order_id'] ?>" data-supplier-id="<?php echo $order['order_supplier']['user_id'] ?>" class="btn btn-danger form-control btn-cancel-awaiting-order">Cancel</button>
                                                     <?php } ?>
                                                 </div>
                                                 <div class="col-xs-6 col-sm-4">
                                                     <?php if($order['status'] == 'insert') { ?>
-                                                    <button type="submit" name="submit" value="update_awaiting_action" class="btn btn-primary form-control">Submit</button>
+                                                    <button type="submit" name="submit" value="update_awaiting_action" class="btn btn-primary active form-control">Submit</button>
                                                     <?php } else { ?>
-                                                    <button type="submit" name="submit" value="update_quantity_price" class="btn btn-info form-control">Update</button>
+                                                    <button type="submit" name="submit" value="update_quantity_price" class="btn btn-info active form-control">Update</button>
                                                     <?php } ?>
                                                 </div>
                                             </div>
@@ -185,7 +185,7 @@
                                                         <div class="error-message text-danger"></div>
                                                     </div>
                                                     <div class="col-sm-2 col-grid text-black">
-                                                        <button type="button" class="btn btn-block btn-success submit-comment" data-action="{{route('add.approval.comment')}}" style="left: 0;bottom: 0;margin-top:75px;">Submit</button>
+                                                        <button type="button" class="btn btn-block active btn-success submit-comment" data-action="{{route('add.approval.comment')}}" style="left: 0;bottom: 0;margin-top:75px;">Submit</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -211,7 +211,7 @@
                                         <div class="col-xs-6 col-sm-6 ">
                                             <div class="row button-row">
                                                 <div class="col-xs-12 col-sm-4">
-                                                    <button type="button" class="btn btn-default form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
+                                                    <button type="button" class="btn btn-default active form-control collapse-comment" data-toggle="collapse" data-target="#history<?php echo $order['order_id'] ?>" aria-expanded="true" aria-controls="collapseExample">Comment</button>
                                                 </div>
                                                 <div class="col-sm-8"></div>
                                             </div>
@@ -220,9 +220,9 @@
                                         <?php if($order['cancelled_status'] && $order['cancelled_status']['status'] == 0){ 
                                             $class = 'col-xs-6 col-sm-8'; ?>
                                         <div class="col-xs-6 col-sm-4" style="padding-bottom: 10px;">
-                                            <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
-                                            <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('awaiting.action.update.request') }}"><b>Accept</b></button>
-                                            <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-click-action="new" data-action="{{ route('awaiting.action.update.request') }}"><b>Reject</b></button>
+                                            <button type="button" class="btn btn-default active" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
+                                            <button type="button" name="update_request" class="btn btn-success active btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('awaiting.action.update.request') }}"><b>Accept</b></button>
+                                            <button type="button" name="update_request" class="btn btn-danger active btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-click-action="new" data-action="{{ route('awaiting.action.update.request') }}"><b>Reject</b></button>
 
                                             <label class="btn-block text-danger text-center" style="font-size: 14px;"><strong> Supplier Cancelled Order </strong></label>
                                         </div>
@@ -245,11 +245,11 @@
                                             <button type="button" class="btn btn-danger disabled" disabled>Request Rejected</button>
                                         </div>
                                         <div class="col-xs-6 col-sm-2">
-                                            <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger form-control submit-cancel-order">Cancel</button>
+                                            <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger active form-control submit-cancel-order">Cancel</button>
                                         </div>
                                         <?php }else{ ?>
                                         <div class="col-xs-6 col-sm-2">
-                                            <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger form-control submit-cancel-order">Cancel</button>
+                                            <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger active form-control submit-cancel-order">Cancel</button>
                                         </div>
                                         <?php } ?>
             
@@ -272,7 +272,7 @@
                                                         <div class="error-message text-danger"></div>
                                                     </div>
                                                     <div class="col-sm-2">
-                                                        <button type="submit" name="submit" value="save-comment" class="btn btn-block btn-success" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
+                                                        <button type="submit" name="submit" value="save-comment" class="btn btn-block active btn-success" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -313,7 +313,7 @@
                 <textarea name="comment" rows="5" class="form-control" required></textarea>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success submit-cancel-confirmed-order">Submit</button>
+                <button type="submit" class="btn btn-success active submit-cancel-confirmed-order">Submit</button>
             </div>
             </form>
         </div>

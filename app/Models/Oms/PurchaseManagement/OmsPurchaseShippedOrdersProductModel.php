@@ -14,4 +14,8 @@ class OmsPurchaseShippedOrdersProductModel extends Model
     const FIELD_NAME = 'name';
     const FIELD_MODEL = 'model';
     const FIELD_TYPE = 'type';
+
+    public function orderProductQuantities() {
+        return $this->hasMany(OmsPurchaseShippedOrdersProductQuantityModel::class, 'order_product_id');
+    }
 }

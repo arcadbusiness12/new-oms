@@ -284,3 +284,14 @@ input[type="checkbox"] {
     left: 50%;
     transform: translate(-50%);
 }
+
+.single_option_row label {
+    font-size: 14px;
+}
+.text-lable {
+    /* font-size: 14; */
+}
+.sidebar-top-box {
+    background-color: #3f51b5;
+    color: white;
+}

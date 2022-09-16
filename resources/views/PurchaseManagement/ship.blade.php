@@ -44,16 +44,16 @@
                             <?php } ?>
                             <?php if($order) { ?>
                                 <div class="card order_list">
-                                    <form action="<?php echo URL::to('/purchase_manage/add_to_ship') ?>" method="post" id="ship_order">
+                                    <form action="<?php echo route('add.to.ship') ?>" method="post" id="ship_order">
                                         {{csrf_field()}}
                                         <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                         <input type="hidden" name="urgent" value="<?php echo $order['urgent'] ?>" />
                                         <input type="hidden" name="link" value="<?php echo $order['link'] ?>" />
                                         <div class="row top_row">
-                                            <div class="col-xs-8"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
-                                            <div class="col-xs-4 text-right">
+                                            <div class="col-sm-8 text-black"><b>Order Number: #<?php echo $order['order_id'] ?></b></div>
+                                            <div class="col-sm-4 mb-2 text-right">
                                                 <?php if($order['urgent']) { ?>
-                                                    <div class="label label-warning">Urgent</div>
+                                                    <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                                 <?php } ?>
                                             </div>
                                         </div>
@@ -66,7 +66,7 @@
                                                 <div class="col-xs-8 col-sm-10">
                                                     <strong><?php echo $product['name'] ?></strong><br>
                                                     <i><?php echo $product['model'] ?></i>
-                                                    <div class="options-label">
+                                                    <div class="options-label text-black ">
                                                         <?php if(isset($product['options'])) {  ?>
                                                         <?php foreach ($product['options'] as $key => $option) {  ?>
                                                         <?php if($key !== 'static') { ?>
@@ -84,10 +84,10 @@
                                             </div>
                                             <div class="shipped_product_row table-responsive">
                                                 <table class="table">
-                                                    <tr>
+                                                    <tr class="single_option_row">
                                                         <td class="col-xs-6">
                                                             <?php if(isset($product['options']) && isset($product['options']['static'])) { ?>
-                                                            <label><?php echo $product['options']['static']['name'] ?> - <?php echo $product['options']['static']['value'] ?></label>
+                                                            <label class="text-black"><strong> <?php echo $product['options']['static']['name'] ?> - <?php echo $product['options']['static']['value'] ?></strong></label>
                                                             <?php } else { ?>
                                                             <label>&nbsp;</label>
                                                             <?php } ?>
@@ -114,7 +114,7 @@
                                                             </div>
                                                         </td>
                                                         <td class="col-xs-6">
-                                                            <label>Shipped Quantity</label>
+                                                            <label class="text-black"><strong> Shipped Quantity </strong></label>
                                                             <div class="single_option_row">
                                                             <?php if(isset($product['options'])) {  ?>
                 
@@ -142,42 +142,42 @@
                                             <div class="col-xs-12 col-sm-8">
                                                 <div class="row button-row">
                                                     <div class="col-xs-12 col-sm-4">
-                                                        <button type="button" class="btn btn-default form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?>">Comment</button>
+                                                        <button type="button" class="btn btn-default active form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?>">Comment</button>
                                                     </div>
-                                                    <div class="col-xs-12 col-sm-4">
+                                                    <div class="col-xs-12 col-sm-4 text-black">
                                                         <input type="hidden" name="submit" value="ship_order" />
-                                                        <button type="submit" class="btn btn-success form-control" id="submit-ship-order">Ship Order</button>
+                                                        <button type="submit" class="btn btn-success active form-control" id="submit-ship-order">Ship Order</button>
                                                     </div>
-                                                    <div class="col-xs-12 col-sm-4">
-                                                        <label class="control-label">Add Local Shipping To Forwarder</label>
+                                                    <div class="col-xs-12 col-sm-4 text-black amout-input" style="display: none;">
                                                         <div>
-                                                            <input type="text" pattern="^(\d*\.)?\d+$" title="Enter valid price" name="local_cost" step="any" placeholder="Amount" class="form-control" required="">
+                                                            <input type="text" pattern="^(\d*\.)?\d+$" title="Enter valid price" name="local_cost" step="any" placeholder="Amount" class="form-control amount-input-field" >
                                                         </div>
+                                                        <label class="control-label text-lable"><strong> Add Local Shipping To Forwarder </strong></label>
                                                     </div>
                                                 </div>
-                                                <div id="history<?php echo $order['order_id'] ?>" class="history-panel">
+                                                <div id="history<?php echo $order['order_id'] ?>" class="history-panel mt-2">
                                                 <?php foreach ($order['orderHistories'] as $history) { ?>
-                                                    <div>
-                                                        <label><?php echo $history['name'] ?>:</label>
+                                                    <div class="pl-4 pr-4 mt-2 text-black">
+                                                        <label><strong><?php echo $history['name'] ?>: </strong></label>
                                                         <i><?php echo $history['comment'] ?></i>
                                                     </div>
                                                 <?php } ?>
-                                                    <div>
-                                                        <label class="control-label">Supplier Reply:</label>
+                                                    <div class="pl-4 pr-4 mt-2 mb-2 text-black">
+                                                        <label class="control-label text-black "><strong>Supplier Reply:</strong> </label>
                                                         <textarea name="instruction" class="form-control" rows="3"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-xs-12 col-sm-4">
+                                            <div class="col-xs-12 col-sm-4 text-black">
                                                 <input type="text" name="shipping_name" placeholder="Shipping Name" class="form-control" required />
-                                                <input type="text" name="tracking_number" placeholder="Tracking Number" class="form-control" required />
-                                                <div class="fancy-radio">
-                                                    <input type="radio" name="shipped" id="forwarder" value="forwarder" oninvalid="$('.shipped_msg').text('Please Select any one shipping');" required />
-                                                    <label for="forwarder">Shipped To Forwarder</label>
+                                                <input type="text" name="tracking_number" placeholder="Tracking Number" class="form-control mb-2" required />
+                                                <div class="fancy-radio mt-2">
+                                                    <input type="radio" name="shipped" id="forwarder" class="shippedTo" data-action="forwarder" value="forwarder" oninvalid="$('.shipped_msg').text('Please Select any one shipping');" required />
+                                                    <label for="forwarder"><strong> Shipped To Forwarder </strong></label>
                                                 </div>
                                                 <div class="fancy-radio">
-                                                    <input type="radio" name="shipped" id="dubai" value="dubai" oninvalid="$('.shipped_msg').text('Please Select any one shipping');" required />
-                                                    <label for="dubai">Shipped To Dubai</label>
+                                                    <input type="radio" name="shipped" id="dubai" class="shippedTo" data-action="dubia" value="dubai" oninvalid="$('.shipped_msg').text('Please Select any one shipping');" required />
+                                                    <label for="dubai"><strong> Shipped To Dubai </strong></label>
                                                 </div>
                                                 <div class="text-danger shipped_msg"></div>
                                             </div>
@@ -209,7 +209,7 @@
                 <textarea name="comment" rows="5" class="form-control" required></textarea>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success submit-cancel-confirmed-order">Submit</button>
+                <button type="submit" class="btn btn-success active submit-cancel-confirmed-order">Submit</button>
             </div>
             </form>
         </div>

@@ -76,15 +76,14 @@
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
                                                 <?php $units = 0; ?>
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                <?php foreach ($product['quantities'] as $quantity) { 
                                                     if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                     ?>
-                                                    <?php foreach ($quantity['product_options'] as $key => $option) { 
+                                                    <?php foreach ($quantity['productOptions'] as $key => $option) { 
                                                         
                                                         if($option['static'] !== 'static') { 
-                                                            $units += $quantity['order_quantity'];
                                                             ?>
                                                         <div class="box-label text-black">
                                                             <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity']; ?>
@@ -92,7 +91,7 @@
                                                     <?php } } ?>
                                                 <?php } ?>
                                                 <div class="box-label text-black">
-                                                    T. Units = <?php echo $units ?>
+                                                    T. Units = <?php echo $product['unit'] ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -102,17 +101,17 @@
                                 <div class="row action_row mt-2">
                                     <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
                                     <div class="col-xs-6 col-sm-8 text-right">
-                                        <button type="button" class="btn btn-default collapse-comment" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'], 2); ?></b></button>
+                                        <button type="button" class="btn btn-default active active collapse-comment" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'], 2); ?></b></button>
                                     </div>
                                     <div class="col-xs-6 col-sm-2">
                                         <?php if($order['cancelled_status'] && $order['cancelled_status']['status'] == 0){ ?>
-                                        <button type="button" class="btn btn-danger form-control disabled" disabled>Requested</button>
+                                        <button type="button" class="btn btn-danger active form-control disabled" disabled>Requested</button>
                                         <?php } else { ?>
-                                        <button type="button" data-order-id="<?php echo $order['order_id'] ?>" data-supplier-id="<?php echo $order['order_supplier']['user_id'] ?>" class="btn btn-danger form-control btn-cancel-confirmed-order">Cancel</button>
+                                        <button type="button" data-order-id="<?php echo $order['order_id'] ?>" data-supplier-id="<?php echo $order['order_supplier']['user_id'] ?>" class="btn btn-danger active form-control btn-cancel-confirmed-order">Cancel</button>
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-6 col-sm-2">
-                                        <a href="<?php echo route('ship.order', $order['order_id']) ?>"><button type="button" class="btn btn-success form-control">Ship</button></a>
+                                        <a href="<?php echo route('ship.order', $order['order_id']) ?>"><button type="button" class="btn btn-success active form-control">Ship</button></a>
                                     </div>
             
                                     <?php } else { 
@@ -122,10 +121,10 @@
                                         $class = 'col-xs-6 col-sm-8'; ?>
                                     <div class="col-xs-6 col-sm-4">
                                         <div class="ml-4">
-                                            <label class="btn-block text-danger"><strong> Supplier Cancelled Order </strong></label>
-                                            <button type="button" class="btn btn-default" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
-                                            <button type="button" name="update_request" class="btn btn-success btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Accept</b></button>
-                                            <button type="button" name="update_request" class="btn btn-danger btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('confirmed.action.update.request') }}"><b>Reject</b></button>
+                                            <label class="btn-block text-danger"><strong> Supplier Cancelled Order {{session('role')}}</strong></label>
+                                            <button type="button" class="btn btn-default active" data-toggle="modal" href='#modal-oder-comment<?php echo $order['order_id'] ?>'>Comment</button>
+                                            <button type="button" name="update_request" class="btn btn-success active btn-accept" value="accept" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('update.confirmed.approval.order') }}"><b>Accept</b></button>
+                                            <button type="button" name="update_request" class="btn btn-danger active btn-reject" value="reject" data-order-id="<?php echo $order['order_id'] ?>" data-action="{{ route('update.confirmed.approval.order') }}"><b>Reject</b></button>
                                         </div>
                                     </div>
                                     <div class="modal fade" id="modal-oder-comment<?php echo $order['order_id'] ?>">
@@ -145,24 +144,25 @@
                                     <?php }else if(@$order['cancelled_status']['status'] == 2){
                                         $class = 'col-xs-6 col-sm-8'; ?>
                                     <div class="col-xs-6 col-sm-4">
-                                        <button type="button" class="btn btn-danger disabled" disabled>Request Rejected</button>
+                                        <button type="button" class="btn btn-danger active disabled" disabled>Request Rejected</button>
                                     </div>
                                     <?php } ?>
                                     
                                     <div class="<?php echo $class ?> text-right">
-                                        <button type="button" class="btn btn-default collapse-comment mr-4"><b><?php echo number_format($order['total'],2); ?></b></button>
+                                        <button type="button" class="btn btn-default active collapse-comment mr-4"><b><?php echo number_format($order['total'],2); ?></b></button>
                                     </div>
                                     <?php } ?>
                                 </div>
                                 <!--  comment code start here  -->
-                                <?php foreach ($order['order_histories'] as $history) { ?>
-                                    <div class="pl-4 pr-4 mt-2 text-black">
-                                        <label><strong><?php echo $history['name'] ?>:</strong></label>
-                                        <i><?php echo $history['comment'] ?></i>
-                                        <i style="float: right;"><?php echo date('Y-m-d', strtotime($history['created_at'])); ?></i>
-                                    </div>
-                                <?php } ?>
+                                
                                 <form action="<?php echo route('update.awaiting.action.order') ?>" method="post">
+                                    <?php foreach ($order['order_histories'] as $history) { ?>
+                                        <div class="pl-4 pr-4 mt-2 text-black">
+                                            <label><strong><?php echo $history['name'] ?>:</strong></label>
+                                            <i><?php echo $history['comment'] ?></i>
+                                            <i style="float: right;"><?php echo date('Y-m-d', strtotime($history['created_at'])); ?></i>
+                                        </div>
+                                    <?php } ?>
                                   {{csrf_field()}}
                                   <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                   <div class="row approval-comment pl-4 pr-4 pb-4" style="-webkit-display:-webkit-flex;-webkit-flex-wrap:wrap;-ms-display:-ms-flexbox;-ms-flex-wrap:wrap;display:flex;flex-wrap:wrap;flex-direction:row;">
@@ -172,7 +172,7 @@
                                       <div class="error-message text-danger"></div>
                                     </div>
                                     <div class="col-sm-2 text-black">
-                                      <button type="submit" name="submit" value="save-comment" class="btn btn-block btn-success" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
+                                      <button type="submit" name="submit" value="save-comment" class="btn btn-block active btn-success" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
                                     </div>
                                   </div>
                                 </form>
@@ -194,14 +194,14 @@
                                                     <th>Total</th>
                                                 </tr>
                                                 <?php foreach ($order['order_products'] as $product) { ?>
-                                                    <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                    <?php foreach ($product['quantities'] as $quantity) { 
                                                         if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                         ?>
                                                         <tr>
-                                                        <?php if($quantity['product_options']) { ?>
-                                                        <?php foreach ($quantity['product_options'] as $key => $option) { if($option['static'] !== 'static') { ?>
+                                                        <?php if($quantity['productOptions']) { ?>
+                                                        <?php foreach ($quantity['productOptions'] as $key => $option) { if($option['static'] !== 'static') { ?>
                                                             <td><?php echo $option['name'] . ' - ' . $option['value']; ?></td>
                                                         <?php } } ?>
                                                         <?php }else{ ?>
@@ -267,7 +267,7 @@
                 <textarea name="comment" rows="5" class="form-control" required></textarea>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success submit-cancel-confirmed-order">Submit</button>
+                <button type="submit" class="btn btn-success active submit-cancel-confirmed-order">Submit</button>
             </div>
             </form>
         </div>

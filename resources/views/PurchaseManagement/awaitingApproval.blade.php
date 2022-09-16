@@ -51,7 +51,7 @@
                                      <div class="row top_row">
                                         <div class="col-sm-4 col-grid text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             
-                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-primary"><i class="icon icon-pencil"></i></a>
+                                                <a href="{{route('edit.purchase.orders', $order['order_id'])}}" class="btn btn-primary active"><i class="icon icon-pencil"></i></a>
                                             
                                         </b>
                                     </div>
@@ -80,7 +80,7 @@
                                                 <i><?php echo $product['model'] ?></i>
                                             </div>
                                             <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">Details</button>
+                                                <button type="button" class="btn btn-default active form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">Details</button>
                                             </div>
                                         </div>
                                         <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
@@ -151,13 +151,13 @@
                                             </div>
                                             <div class="row button-row mt-2 mb-2">
                                                 <div class="col-xs-12 col-sm-4">
-                                                    <button type="button" class="btn btn-default form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?>">Comment</button>
+                                                    <button type="button" class="btn btn-default active form-control collapse-comment" data-target="history<?php echo $order['order_id'] ?>">Comment</button>
                                                 </div>
                                                 <div class="col-xs-6 col-sm-4">
-                                                    <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger form-control submit-cancel-order">Cancel</button>
+                                                    <button type="submit" name="submit" value="cancel" formnovalidate class="btn btn-danger active form-control submit-cancel-order">Cancel</button>
                                                 </div>
                                                 <div class="col-xs-6 col-sm-4">
-                                                    <button type="submit" name="submit" value="approve" class="btn btn-success form-control">Approve</button>
+                                                    <button type="submit" name="submit" value="approve" class="btn btn-success active form-control">Approve</button>
                                                 </div>
                                             </div>
                                             <div id="history<?php echo $order['order_id'] ?>" class="history-panel  p-2 mb-2">
@@ -175,7 +175,7 @@
                                                         <div class="error-message text-danger"></div>
                                                     </div>
                                                     <div class="col-sm-2">
-                                                        <button type="button" class="btn btn-block btn-success submit-comment" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
+                                                        <button type="button" class="btn btn-block btn-success active submit-comment" style="position: absolute;left: 0;bottom: 0;width: 85%;">Submit</button>
                                                     </div>
                                                 </div>
                                             </div>
