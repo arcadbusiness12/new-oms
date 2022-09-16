@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
-        <div class="col-md-12 col-sm-12 col-grid">
+        <div class="col-md-12 col-sm-12 col-grid" id="return_order">
             <div class="card p-3 text-black">
                 <div class="row">
                     <div class="col-sm-8">
@@ -42,6 +42,7 @@
 <script type="text/javascript">
     $(document).ready(function(){
         $(document).delegate('.product-return-bacode-checkbox', 'change', function(e) {
+            //alert("first");
             if($('.product-return-bacode-checkbox:not(:checked)').length == 0){
                 setTimeout(function(){
                     $('html,body').animate({
@@ -53,7 +54,19 @@
                     scrollTop: $(this).offset().top - $(window).height()/2
                 }, 500);
             }
+            //show hide barcode and button
+            var total_checkbox = $('.product-return-bacode-checkbox');
+            var checked = $('.product-return-bacode-checkbox:checked');
+            //alert(total_checkbox.length);
+            if (checked.length == total_checkbox.length) {
+                //$('#return_order .row_update_returned').slideDown(250);
+                $('#return_order .row_update_returned').removeClass("d-none");
+            } else {
+                //$('#return_order .row_update_returned').slideUp(250);
+                $('#return_order .row_update_returned').addClass("d-none");
+            }
         });
+
     });
     //----------------------
     $(document).delegate('#form_return_order', 'submit', function(e) {
@@ -70,4 +83,5 @@
         });
     });
 </script>
+<script src="{{URL::asset('/assets/js/JsBarcode.all.min.js')}}"></script>
 @endpush

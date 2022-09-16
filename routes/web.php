@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
+use App\Http\Controllers\Exchange\ExchangeOrdersController;
 use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
@@ -81,6 +83,7 @@ Route::prefix('placeOrder')->middleware('auth')->group(function(){
         Route::post('/df/ajax/set_payment_address', 'set_payment_address')->name('df.place.order.ajax.set_payment_address');
     });
 });
+//orders routes
 Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
         Route::get("/","index")->name('orders');
@@ -97,7 +100,7 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/ship/orders/to/courier', 'shipOrders')->name('orders.ship.orders.to.courier');
         Route::get('/return/order', 'returnOrder')->name('orders.return.order');
         Route::post('/get/return/order', 'getReturnOrder')->name('orders.get.return.order');
-
+        Route::post('/orders/update/return/order', 'updateReturnOrder')->name('orders.update.return.order');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
@@ -109,6 +112,15 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/get/order/id/from/airwaybill', 'getOrderIdFromAirwayBill')->name('orders.get.order.id.from.airwaybill');
         Route::post('/get/user/order/history', 'userOrderHistory')->name('get.user.order.history');
         Route::post('/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('orders.forword.for.awb.generation');
+    });
+});
+//exchange routes
+Route::prefix('exchange')->middleware('auth')->group(function(){
+    Route::controller(ExchangeOrdersController::class)->group(function() {
+        Route::get("/","index")->name('exchange');
+    });
+    Route::controller(ExchangeOrdersAjaxController::class)->group(function() {
+        Route::post('/cancel/order', 'cancelOrder')->name('exchange.cancel.order');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

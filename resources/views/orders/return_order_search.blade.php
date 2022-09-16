@@ -3,8 +3,9 @@
         <div class="panel panel-default">
             <div class="panel-body table-responsive">
                 <?php if($order && $order['products']) { ?>
-                <form action="<?php echo URL::to('/orders/update_return_order') ?>" method="post" name="update_quantity" id="form_update_quantity">
+                <form action="{{ route('orders.update.return.order') }}" method="post" name="update_quantity" id="form_update_quantity">
                     <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>">
+                    <input type="hidden" name="oms_store" value="{{ $order['oms_store'] }}">
                     {{ csrf_field() }}
                     <table class="table">
                         <tr class="order_list_title_row">
@@ -64,11 +65,11 @@
                         <?php if(count($order['products']) != $returned){ ?>
                         <tr>
                             <td colspan="6">
-                                <div class="row_update_returned">
-                                    <div class="col-xs-12 col-sm-6 text-center">
+                                <div class="row row_update_returned d-none">
+                                    <div class="col-sm-6 text-center">
                                         <button type="submit" name="submit" id="submit" class="btn active btn-success" value="update_returned" data-value="<?php echo 'RETURN'.$order['order_id'] ?>" style="margin-top: 45px;">Shipment Returned</button>
                                     </div>
-                                    <div class="col-xs-12 col-sm-6 text-center">
+                                    <div class="col-sm-6 text-center">
                                         <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="RETURN_ORDER" jsbarcode-textmargin="0" jsbarcode-fontoptions="bold" jsbarcode-height="100" jsbarcode-displayValue="false"></svg>
                                     </div>
                                 </div>
