@@ -201,7 +201,8 @@
                                                         ?>
                                                         <tr>
                                                         <?php if($quantity['productOptions']) { ?>
-                                                        <?php foreach ($quantity['productOptions'] as $key => $option) { if($option['static'] !== 'static') { ?>
+                                                        <?php foreach ($quantity['productOptions'] as $key => $option) { 
+                                                            if($option['static'] !== 'static') { ?>
                                                             <td><?php echo $option['name'] . ' - ' . $option['value']; ?></td>
                                                         <?php } } ?>
                                                         <?php }else{ ?>

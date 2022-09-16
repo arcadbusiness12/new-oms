@@ -83,16 +83,20 @@
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
                                                 <?php foreach ($product['order_product_quantities'] as $quantity) {
-                                                    //  if($product['product_id'] != $quantity['order_product_id']) {
-                                                    //                             continue;
-                                                    //                         } 
+                                                     if($product['product_id'] != $quantity['order_product_id']) {
+                                                                                continue;
+                                                                            } 
                                                     ?>
-                                                    <?php foreach ($quantity['product_options'] as $key => $option) { 
-                                                        if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
+                                                    <?php
+                                                    // if()
+                                                     foreach ($quantity['product_options'] as $key => $option) { 
+                                                        if($option['static'] !== 'static' && $quantity['order_quantity'] > 0 ) { ?>
                                                         <div class="box-label">
-                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['shipped_quantity']; ?>
+                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity'] - $quantity['shipped_quantity']; ?>
                                                         </div>
-                                                    <?php } } ?>
+                                                    <?php 
+                                                    }
+                                                 } ?>
                                                 <?php } ?>
                                                 <div class="box-label">
                                                     {{-- T. Units = <?php echo $product['unit'] ?> --}}
@@ -197,7 +201,7 @@
                                         <div class="product_list_row">
                                             <div class="row product_row">
                                                 <div class="col-xs-4 col-sm-2">
-                                                    <img width="100" src="<?php echo $product['image'] ?>" />
+                                                    {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
                                                 </div>
                                                 <div class="col-xs-6 col-sm-8">
                                                     <strong><?php echo $product['name'] ?></strong><br>

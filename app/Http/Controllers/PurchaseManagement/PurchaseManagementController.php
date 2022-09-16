@@ -1114,8 +1114,8 @@ class PurchaseManagementController extends Controller
             'orderSupplier'
             
         ]
-        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')
-        ->paginate(5)->appends($request->all());
+        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')->groupBy('order_id')
+        ->paginate(self::PER_PAGE)->appends($request->all());
         if($count == true){ return $orders->count(); }
         foreach($orders as $order) {
             $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->whereNull('shiped_order_id')->exists();
@@ -1123,6 +1123,7 @@ class PurchaseManagementController extends Controller
             foreach($order->orderProducts as $product) {
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
                 foreach($product->orderProductQuantities as $quantity) {
+                    
                 foreach($quantity->productOptions as $option) {
                     if($option['product_option_id'] == $option_id){
                         $option['static'] = 'static';
@@ -1132,33 +1133,42 @@ class PurchaseManagementController extends Controller
                  }
                 }
             }
-            if(count((array)$order->shippedOrders) > 0) {
+            // dd($order->shipped_orders);
+            if(count((array)$order->shipped_orders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
                     foreach($sorder->orderProducts as $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
                         foreach($sproduct->orderProductQuantities as $squantity) {
+                            $to_be_shipped_options = array();
                             foreach($squantity->productOptions as $option) {
                                 if($option['product_option_id'] == $option_id){
-                                    $option['static'] = 'static';
+                                    $to_be_shipped_options['static'] = array(
+                                        'name'  =>  $option['name'],
+                                        'value' =>  $option['value'],
+                                    );    
                                 }else{
-                                    $option['static'] = 'size';
+                                    $to_be_shipped_options[] = array(
+                                        'name'  =>  $option['name'],
+                                        'value' =>  $option['value'],
+                                    );
                                 }
+                                // $option[]
                              }
                             }
                     }
                     
                 }
             }
-            
         }
-        // dd($orders->toArray());
         $statuses = array(
             'to_be_shipped' =>  4,
             'shipped'       =>  5,
             'cancelled'     =>  7,
         );
         $counter = $this->productCount();
-        $search_form_action = \URL::to('/purchase_manage/to_be_shipped'); $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped'); 
+        // dd($search_form_action);
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
         return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
     }
 
