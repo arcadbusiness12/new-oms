@@ -50,24 +50,24 @@
                                     <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
                                         <br>
-                                        <div class="badge"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
+                                        <div class="badge"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-4 text-center">
                                         <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
-                                            <div class="label label-warning">To Be Shipped</div>
+                                            <div class="badge badge-warning">To Be Shipped</div>
                                         <?php } else if($order['order_status_id'] == $statuses['shipped']){ ?>
-                                            <div class="label label-success">Shipped</div>
+                                            <div class="badge badge-success">Shipped</div>
                                         <?php } else if($order['order_status_id'] == $statuses['cancelled']){ ?>
                                             <!-- <div class="label label-danger">Cancelled</div> -->
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-4 text-right">
                                         <?php if($order['urgent']) { ?>
-                                            <div class="label label-warning">Urgent</div>
+                                            <div class="badge badge-warning">Urgent</div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge"><?php echo $order['created_at'] ?></div>
+                                            <div class="badge badge-secondary"><?php echo $order['created_at'] ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -82,17 +82,18 @@
                                             <strong><?php echo $product['name'] ?></strong><br>
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) {
+                                                <?php foreach ($product['quantities'] as $quantity) {
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                     ?>
                                                     <?php
                                                     // if()
-                                                     foreach ($quantity['product_options'] as $key => $option) { 
-                                                        if($option['static'] !== 'static' && $quantity['order_quantity'] > 0 ) { ?>
+                                                     foreach ($quantity['options'] as $key => $option) { 
+                                                         $sqty = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                                                        if($key !== 'static' && $sqty > 0 ) { ?>
                                                         <div class="box-label">
-                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['order_quantity'] - $quantity['shipped_quantity']; ?>
+                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $sqty; ?>
                                                         </div>
                                                     <?php 
                                                     }
@@ -147,15 +148,15 @@
                                                     <th>Total</th>
                                                 </tr>
                                                 <?php foreach ($order['order_products'] as $product) { ?>
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                <?php foreach ($product['quantities'] as $quantity) { 
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                     ?>
                                                         <tr>
-                                                        <?php if($quantity['product_options']) { ?>
-                                                        <?php foreach ($quantity['product_options'] as $key => $option) { 
-                                                            if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
+                                                        <?php if($quantity['options']) { ?>
+                                                        <?php foreach ($quantity['options'] as $key => $option) { 
+                                                            if($key !== 'static' && $quantity['order_quantity'] > 0) { ?>
                                                             <td><?php echo $option['name'] . ' - ' . $option['value']; ?></td>
                                                         <?php } } ?>
                                                         <?php }else{ ?>
@@ -163,7 +164,7 @@
                                                         <?php } ?>
                                                             <?php if($quantity['order_quantity'] > 0) { ?>
                                                             <td><?php echo $quantity['order_quantity'] - $quantity['shipped_quantity'] ?></td>
-                                                            <td><?php echo number_format($quantity['price'],2); ?> -- {{$quantity['shipped_quantity']}}</td>
+                                                            <td><?php echo number_format($quantity['price'],2); ?> </td>
                                                             <td><?php echo number_format($quantity['total'],2); ?></td>
                                                             <?php } ?>
                                                         </tr>
@@ -181,14 +182,14 @@
                                         <div class="row top_row">
                                             <div class="col-xs-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b><br>
                                                 <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF') { ?>
-                                                <div class="badge">Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></div>
+                                                <div class="badge badge-secondary">Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></div>
                                                 <?php } else { ?>
-                                                <div class="badge">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
+                                                <div class="badge badge-secondary">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
                                                 <?php } ?>
                                             </div>
                                             <div class="col-xs-4 text-center">
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                                <div class="badge badge-primary"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
+                                                <div class="badge badge-secondary"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                             <?php } ?>
                                             </div>
                                             <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
@@ -214,7 +215,6 @@
                                             <div id="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
                                                 <table class="table">
                                                 <?php $i = 0; foreach ($product['order_product_quantities'] as $quantity) { 
-                                                    echo "<pre>"; print_r($product['order_product_quantities']);
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
