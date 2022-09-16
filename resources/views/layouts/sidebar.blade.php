@@ -50,7 +50,7 @@
                                 </ul>
                         </li>
 
-                        <li class="treeview @if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -94,12 +94,12 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-bug text-red"></i>Exchange<i
+                                <li class="@if( str_contains(Request::url(), '/exchange') ) active @endif"><a href="#"><i class="icon icon-bug text-red"></i>Exchange<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="login.html">All Orders</a>
+                                        <li><a href="{{ route('exchange') }}">All Orders</a>
                                         </li>
-                                        <li><a href="login-2.html">Pendding</a>
+                                        <li><a href="{{ route('exchange') }}?order_status_id=1">Pending</a>
                                         </li>
                                         <li><a href="login.html">Approve Exchange</a>
                                         </li>

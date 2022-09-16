@@ -140,7 +140,7 @@ class OrdersAjaxController extends Controller {
                     if( $check_on_hold ){
                         if( $store == 1 ){
                             $this->availableInventoryQuantity($orderId);
-                        }if( $store == 2 ){
+                        }else if( $store == 2 ){
                             $this->availableInventoryQuantityDF($orderId);
                         }
                         // self::addQuantity($orderId);
@@ -1018,4 +1018,50 @@ class OrdersAjaxController extends Controller {
             }
         }else return $this->opencart_image_url . 'placeholder.png';
     }
+    public static function addQuantity($orderID,$oms_store = null) {
+        if( $oms_store == 1 ){
+		    $order = OrdersModel::with('orderd_products')->where(OrdersModel::FIELD_ORDER_ID, $orderID)->first();
+        }else if( $oms_store == 2 ){
+		    $order = DFOrdersModel::with('orderd_products')->where(OrdersModel::FIELD_ORDER_ID, $orderID)->first();
+        }
+		foreach ($order->orderd_products as $orderProduct) {
+            if( $oms_store == 1 ){
+			    $opencartProduct = ProductsModel::select('sku')->where('product_id', $orderProduct->product_id)->first();
+            }else if( $oms_store == 2 ){
+			    $opencartProduct = DFProductsModel::select('sku')->where('product_id', $orderProduct->product_id)->first();
+            }
+			$omsProduct = OmsInventoryProductModel::where('sku', $opencartProduct->sku)->first();
+			if($omsProduct){
+				//from helper
+                updateSitesStock($opencartProduct->sku);
+			}
+            // else{
+			// 	$orderProductOptoins = OrderOptionsModel::where(OrderOptionsModel::FIELD_ORDER_PRODUCT_ID, $orderProduct->{OrderOptionsModel::FIELD_ORDER_PRODUCT_ID})->get();
+			// 	if ($orderProductOptoins->count()) {
+			// 		foreach ($orderProductOptoins as $orderOption) {
+			// 			$orderProductData = OrderedProductModel::select('product_id')->where(OrderedProductModel::FIELD_ORDER_PRODUCT_ID, $orderOption->order_product_id)->first();
+			// 			$orderOptionData = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+			// 			->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+			// 			->where('option_description.name', $orderOption->name)
+			// 			->where('ovd.name', $orderOption->value)
+			// 			->first();
+
+			// 			$productOption = ProductOptionValueModel::where(ProductOptionValueModel::FIELD_PRODUCT_ID, $orderProductData->product_id)->where(ProductOptionValueModel::FIELD_OPTION_ID, $orderOptionData->option_id)->where(ProductOptionValueModel::FIELD_OPTION_VALUE_ID, $orderOptionData->option_value_id)->first();
+
+			// 			if ($productOption && $productOption->subtract) {
+			// 				$productOption->increment('quantity', $orderProduct->quantity);
+			// 				$product_total_quantity = ProductOptionValueModel::where(ProductOptionValueModel::FIELD_PRODUCT_ID, $orderProduct->{ProductOptionModel::FIELD_PRODUCT_ID})
+			// 				->where(ProductOptionValueModel::FIELD_SUBTRACT, 1)
+			// 				->sum(ProductOptionValueModel::FIELD_QUANTITY);
+			// 				ProductsModel::where(ProductsModel::FIELD_PRODUCT_ID, $orderProduct->{ProductOptionModel::FIELD_PRODUCT_ID})
+			// 				->update(array(ProductsModel::FIELD_QUANTITY => $product_total_quantity));
+			// 			}
+			// 		}
+			// 	} else {
+			// 		$product = ProductsModel::where(ProductsModel::FIELD_PRODUCT_ID, $orderProduct->{ProductOptionModel::FIELD_PRODUCT_ID})->first();
+			// 		$product->increment('quantity', $orderProduct->quantity);
+			// 	}
+			// }
+		}
+	}
 }
