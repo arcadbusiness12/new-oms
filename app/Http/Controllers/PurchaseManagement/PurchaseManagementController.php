@@ -1118,7 +1118,8 @@ class PurchaseManagementController extends Controller
                 $any_qty_remain = 0;
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
                 $quantities = OmsPurchaseOrdersProductQuantityModel::where('order_id', $order['order_id'])->where('order_product_id', $product->product_id)->get();
-                // dd($quantities->toArray());
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
+                $product['unit'] = $units->unit;    
                 $any_qty_remain = 0;
                 foreach($quantities as $k => $quantity) {
                     $options = OmsPurchaseOrdersProductOptionModel::select('product_option_id','name','value')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
@@ -1137,11 +1138,19 @@ class PurchaseManagementController extends Controller
                             );
                         }
                     }
-                    $quantities[$k]['options'] = $to_be_shipped_options;
+                    // $quantities[$k]['options'] = $to_be_shipped_options;
+                    $to_be_shipped_quantities[] = array(
+                        'quantity'                  =>  $quantity['quantity'],
+                        'order_product_id'          =>  $quantity['order_product_id'],
+                        'order_quantity'            =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                        'price'                     =>  $quantity['price'],
+                        'total'                     =>  ($quantity['order_quantity'] - $quantity['shipped_quantity']) * $quantity['price'],
+                        'options'                   =>  $to_be_shipped_options,
+                    );
                     $any_qty_remain = $any_qty_remain + ($quantity['order_quantity'] - $quantity['shipped_quantity']);
                     
                 }
-                $product['quantities'] = $quantities->toArray();
+                $product['quantities'] = $to_be_shipped_quantities;
                 if($any_qty_remain < 1) {
                     unset($order->orderProducts[$key]);
                 }

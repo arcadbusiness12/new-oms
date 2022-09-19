@@ -90,7 +90,7 @@
                                                     <?php
                                                     // if()
                                                      foreach ($quantity['options'] as $key => $option) { 
-                                                         $sqty = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                                                         $sqty = $quantity['order_quantity'];
                                                         if($key !== 'static' && $sqty > 0 ) { ?>
                                                         <div class="box-label">
                                                             <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $sqty; ?>
@@ -100,7 +100,7 @@
                                                  } ?>
                                                 <?php } ?>
                                                 <div class="box-label">
-                                                    {{-- T. Units = <?php echo $product['unit'] ?> --}}
+                                                    T. Units = <?php echo $product['unit'] ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -163,7 +163,7 @@
                                                             <td>-</td>
                                                         <?php } ?>
                                                             <?php if($quantity['order_quantity'] > 0) { ?>
-                                                            <td><?php echo $quantity['order_quantity'] - $quantity['shipped_quantity'] ?></td>
+                                                            <td class="testing"><?php echo $quantity['order_quantity'] ?></td>
                                                             <td><?php echo number_format($quantity['price'],2); ?> </td>
                                                             <td><?php echo number_format($quantity['total'],2); ?></td>
                                                             <?php } ?>
@@ -214,7 +214,8 @@
                                             </div>
                                             <div id="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
                                                 <table class="table">
-                                                <?php $i = 0; foreach ($product['order_product_quantities'] as $quantity) { 
+                                                <?php $i = 0; 
+                                                foreach ($product['order_product_quantities'] as $quantity) { 
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
