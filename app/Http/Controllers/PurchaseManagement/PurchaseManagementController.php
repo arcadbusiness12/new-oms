@@ -1118,7 +1118,7 @@ class PurchaseManagementController extends Controller
                 $any_qty_remain = 0;
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
                 $quantities = OmsPurchaseOrdersProductQuantityModel::where('order_id', $order['order_id'])->where('order_product_id', $product->product_id)->get();
-                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM((order_quantity - shipped_quantity)) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
                 $product['unit'] = $units->unit;    
                 $any_qty_remain = 0;
                 foreach($quantities as $k => $quantity) {
