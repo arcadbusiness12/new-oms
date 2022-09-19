@@ -1111,6 +1111,7 @@ class PurchaseManagementController extends Controller
         if($count == true){ return $orders->count(); }
         // dd($orders->toArray());
         foreach($orders as $order) {
+            $order_total = 0;
             $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->whereNull('shiped_order_id')->exists();
             $order['stock_cancel'] = $stock_cancel;
             // dd($order->orderProducts->toArray());
@@ -1139,6 +1140,7 @@ class PurchaseManagementController extends Controller
                         }
                     }
                     // $quantities[$k]['options'] = $to_be_shipped_options;
+                    $order_total += ($quantity['order_quantity'] - $quantity['shipped_quantity']) * $quantity['price'];
                     $to_be_shipped_quantities[] = array(
                         'quantity'                  =>  $quantity['quantity'],
                         'order_product_id'          =>  $quantity['order_product_id'],
@@ -1156,7 +1158,7 @@ class PurchaseManagementController extends Controller
                 }
                 // dd($product);
             }
-            // dd($order->shipped_orders);
+            $order['total'] = $order_total;
             if(count((array)$order->shipped_orders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
                     foreach($sorder->orderProducts as $sproduct) {
