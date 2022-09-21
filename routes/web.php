@@ -118,9 +118,12 @@ Route::prefix('orders')->middleware('auth')->group(function(){
 Route::prefix('exchange')->middleware('auth')->group(function(){
     Route::controller(ExchangeOrdersController::class)->group(function() {
         Route::get("/","index")->name('exchange');
+        Route::get('/picking/list/awaiting', 'pickingListAwaiting')->name('exchange.picking.list.awaiting');
     });
     Route::controller(ExchangeOrdersAjaxController::class)->group(function() {
         Route::post('/cancel/order', 'cancelOrder')->name('exchange.cancel.order');
+        Route::get('/cancel/quantity', 'cancelQuantity')->name('exchange.cancel.quantity');
+        Route::post('/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('exchange.forword.for.awb.generation');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

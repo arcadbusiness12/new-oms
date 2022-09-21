@@ -67,6 +67,35 @@ class ExchangeOrdersController extends Controller
         $orderStatus = ExchangeOrderStatusModel::all();
         return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus'));
     }
+    public function pickingListAwaiting(){
+        $old_input = RequestFacad::all();
+        $data = DB::table("oms_exchange_orders AS eord")
+        ->rightjoin(DB::raw("(SELECT * FROM
+                    ( SELECT exchange_order_id,order_id,1 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_BAOPENCART_DATABASE.oc_exchange_order
+                    UNION
+                    SELECT exchange_order_id,order_id,2 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_DFOPENCART_DATABASE.oc_exchange_order
+                    )
+                    AS exchanges) AS exchanges"),function($join){
+                    $join->on('exchanges.order_id','=','eord.order_id');
+                    $join->on('exchanges.oms_store','=','eord.store');
+        })
+        ->select(DB::raw("exchanges.*,eord.oms_order_status,0 AS payment_status"))
+        ->where('eord.oms_order_status',0)
+        ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+            return $query->where("order_id",$old_input['order_id']);
+        })
+        ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
+            return $query->where("order_status_id",$old_input['order_status_id']);
+        })->orderByRaw("date_modified DESC")
+        ->paginate(20);
+        // dd($data->toArray());
+        //
+        $data = $this->getOrdersWithImage($data);
+        // dd($data->toArray());
+        $searchFormAction = "exchange";
+        $orderStatus = ExchangeOrderStatusModel::all();
+        return view(self::VIEW_DIR.".pick_list_view",compact('data','searchFormAction','orderStatus'));
+    }
     protected function getOrdersWithImage($orders){
         foreach ($orders as $key => $order) {
             $ordered_products = $this->orderedProducts($order);

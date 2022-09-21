@@ -5,15 +5,22 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrderHistoryModel as DFExchangeOrderHistoryModel;
 use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrdersModel as DFExchangeOrdersModel;
+use App\Models\DressFairOpenCart\Products\OptionDescriptionModel as DFOptionDescriptionModel;
+use App\Models\DressFairOpenCart\Products\ProductsModel as DFProductsModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsActivityLogModel;
 use App\Models\Oms\OmsExchangeOrdersModel;
 use App\Models\Oms\OmsOrderStatusInterface;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\OpenCart\ExchangeOrders\ExchangeOrderHistoryModel;
 use App\Models\OpenCart\ExchangeOrders\ExchangeOrdersModel;
+use App\Models\OpenCart\Products\OptionDescriptionModel;
+use App\Models\OpenCart\Products\ProductsModel;
 use Illuminate\Support\Facades\Request AS Input;
-
+use DB;
 class ExchangeOrdersAjaxController extends Controller
 {
     const VIEW_DIR = 'exchange';
@@ -37,7 +44,6 @@ class ExchangeOrdersAjaxController extends Controller
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
     }
     public function cancelOrder(){
-        dd(Input::all());
         try{
             $orderId   = Input::get('order_id');
             $oms_store = Input::get('oms_store');
@@ -94,10 +100,10 @@ class ExchangeOrdersAjaxController extends Controller
                     $orderHistory->{ExchangeOrderHistoryModel::FIELD_NOTIFY} = ExchangeOrderHistoryModel::NOTIFY_CUSTOMER;
                     $orderHistory->save();
                     //check if order is in onhold
-                    $check_on_hold = OmsInventoryOnholdQuantityModel::where("order_id",$orderId_onhold)->first();
+                    $check_on_hold = OmsInventoryOnholdQuantityModel::where("order_id",$orderId_onhold)->where('store',$oms_store)->first();
                     if( $check_on_hold ){
-                      //   $this->availableInventoryQuantity($orderId);
-                      self::addQuantity($orderId);
+                        $this->availableInventoryQuantity($orderId,$oms_store);
+                    //   self::addQuantity($orderId);
                     }
 
                     return array('success' => true, 'data' => array(), 'error' => array('message' => ''));
@@ -108,6 +114,80 @@ class ExchangeOrdersAjaxController extends Controller
         }
         catch (\Exception $e){
             return array('success' => false, 'data' => array(), 'error' => array('message' => $e->getMessage()));
+        }
+    }
+    public function cancelQuantity(){
+        $this->availableInventoryQuantity(1115552,1);
+    }
+    public function availableInventoryQuantity($order_id,$oms_store = null){
+        if( $oms_store == 1 ){
+            $orderd_products = ExchangeOrdersModel::with(['orderd_products'])->where(ExchangeOrdersModel::FIELD_ORDER_ID, $order_id)->first();
+        }else if( $oms_store == 2 ){
+            $orderd_products = DFExchangeOrdersModel::with('orderd_products')->where(ExchangeOrdersModel::FIELD_ORDER_ID,$order_id)->first();
+        }
+        if($orderd_products->orderd_products){
+            foreach ($orderd_products->orderd_products as $key => $product) {
+                if( $oms_store == 1 ){
+                    $opencart_sku = ProductsModel::select('sku')->where('product_id', $product->product_id)->first();
+                }else if( $oms_store == 2 ){
+                    $opencart_sku = DFProductsModel::select('sku')->where('product_id', $product->product_id)->first();
+                }
+                $exists = OmsInventoryProductModel::where('sku', $opencart_sku->sku)->first();
+                if($exists){
+                    $product_id = $exists->product_id;
+                    if(!empty($exists->size)){
+                        $total_quantity = 0;
+                        foreach ($product->order_options as $key => $option) {
+                            if( $oms_store == 1 ){
+                                $option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+                                ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+                                ->where('option_description.name', $option->name)
+                                ->where('ovd.name', $option->value)
+                                ->first();
+							    $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
+                            }else if( $oms_store == 2 ){
+
+                                $option_data = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+                                ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+                                ->where('option_description.name', $option->name)
+                                ->where('ovd.name', $option->value)
+                                ->first();
+							    $ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
+                            }
+                            if($option_data && $option_data->option_id != $ba_color_option_id){
+                                $total_quantity = $total_quantity + $product->quantity;
+                                $decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
+                                OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $option_data->option_id)->where('option_value_id', $option_data->option_value_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+                            }
+                        }
+
+                        $decrement_query = 'IF (onhold_quantity-' . $total_quantity . ' <= 0, 0, onhold_quantity-' . $total_quantity . ')';
+                        OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $ba_color_option_id)->where('option_value_id', $exists->color)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $total_quantity) ));
+                    }else{
+                        foreach ($product->order_options as $key => $option) {
+                            if( $oms_store == 1 ){
+                                $option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+                                    ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+                                    ->where('option_description.name', $option->name)
+                                    ->where('ovd.name', $option->value)
+                                    ->first();
+                            }else if( $oms_store == 2 ){
+                                $option_data = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+                                    ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+                                    ->where('option_description.name', $option->name)
+                                    ->where('ovd.name', $option->value)
+                                    ->first();
+                            }
+
+                            if($option_data){
+                                $decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
+                                OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $option_data->option_id)->where('option_value_id', $option_data->option_value_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+                            }
+                        }
+                    }
+                    updateSitesStock($opencart_sku->sku);
+                }
+            }
         }
     }
 }
