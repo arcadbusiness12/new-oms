@@ -1077,17 +1077,9 @@ class PurchaseManagementController extends Controller
             $shippedWhereClause[] = ['status', $request->order_status_id];
         }
         $orders = OmsPurchaseOrdersModel::with([
-            'orderProducts' => function($q) use($relationWhereClause) {
-                $q->where($relationWhereClause);
-            },
+            'orderProducts',
             'orderProductQuantities' => function($qu) {
                 $qu->orderBy('order_product_quantity_id', 'ASC');
-            },
-            'orderProducts.orderProductQuantities' => function($qu) {
-                $qu->orderBy('order_product_quantity_id', 'ASC');
-            },
-            'orderProductQuantities.productOptions' => function($qo) {
-                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
             'orderProducts.orderProductQuantities.productOptions' => function($qo) {
                 $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
@@ -1114,42 +1106,84 @@ class PurchaseManagementController extends Controller
             'orderSupplier'
             
         ]
-        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')
-        ->paginate(5)->appends($request->all());
+        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')->groupBy('order_id')
+        ->paginate(self::PER_PAGE)->appends($request->all());
         if($count == true){ return $orders->count(); }
+        // dd($orders->toArray());
         foreach($orders as $order) {
+            $order_total = 0;
             $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->whereNull('shiped_order_id')->exists();
             $order['stock_cancel'] = $stock_cancel;
-            foreach($order->orderProducts as $product) {
+            // dd($order->orderProducts->toArray());
+            foreach($order->orderProducts as $key => $product) {
+                $any_qty_remain = 0;
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
-                foreach($product->orderProductQuantities as $quantity) {
-                foreach($quantity->productOptions as $option) {
-                    if($option['product_option_id'] == $option_id){
-                        $option['static'] = 'static';
-                    }else{
-                        $option['static'] = 'size';
+                $quantities = OmsPurchaseOrdersProductQuantityModel::where('order_id', $order['order_id'])->where('order_product_id', $product->product_id)->get();
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM((order_quantity - shipped_quantity)) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
+                $product['unit'] = $units->unit;    
+                $any_qty_remain = 0;
+                foreach($quantities as $k => $quantity) {
+                    $options = OmsPurchaseOrdersProductOptionModel::select('product_option_id','name','value')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+
+                    $to_be_shipped_options = array();
+                    foreach ($options as $option) {
+                        if($option['product_option_id'] == $option_id){
+                            $to_be_shipped_options['static'] = array(
+                                'name'  =>  $option['name'],
+                                'value' =>  $option['value'],
+                            );    
+                        }else{
+                            $to_be_shipped_options[] = array(
+                                'name'  =>  $option['name'],
+                                'value' =>  $option['value'],
+                            );
+                        }
                     }
-                 }
+                    // $quantities[$k]['options'] = $to_be_shipped_options;
+                    $order_total += ($quantity['order_quantity'] - $quantity['shipped_quantity']) * $quantity['price'];
+                    $to_be_shipped_quantities[] = array(
+                        'quantity'                  =>  $quantity['quantity'],
+                        'order_product_id'          =>  $quantity['order_product_id'],
+                        'order_quantity'            =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                        'price'                     =>  $quantity['price'],
+                        'total'                     =>  ($quantity['order_quantity'] - $quantity['shipped_quantity']) * $quantity['price'],
+                        'options'                   =>  $to_be_shipped_options,
+                    );
+                    $any_qty_remain = $any_qty_remain + ($quantity['order_quantity'] - $quantity['shipped_quantity']);
+                    
                 }
+                $product['quantities'] = $to_be_shipped_quantities;
+                if($any_qty_remain < 1) {
+                    unset($order->orderProducts[$key]);
+                }
+                // dd($product);
             }
-            if(count((array)$order->shippedOrders) > 0) {
+            $order['total'] = $order_total;
+            if(count((array)$order->shipped_orders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
                     foreach($sorder->orderProducts as $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
                         foreach($sproduct->orderProductQuantities as $squantity) {
+                            $to_be_shipped_options = array();
                             foreach($squantity->productOptions as $option) {
                                 if($option['product_option_id'] == $option_id){
-                                    $option['static'] = 'static';
+                                    $to_be_shipped_options['static'] = array(
+                                        'name'  =>  $option['name'],
+                                        'value' =>  $option['value'],
+                                    );    
                                 }else{
-                                    $option['static'] = 'size';
+                                    $to_be_shipped_options[] = array(
+                                        'name'  =>  $option['name'],
+                                        'value' =>  $option['value'],
+                                    );
                                 }
+                                // $option[]
                              }
                             }
                     }
                     
                 }
             }
-            
         }
         // dd($orders->toArray());
         $statuses = array(
@@ -1158,7 +1192,9 @@ class PurchaseManagementController extends Controller
             'cancelled'     =>  7,
         );
         $counter = $this->productCount();
-        $search_form_action = \URL::to('/purchase_manage/to_be_shipped'); $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped'); 
+        // dd($search_form_action);
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
         return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
     }
 

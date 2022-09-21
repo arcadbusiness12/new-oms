@@ -44,30 +44,30 @@
                            
                            <?php if($orders['data']) { ?>
                             <?php foreach ($orders['data'] as $order) { ?>
-                            <div class="card order_list">
+                            <div class="card order_list mb-4">
                                 <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
                                 <div class="row top_row <?= (!$order['total']) ? 'hidden' : '' ?>">
-                                    <div class="col-xs-4"><b>Order Number: #<?php echo $order['order_id'] ?></b>
+                                    <div class="col-xs-4 col-sm-4 text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
                                         <br>
-                                        <div class="badge"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
+                                        <div class="badge"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                         <?php } ?>
                                     </div>
-                                    <div class="col-xs-4 text-center">
+                                    <div class="col-xs-4 col-sm-4 text-center">
                                         <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
-                                            <div class="label label-warning">To Be Shipped</div>
+                                            <div class="badge badge-secondary" style="font-size: 14px;"><b>To Be Shipped</b></div>
                                         <?php } else if($order['order_status_id'] == $statuses['shipped']){ ?>
-                                            <div class="label label-success">Shipped</div>
+                                            <div class="badge badge-secondary" style="font-size: 14px;"><b>Shipped</b></div>
                                         <?php } else if($order['order_status_id'] == $statuses['cancelled']){ ?>
                                             <!-- <div class="label label-danger">Cancelled</div> -->
                                         <?php } ?>
                                     </div>
-                                    <div class="col-xs-4 text-right">
+                                    <div class="col-xs-4 col-sm-4 text-right">
                                         <?php if($order['urgent']) { ?>
-                                            <div class="label label-warning">Urgent</div>
+                                            <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge"><?php echo $order['created_at'] ?></div>
+                                            <div class="badge badge-secondary"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                         </div>
                                     </div>
                                 </div>
@@ -82,59 +82,64 @@
                                             <strong><?php echo $product['name'] ?></strong><br>
                                             <i><?php echo $product['model'] ?></i>
                                             <div class="options-label">
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) {
-                                                    //  if($product['product_id'] != $quantity['order_product_id']) {
-                                                    //                             continue;
-                                                    //                         } 
+                                                <?php foreach ($product['quantities'] as $quantity) {
+                                                     if($product['product_id'] != $quantity['order_product_id']) {
+                                                                                continue;
+                                                                            } 
                                                     ?>
-                                                    <?php foreach ($quantity['product_options'] as $key => $option) { 
-                                                        if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
-                                                        <div class="box-label">
-                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $quantity['shipped_quantity']; ?>
+                                                    <?php
+                                                    // if()
+                                                     foreach ($quantity['options'] as $key => $option) { 
+                                                         $sqty = $quantity['order_quantity'];
+                                                        if($key !== 'static' && $sqty > 0 ) { ?>
+                                                        <div class="box-label text-black">
+                                                            <?php echo $option['name'] ?> - <?php echo $option['value'] ?> = <?php echo $sqty; ?>
                                                         </div>
-                                                    <?php } } ?>
+                                                    <?php 
+                                                    }
+                                                 } ?>
                                                 <?php } ?>
-                                                <div class="box-label">
-                                                    {{-- T. Units = <?php echo $product['unit'] ?> --}}
+                                                <div class="box-label text-black">
+                                                    T. Units = <?php echo $product['unit'] ?>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <?php } } ?>
-                                <div class="row action_row <?= (!$order['total']) ? 'hidden' : '' ?>">
+                                <div class="row action_row <?= (!$order['total']) ? 'hidden' : '' ?> mb-2">
                                     <div class="col-xs-12 col-sm-2">
                                     <?php if(session('role') == 'SUPPLIER') { ?>
                                     <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
                                         <?php if($order['stock_cancel']) { ?>
-                                            <div class="label label-warning">Cancel Request Sent</div>
+                                            <div class="badge badge-warning">Cancel Request Sent</div>
                                         <?php } else { $main_order_id = $order['order_id']; ?>
                                           <form action="<?php echo URL::to('/purchase_manage/stock_cancel_order_request') ?>" method="post">  
                                             
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
-                                                <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control submit-cancel-order">Stock Cancel</button>
+                                                <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control submit-cancel-order active">Stock Cancel</button>
                                             </form>
                                         <?php } ?>
                                     <?php } ?>
                                     <?php } ?>
                                     </div>
                                     <div class="col-xs-12 col-sm-8 text-center">
-                                        <button type="button" class="btn btn-default collapse-comment" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'],2); ?></b></button>
+                                        <button type="button" class="btn btn-default collapse-comment active" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'],2); ?></b></button>
                                     </div>
                                     <div class="col-xs-12 col-sm-2">
                                         <?php if($order['order_status_id'] == $statuses['to_be_shipped']){ ?>
                                         <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF'){ ?>
-                                        <a href="<?php echo URL::to('/purchase_manage/view_confirmed/' . $order['order_id']) ?>"><button type="button" class="btn btn-info form-control">View</button></a>
+                                        <a href="<?php echo URL::to('/purchase_manage/view_confirmed/' . $order['order_id']) ?>"><button type="button" class="btn btn-info form-control active">View</button></a>
                                         <?php } else { ?>
                                         <a href="<?php echo URL::to('/purchase_manage/ship/'. $order['order_id']) ?>"><button type="button" class="btn btn-success form-control">Ship</button></a>
                                         <?php } ?>
                                         <?php } ?>
                                     </div>
                                 </div>
-                                <div id="summary<?php echo $order['order_id'] ?>" class="summary-panel">
+                                <div id="summary<?php echo $order['order_id'] ?>" class="summary-panel collapse">
                                     <div class="row">
-                                        <div class="col-xs-12">
+                                        <div class="col-xs-12 ml-5">
                                             <table class="table">
                                                 <tr>
                                                     <th>Option</th>
@@ -143,23 +148,23 @@
                                                     <th>Total</th>
                                                 </tr>
                                                 <?php foreach ($order['order_products'] as $product) { ?>
-                                                <?php foreach ($product['order_product_quantities'] as $quantity) { 
+                                                <?php foreach ($product['quantities'] as $quantity) { 
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
                                                     ?>
                                                         <tr>
-                                                        <?php if($quantity['product_options']) { ?>
-                                                        <?php foreach ($quantity['product_options'] as $key => $option) { 
-                                                            if($option['static'] !== 'static' && $quantity['order_quantity'] > 0) { ?>
+                                                        <?php if($quantity['options']) { ?>
+                                                        <?php foreach ($quantity['options'] as $key => $option) { 
+                                                            if($key !== 'static' && $quantity['order_quantity'] > 0) { ?>
                                                             <td><?php echo $option['name'] . ' - ' . $option['value']; ?></td>
                                                         <?php } } ?>
                                                         <?php }else{ ?>
                                                             <td>-</td>
                                                         <?php } ?>
                                                             <?php if($quantity['order_quantity'] > 0) { ?>
-                                                            <td><?php echo $quantity['order_quantity'] - $quantity['shipped_quantity'] ?></td>
-                                                            <td><?php echo number_format($quantity['price'],2); ?> -- {{$quantity['shipped_quantity']}}</td>
+                                                            <td class="testing"><?php echo $quantity['order_quantity'] ?></td>
+                                                            <td><?php echo number_format($quantity['price'],2); ?> </td>
                                                             <td><?php echo number_format($quantity['total'],2); ?></td>
                                                             <?php } ?>
                                                         </tr>
@@ -175,21 +180,21 @@
                                         if($shipped_order['order_products']) { ?>
                                     <div class="card order_list">
                                         <div class="row top_row">
-                                            <div class="col-xs-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b><br>
+                                            <div class="col-xs-4 col-sm-4 text-black mb-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b><br>
                                                 <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF') { ?>
-                                                <div class="badge">Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></div>
+                                                <div class="badge badge-secondary"><b>Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
                                                 <?php } else { ?>
-                                                <div class="badge">Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></div>
+                                                <div class="badge badge-secondary"><b>Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
                                                 <?php } ?>
                                             </div>
-                                            <div class="col-xs-4 text-center">
+                                            <div class="col-xs-4 col-sm-4 text-center">
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                                <div class="badge badge-primary"><?php echo ucfirst($order['supplier']['firstname'] . " " . $order['supplier']['lastname']) ?></div>
+                                                <div class="badge badge-secondary"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                             <?php } ?>
                                             </div>
                                             <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
-                                            <div class="col-xs-4 text-right">
-                                                <button type="button" class="btn btn-success ship_to_dubai" data-order-id="<?php echo $shipped_order['order_id'] ?>" data-shipped-id="<?php echo $shipped_order['shipped_id'] ?>">Ship To Dubai</button>
+                                            <div class="col-xs-4 col-sm-4 text-right">
+                                                <button type="button" class="btn btn-success ship_to_dubai" data-order-id="<?php echo $shipped_order['order_id'] ?>" data-shipped-id="<?php echo $shipped_order['shipped_id'] ?>"><b>Ship To Dubai</b></button>
                                             </div>
                                             <?php } ?>
                                         </div>
@@ -197,7 +202,7 @@
                                         <div class="product_list_row">
                                             <div class="row product_row">
                                                 <div class="col-xs-4 col-sm-2">
-                                                    <img width="100" src="<?php echo $product['image'] ?>" />
+                                                    {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
                                                 </div>
                                                 <div class="col-xs-6 col-sm-8">
                                                     <strong><?php echo $product['name'] ?></strong><br>
@@ -207,10 +212,10 @@
                                                     <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>">Details</button>
                                                 </div>
                                             </div>
-                                            <div id="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
+                                            <div id="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
                                                 <table class="table">
-                                                <?php $i = 0; foreach ($product['order_product_quantities'] as $quantity) { 
-                                                    echo "<pre>"; print_r($product['order_product_quantities']);
+                                                <?php $i = 0; 
+                                                foreach ($product['order_product_quantities'] as $quantity) { 
                                                      if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
                                                                             } 
