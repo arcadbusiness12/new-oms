@@ -50,14 +50,14 @@
                                     <div class="col-xs-4 col-sm-4 text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
                                         <br>
-                                        <div class="badge"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
+                                        <div class="badge badge-secondary"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-4 col-sm-4 text-center">
                                         <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
-                                            <div class="badge badge-secondary" style="font-size: 14px;"><b>To Be Shipped</b></div>
+                                            <div class="badge badge-warning orange darken-1" style="font-size: 14px;"><b>To Be Shipped</b></div>
                                         <?php } else if($order['order_status_id'] == $statuses['shipped']){ ?>
-                                            <div class="badge badge-secondary" style="font-size: 14px;"><b>Shipped</b></div>
+                                            <div class="badge badge-warning orange darken-1" style="font-size: 14px;"><b>Shipped</b></div>
                                         <?php } else if($order['order_status_id'] == $statuses['cancelled']){ ?>
                                             <!-- <div class="label label-danger">Cancelled</div> -->
                                         <?php } ?>
@@ -112,27 +112,27 @@
                                     <?php if(session('role') == 'SUPPLIER') { ?>
                                     <?php if($order['order_status_id'] == $statuses['to_be_shipped']) { ?>
                                         <?php if($order['stock_cancel']) { ?>
-                                            <div class="badge badge-warning">Cancel Request Sent</div>
+                                            <div class="badge badge-danger font-weight-bold ml-3 active" style="font-size: 14px;"> Cancel Request Sent</div>
                                         <?php } else { $main_order_id = $order['order_id']; ?>
-                                          <form action="<?php echo URL::to('/purchase_manage/stock_cancel_order_request') ?>" method="post">  
+                                          <form action="<?php echo URL::to('/PurchaseManagement/tobe/ship/order/stock/cancel/request') ?>" method="post">  
                                             
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
-                                                <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control submit-cancel-order active">Stock Cancel</button>
+                                                <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control submit-cancel-order active ml-3">Stock Cancel</button>
                                             </form>
                                         <?php } ?>
                                     <?php } ?>
                                     <?php } ?>
                                     </div>
-                                    <div class="col-xs-12 col-sm-8 text-center">
-                                        <button type="button" class="btn btn-default collapse-comment active" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'],2); ?></b></button>
+                                    <div class="col-xs-12 col-sm-7 text-center">
+                                        <button type="button" class="btn btn-default collapse-comment active text-black" data-target="summary<?php echo $order['order_id'] ?>"><b><?php echo number_format($order['total'],2); ?></b></button>
                                     </div>
-                                    <div class="col-xs-12 col-sm-2">
+                                    <div class="col-xs-12 col-sm-3 text-right">
                                         <?php if($order['order_status_id'] == $statuses['to_be_shipped']){ ?>
                                         <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF'){ ?>
-                                        <a href="<?php echo URL::to('/purchase_manage/view_confirmed/' . $order['order_id']) ?>"><button type="button" class="btn btn-info form-control active">View</button></a>
+                                        <a href="<?php echo route('view.confirmed' , $order['order_id']) ?>"><button type="button" class="btn btn-info form-control active mr-3" style="width: 52%;">View</button></a>
                                         <?php } else { ?>
-                                        <a href="<?php echo URL::to('/purchase_manage/ship/'. $order['order_id']) ?>"><button type="button" class="btn btn-success form-control">Ship</button></a>
+                                        <a href="<?php echo route('ship.order', $order['order_id']) ?>"><button type="button" class="btn btn-success form-control mr-3" style="width: 52%;">Ship</button></a>
                                         <?php } ?>
                                         <?php } ?>
                                     </div>
@@ -178,7 +178,7 @@
                                 <?php if($order['shipped_orders']) { ?>
                                     <?php foreach ($order['shipped_orders'] as $shipped_order) { 
                                         if($shipped_order['order_products']) { ?>
-                                    <div class="card order_list">
+                                    <div class="card order_list mb-4">
                                         <div class="row top_row">
                                             <div class="col-xs-4 col-sm-4 text-black mb-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b><br>
                                                 <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF') { ?>
@@ -202,7 +202,7 @@
                                         <div class="product_list_row">
                                             <div class="row product_row">
                                                 <div class="col-xs-4 col-sm-2">
-                                                    {{-- <img width="100" src="<?php echo $product['image'] ?>" /> --}}
+                                                    <img width="100" src="<?php echo $product['image'] ?>" />
                                                 </div>
                                                 <div class="col-xs-6 col-sm-8">
                                                     <strong><?php echo $product['name'] ?></strong><br>
@@ -224,26 +224,26 @@
                                                         <?php foreach ($quantity['product_options'] as $option) { ?>
                                                         <td class="col-xs-2">
                                                             <?php if($i == 1) { ?>
-                                                            <label class="control-label"><?php echo $option['name'] ?></label>
+                                                            <label class="control-label"><strong> <?php echo $option['name'] ?></strong></label>
                                                             <?php } ?>
                                                             <div><input type="text" class="form-control" value="<?php echo $option['value'] ?>" readonly></div>
                                                         </td>
                                                         <?php } ?>
                                                         <td class="col-xs-2">
                                                             <?php if($i == 1) { ?>
-                                                            <label class="control-label">Shipped Quantity</label>
+                                                            <label class="control-label"><strong> Shippengd Quantity </strong></label>
                                                             <?php } ?>
                                                             <div><input type="text" class="form-control" value="<?php echo $quantity['quantity'] ?>" readonly></div>
                                                         </td>
                                                         <td class="col-xs-2">
                                                             <?php if($i == 1) { ?>
-                                                            <label class="control-label">Price</label>
+                                                            <label class="control-label"><strong> Price </strong></label>
                                                             <?php } ?>
                                                             <div><input type="text" class="form-control price" value="<?php echo number_format($quantity['price'],2) ?>" readonly/></div>
                                                         </td>
                                                         <td class="col-xs-2">
                                                             <?php if($i == 1) { ?>
-                                                            <label class="control-label">Sum</label>
+                                                            <label class="control-label"><strong> Sum </strong></label>
                                                             <?php } ?>
                                                             <div><input type="text" class="form-control sum" value="<?php echo number_format($quantity['total'],2) ?>" readonly/></div>
                                                         </td>
@@ -257,9 +257,9 @@
                                             <div class="col-xs-12 col-sm-8"></div>
                                             <div class="col-xs-12 col-sm-4 total_column">
                                                 <div class="row">
-                                                    <div class="col-xs-7 col-sm-6">
+                                                    <div class="col-xs-7 col-sm-6 text-black">
                                                         <?php foreach ($shipped_order['order_totals'] as $key => $value) { ?>
-                                                        <label><?php echo $value['code'] ?></label>
+                                                        <label class="font-weight-bold"><?php echo $value['code'] ?> </label>
                                                         <?php } ?>
                                                     </div>
                                                     <div class="col-xs-5 col-sm-6">

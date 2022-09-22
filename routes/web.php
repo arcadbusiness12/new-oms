@@ -192,6 +192,8 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::get('/ship/order/{id}', 'orderShipping')->name('ship.order');
         Route::post('/add/to/ship', 'addToShip')->name('add.to.ship');
         Route::any('/get/to/be/shipped', 'getToBeShipped')->name('get.to.be.shipped');
+        Route::post('/tobe/ship/order/stock/cancel/request', 'toBeShipOrderCancelRequest')->name('tobe.ship.order.stock.cancel.request');
+        Route::get('/view/confirmed/{order}', 'viewConfirmed')->name('view.confirmed');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

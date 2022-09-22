@@ -1159,9 +1159,8 @@ class PurchaseManagementController extends Controller
                 // dd($product);
             }
             $order['total'] = $order_total;
-            if(count((array)$order->shipped_orders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
-                    foreach($sorder->orderProducts as $sproduct) {
+                    foreach($sorder->orderProducts as $k => $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
                         foreach($sproduct->orderProductQuantities as $squantity) {
                             $to_be_shipped_options = array();
@@ -1183,9 +1182,7 @@ class PurchaseManagementController extends Controller
                     }
                     
                 }
-            }
         }
-        // dd($orders->toArray());
         $statuses = array(
             'to_be_shipped' =>  4,
             'shipped'       =>  5,
@@ -1193,9 +1190,38 @@ class PurchaseManagementController extends Controller
         );
         $counter = $this->productCount();
         $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped'); 
-        // dd($search_form_action);
+        // dd($orders->toArray());
         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
         return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
+    }
+
+    public function viewConfirmed($order_id) {
+        $option_id = OmsSettingsModel::get('product_option','color');
+        if($order_id) {
+            $order = OmsPurchaseOrdersModel::with(['orderProducts', 'orderTotals' => function($q) {
+                $q->orderBy('sort_order', 'ASC');
+            },'orderHistories'])->where('order_id', $order_id)->where('order_status_id', 4)->first();
+
+            foreach($order->orderProducts as $k => $product) {
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::RAW('SUM(order_quantity - shipped_quantity) as unit'))->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                $quantities = OmsPurchaseOrdersProductQuantityModel::with('productOptions')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->get()->toArray();
+                
+                $qutites = [];
+                foreach($quantities as $quantity) {
+                    foreach($quantity['product_options'] as $key =>$option) {
+                        if($option['product_option_id'] == $option_id){
+                            $quantity['product_options'][$key]['static'] = 'static';
+                        }else{
+                            $quantity['product_options'][$key]['static'] = 'size';
+                        }
+                    }
+                    array_push($qutites, $quantity);
+                }
+                $product['quantities'] = $qutites;
+                $product['unit'] = $units['unit'];
+            }
+        }
+        return view(self::VIEW_DIR.".viewConfirmed", ["order" => $order]);
     }
 
     public function supplierCancelledAwaitingActionOrderRequest(Request $request) {
@@ -1371,6 +1397,21 @@ class PurchaseManagementController extends Controller
               return redirect()->back()->with('message', 'Your Order #'. $order_id .' cancelled request send successfully.');
         }else {
             return redirect()->back()->with('message', 'Something went wrong!');
+        }
+    }
+
+    public function toBeShipOrderCancelRequest(Request $request) {
+        if($request->all() > 0 && $request->submit == 'cancel'){
+            $StockCancel = new OmsPurchaseStockCancelledModel();
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_ORDER_ID} = $request->order_id;
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_SUPPLIER} = session('user_id');
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_STATUS} = 0;
+            if(isset($request->shiped_order_id)) {
+                $StockCancel->shiped_order_id = $request->shiped_order_id;
+            }
+            $StockCancel->save();
+
+            return redirect()->back()->with('message', 'Your Order #'. $request->order_id .' cancelled request send successfully.');
         }
     }
 

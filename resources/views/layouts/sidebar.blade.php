@@ -25,7 +25,7 @@
                     <div class="relative brand-wrapper sticky b-b sidebar-top-box">
                         <div class="d-flex justify-content-between align-items-center p-3">
                             <div class="text-xs-center">
-                                <span class="font-weight-lighter s-18"><?php echo session('firstname'). ' '. session('lastname') ?></span>
+                                <span class="font-weight-bold s-18" style="text-shadow: 2px -4px 5px;"><?php echo session('firstname'). ' '. session('lastname') ?></span>
                             </div>
                             {{-- <div class="badge badge-danger r-0">New Panel</div> --}}
                         </div>
@@ -172,7 +172,8 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/get/to/be/shipped') !== false) active @endif">
                                     <a href="{{route('get.to.be.shipped')}}"><i class="icon icon-ship"></i>To Be Shipped</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-ship"></i>Shipped</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/view/confirmed') !== false) active @endif">
+                                    <a href="{{route('get.to.be.shipped')}}"><i class="icon icon-ship"></i>Shipped</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-truck"></i>Deliver
                                     </a>
