@@ -24,7 +24,7 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        <div class="panel-heading">All Orders</div>
+                        <div class="panel-heading">Pick List</div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
                           @if(session()->has('success'))

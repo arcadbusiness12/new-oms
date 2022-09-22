@@ -97,13 +97,13 @@
                                 <li class="@if( str_contains(Request::url(), '/exchange') ) active @endif"><a href="#"><i class="icon icon-bug text-red"></i>Exchange<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="{{ route('exchange') }}">All Orders</a>
+                                        <li class="@if( Request::url() == route('exchange') ) active @endif" ><a href="{{ route('exchange') }}">All Orders</a>
                                         </li>
-                                        <li><a href="{{ route('exchange') }}?order_status_id=1">Pending</a>
+                                        <li class="@if( Request::url() == route('exchange') ) active @endif"><a href="{{ route('exchange') }}?order_status_id=1">Pending</a>
                                         </li>
-                                        <li><a href="login.html">Approve Exchange</a>
-                                        </li>
-                                        <li><a href="login-2.html">Pick List</a>
+                                        {{--  <li><a href="login.html">Approve Exchange</a>
+                                        </li>  --}}
+                                        <li class="@if( Request::url() == route('exchange.picking.list.awaiting') ) active @endif"><a href="{{ route('exchange.picking.list.awaiting') }}">Pick List</a>
                                         </li>
                                         <li><a href="login.html">Pack Orders</a>
                                         </li>

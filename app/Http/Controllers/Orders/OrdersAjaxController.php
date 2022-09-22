@@ -234,9 +234,9 @@ class OrdersAjaxController extends Controller {
 							->where('option_description.name', $option->name)
 							->where('ovd.name', $option->value)
 							->first();
-							$ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
+							$ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
 							if($option_data && $option_data->option_id != $ba_color_option_id){
-								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
+								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_data->option_id,$option_data->option_value_id);
 								$total_quantity = $total_quantity + $product->quantity;
 								$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
                                 $onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
@@ -257,7 +257,7 @@ class OrdersAjaxController extends Controller {
 							->where('ovd.name', $option->value)
 							->first();
 							if($option_data){
-								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
+								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_data->option_id,$option_data->option_value_id);
 								$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
 								$onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
 								if($packedExists){
