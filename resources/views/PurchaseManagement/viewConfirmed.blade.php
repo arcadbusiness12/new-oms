@@ -56,7 +56,8 @@
                                         <?php $i = 0; foreach ($product['quantities'] as $quantity) { 
                                             if($product['product_id'] != $quantity['order_product_id']) {
                                                                                 continue;
-                                                                            } 
+                                                                            }
+                                            // $quantity = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                                             $i++; ?>
                                             <?php if($quantity['quantity'] > 0) { ?>
                                             <tr class="single_option_row">
@@ -72,7 +73,8 @@
                                                     <?php if($i == 1) { ?>
                                                     <label class="control-label"><strong> Quantity </strong></label>
                                                     <?php } ?>
-                                                    <div><input type="text" class="form-control" value="<?php echo $quantity['quantity'] ?>" readonly></div>
+                                                    <?php $tobequantity = $quantity['order_quantity'] - $quantity['shipped_quantity']; ?>
+                                                    <div><input type="text" class="form-control" value="<?php echo $tobequantity ?>" readonly></div>
                                                 </td>
                                                 <?php if($quantity['quantity'] > 0) { ?>
                                                 <td class="col-xs-2">

@@ -1207,6 +1207,7 @@ class PurchaseManagementController extends Controller
                 $quantities = OmsPurchaseOrdersProductQuantityModel::with('productOptions')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->get()->toArray();
                 
                 $qutites = [];
+                $any_qty_remain = 0;
                 foreach($quantities as $quantity) {
                     foreach($quantity['product_options'] as $key =>$option) {
                         if($option['product_option_id'] == $option_id){
@@ -1215,12 +1216,24 @@ class PurchaseManagementController extends Controller
                             $quantity['product_options'][$key]['static'] = 'size';
                         }
                     }
+                    
+                    $any_qty_remain = $any_qty_remain + ($quantity['order_quantity'] - $quantity['shipped_quantity']);
+                    $remainquantity = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                    if($remainquantity == 0) {
+                        unset($quantity);
+                        continue;
+                    }
                     array_push($qutites, $quantity);
                 }
                 $product['quantities'] = $qutites;
                 $product['unit'] = $units['unit'];
+                if($any_qty_remain < 1) {
+                    unset($order->orderProducts[$k]);
+                }
             }
+            
         }
+        
         return view(self::VIEW_DIR.".viewConfirmed", ["order" => $order]);
     }
 
