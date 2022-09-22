@@ -1106,7 +1106,7 @@ class PurchaseManagementController extends Controller
             'orderSupplier'
             
         ]
-        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')->groupBy('order_id')
+        )->where($whereClause)->whereIn('order_status_id', [4])->orderBy('order_id', 'DESC')->groupBy('order_id')
         ->paginate(self::PER_PAGE)->appends($request->all());
         if($count == true){ return $orders->count(); }
         // dd($orders->toArray());
