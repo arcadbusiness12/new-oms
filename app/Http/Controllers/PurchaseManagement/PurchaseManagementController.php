@@ -1281,9 +1281,10 @@ class PurchaseManagementController extends Controller
             },'shippedOrders.orderProducts.orderProductQuantities.productOptions' =>function($soproop) {
                 $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },'orderSupplier'
-        ])->where($whereClause)->whereIn('order_status_id', [4,5])->orderBy('order_id', 'DESC')->groupBy('order_id')
+        ])->where($whereClause)->whereIn('order_status_id', [4,5])->whereHas('shippedOrders', function ($query) {
+            $query->where('status', 2);
+            })->orderBy('order_id', 'DESC')->groupBy('order_id')
           ->paginate(self::PER_PAGE)->appends($request->all());
-        //   dd($orders->toArray());
         foreach($orders as $order) {
             $stock_cancel = false;
             foreach($order->orderProducts as $key => $product) {
