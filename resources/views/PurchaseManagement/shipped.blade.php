@@ -276,7 +276,7 @@
                                         </div>
                                         <!--  supplier cancel order option start -->
                                         <div class="row">
-                                            <div class="col-sm-2 stock-cancel-request-tag">
+                                            <div class="col-sm-2 stock-cancel-request-tag m-4">
                                              @if(session('role') == 'SUPPLIER')
                                                @if($order['stock_cancel'])
                                                     <div class="label label-warning">Cancel Request Sent</div>
