@@ -1283,8 +1283,9 @@ class PurchaseManagementController extends Controller
             },'orderSupplier'
         ])->where($whereClause)->whereIn('order_status_id', [4,5])->orderBy('order_id', 'DESC')->groupBy('order_id')
           ->paginate(self::PER_PAGE)->appends($request->all());
-          
+        //   dd($orders->toArray());
         foreach($orders as $order) {
+            $stock_cancel = false;
             foreach($order->orderProducts as $key => $product) {
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
             }
@@ -1294,6 +1295,7 @@ class PurchaseManagementController extends Controller
                 }
                 $shipped_order['shipping'] = json_decode($shipped_order['shipping'], true);
                 $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where('shiped_order_id',$shipped_order['shipped_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->exists();
+                
             }
             $order['stock_cancel'] = $stock_cancel;
         }
