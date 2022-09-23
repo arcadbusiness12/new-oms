@@ -295,3 +295,10 @@ input[type="checkbox"] {
     background-color: #3f51b5;
     color: white;
 }
+.from-to-text .badge {
+    font-weight: 900 !important;
+}
+
+.hidden-section {
+    display: none;
+}
