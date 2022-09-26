@@ -154,7 +154,7 @@
                                                         </div>
                                                         <div class="col-xs-2 col-sm-2 col-grid">
                                                             {{-- <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button> --}}
-                                                            <button class="btn btn-default active form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                            <button class="btn btn-default active form-control active collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                                 Details
                                                             </button>
                                                         </div>
@@ -303,7 +303,7 @@
                                                                     <i><?php echo $shipped_product['model'] ?></i>
                                                                 </div>
                                                                 <div class="col-xs-2 col-sm-2">
-                                                                    <button class="btn btn-default active form-control collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                                    <button class="btn btn-default active form-control text-black collapse-product-option" type="button" data-toggle="collapse" data-target="#product-option<?php echo $shipped_order['shipped_id'] . $shipped_product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                                         Details
                                                                     </button>
                                                                 </div>

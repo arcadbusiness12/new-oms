@@ -175,10 +175,13 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/shipped/orders') !== false) active @endif">
                                     <a href="{{route('get.shipped.orders')}}"><i class="icon icon-ship"></i>Shipped</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-truck"></i>Deliver
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/add/to/deliver/orders') !== false) active @endif">
+                                    <a href="{{route('add.to.deliver')}}"><i class="icon icon-truck"></i>
+                                        Deliver
                                     </a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-truck"></i>Delivered</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/delivered/orders') !== false) active @endif">
+                                    <a href="{{route('get.delivered.orders')}}"><i class="icon icon-truck"></i>Delivered</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-close"></i>Cancelled</a>
                                 </li>

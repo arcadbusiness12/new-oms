@@ -14,14 +14,19 @@
       <?php array_pop($order_statuses);
       $i = 1;
       foreach ($order_statuses as $key => $value) { 
+        $blink = '';
         $h_class = 'h-class';
         if(count($order['status_history']) > 0) {
           $h_class = '';
         }
+        if($value['order_status_id'] <= $order['order_status_id'] + 1) {  $active = 'active-next'; $blink = ''; } else {
+          $active = ''; $blink = '';
+        }
+        if($value['order_status_id'] <= $order['order_status_id']) {$active = 'active'; $blink = '';}
         ?>
        
-      <li class="<?php if($value['order_status_id'] <= $order['order_status_id'] + 1) { ?> active <?php }?> {{$h_class}}">
-        <a href=""  class="circle">
+      <li class="<?php echo $active;?> {{$h_class}}">
+        <a href=""  class="circle {{$blink}}">
           {{-- <i class="icon-check"></i> --}}
         </a>
        <span class="text-black"><?php echo $value['name']; ?></span>

@@ -82,7 +82,7 @@
                                             </div>
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF')) { ?>
                                             <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn btn-default active form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
+                                                <button type="button" class="btn btn-default active form-control btn-collapse active collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">
                                                     Details
                                                 </button>
                                             </div>

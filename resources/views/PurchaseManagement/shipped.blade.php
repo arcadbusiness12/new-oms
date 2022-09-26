@@ -76,7 +76,7 @@
                                                 <i><?php echo $product['model'] ?></i>
                                             </div>
                                             <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn btn-default form-control active btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button>
+                                                <button type="button" class="btn btn-default form-control active btn-collapse active collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button>
                                             </div>
                                         </div>
                                         <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
@@ -233,12 +233,12 @@
                                         <?php } ?>
                                         <div class="col-sm-12">
                                         </div>
-                                        <div class="row instruction_row">
+                                        <div class="row instruction_row m-2">
                                             <div class="col-xs-12 col-sm-8">
                                                 <?php if($shipped_order['shipping']) { ?>
                                                 <div class="row">
                                                 <?php foreach ($shipped_order['shipping'] as $key => $value) { ?>
-                                                    <div class="col-xs-6 col-sm-6 text-black table-responsive ml-4">
+                                                    <div class="col-xs-6 col-sm-6 text-black table-responsive">
                                                         <label class="font-weight-bold"><?php echo ucfirst($key) ?></label>
                                                         <table class="table table-bordered">
                                                             <tr>
@@ -279,13 +279,13 @@
                                             <div class="col-sm-2 stock-cancel-request-tag m-4">
                                              @if(session('role') == 'SUPPLIER')
                                                @if($order['stock_cancel'])
-                                                    <div class="label label-warning">Cancel Request Sent</div>
+                                                    <div class="badge badge-danger font-weight-bold ml-3 active" style="font-size: 14px;">Cancel Request Sent</div>
                                                 @else
-                                                    <form action="<?php echo URL::to('/purchase_manage/stock_cancel_order_request') ?>" method="post">
+                                                    <form action="<?php echo URL::to('/PurchaseManagement/tobe/ship/order/stock/cancel/request') ?>" method="post">
                                                         {{ csrf_field() }}
                                                         <input type="hidden" name="order_id" value="<?php echo $order['order_id'] ?>" />
                                                         <input type="hidden" name="shiped_order_id" value="<?php echo $shipped_order['shipped_id'] ?>" />
-                                                        <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control submit-cancel-order">Stock Cancel <span class="cancel-btn"></span> </button>
+                                                        <button type="submit" name="submit" value="cancel" class="btn btn-danger form-control active submit-cancel-order">Stock Cancel <span class="cancel-btn"></span> </button>
                                                     </form>
                                                 @endif
                                              @endif

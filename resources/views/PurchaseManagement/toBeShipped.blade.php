@@ -209,7 +209,7 @@
                                                     <i><?php echo $product['model'] ?></i>
                                                 </div>
                                                 <div class="col-xs-2 col-sm-2">
-                                                    <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>">Details</button>
+                                                    <button type="button" class="btn btn-default form-control btn-collapse active collapse-product-option" data-target="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>">Details</button>
                                                 </div>
                                             </div>
                                             <div id="product-option<?php echo $shipped_order['shipped_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
@@ -291,23 +291,36 @@
     </div>
 </div>
 @endsection
-<div class="modal fade" id="model-cancel-order">
+<div class="modal fade" id="ship_to_dubai_modal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('confirmed.order.cancelled') }}" method="post">
-                {{ csrf_field() }}
+            <form action="<?php echo route('ship.to.dubai') ?>" method="post">
+            {{ csrf_field() }}
             <div class="modal-header">
-                <h4 class="modal-title">Reason For Cancel</h4>
+                <h4 class="modal-title font-weight-bold">Ship To Dubai</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="order_id" />
-                <input type="hidden" name="supplier" />
-                <input type="hidden" name="confirmed_action" />
-                <textarea name="comment" rows="5" class="form-control" required></textarea>
+                <input type="hidden" name="order_id"/>
+                <input type="hidden" name="shipped_id"/>
+                <div class="row text-black">
+                    <div class="col-xs-12">
+                        <label class="control-label">Shipping Name</label>
+                        <div>
+                            <input type="text" name="shipping_name" class="form-control" required/>
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <label class="control-label">Tracking Number</label>
+                        <div>
+                            <input type="text" name="tracking_number" class="form-control" required/>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success active submit-cancel-confirmed-order">Submit</button>
+                <input type="hidden" name="submit" value="update_ship_to_dubai" />
+                <button type="submit" id="submit_ship_to_dubai" class="btn btn-success">Ship</button>
             </div>
             </form>
         </div>

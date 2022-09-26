@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models\Oms\PurchaseManagement;
+
+use App\Models\Oms\OmsUserModel;
 use Illuminate\Database\Eloquent\Model;
 
 class OmsPurchaseShippedOrdersModel extends Model
@@ -31,5 +33,12 @@ class OmsPurchaseShippedOrdersModel extends Model
 
     public function orderProductQuantities() {
         return $this->hasMany(OmsPurchaseShippedOrdersProductQuantityModel::class, 'shipped_order_id');
+    }
+    
+    public function orderHistories() {
+        return $this->hasMany(OmsPurchaseOrdersHistoryModel::class, 'order_id', 'order_id');
+    }
+    public function orderSupplier() {
+        return $this->belongsTo(OmsUserModel::class, 'supplier');
     }
 }
