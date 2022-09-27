@@ -25,7 +25,7 @@
                             <?php foreach ($orders['data'] as $order) { ?>
                             <div class="card order_list">
                                 <div class="row top_row">
-                                    <div class="col-xs-4"><b>Order Number: #<?php echo (isset($order['shipped_order_id'])) ? $order['shipped_order_id'] : $order['order_id'] ?></b></div>
+                                    <div class="col-xs-4"><b>Order Number: #<?php echo (isset($order['shipped_id'])) ? $order['shipped_id'] : $order['order_id'] ?></b></div>
                                     <div class="col-xs-4 text-center">
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['order_supplier']) { ?>
                                         <div class="badge">Supplier : <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>

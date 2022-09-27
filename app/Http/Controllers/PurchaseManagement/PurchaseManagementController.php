@@ -1837,9 +1837,17 @@ public function cancelledOrders(Request $request) {
     $option_id = OmsSettingsModel::get('product_option','color');
     $whereClause = [];
     $relationWhereClause = [];
-    if($request->order_id) {
-        $whereClause[] = ['order_id', $request->order_id];
-    }
+        if(Input::get('order_id')){
+            if(Input::get('action') == 'normal') {
+                $whereClause[] = ['oms_purchase_order.order_id', Input::get('order_id')];
+            }else {
+                $whereClause[] = ['oms_purchase_shipped_order.order_id', 'LIKE', Input::get('order_id').'%'];
+            }
+             
+        }
+    // if($request->order_id) {
+    //     $whereClause[] = ['order_id', $request->order_id];
+    // }
     if($request->title) {
         $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
     }
@@ -1852,21 +1860,23 @@ public function cancelledOrders(Request $request) {
     if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
         $whereClause[] = ['supplier', session('user_id')];
     }
+    // dd($whereClause);
     if($request->action == 'normal') {
         $orders = OmsPurchaseOrdersModel::with([
             'orderProducts' => function($q) use($relationWhereClause) {
                 $q->where($relationWhereClause);
             },'orderSupplier'
-        ])->where($whereClause)->orderBy('order_id', 'DESC')
+        ])->where($whereClause)->where('order_status_id', 7)->orderBy('order_id', 'DESC')
         ->paginate(self::PER_PAGE)->appends($request->all());
     }else {
         $orders = OmsPurchaseShippedOrdersModel::with([
             'orderProducts' => function($q) use($relationWhereClause) {
                 $q->where($relationWhereClause);
             },'orderSupplier'
-        ])->where($whereClause)->orderBy('shipped_order_id', 'DESC')
+        ])->where($whereClause)->where('status', 5)->orderBy('shipped_order_id', 'DESC')
         ->paginate(self::PER_PAGE)->appends($request->all());
     }
+    // dd($orders->toArray());
       foreach($orders as $order) {
           foreach($order->orderProducts as $product) {
               if(Input::get('action') == 'normal') {
