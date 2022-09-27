@@ -183,7 +183,8 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/delivered/orders') !== false) active @endif">
                                     <a href="{{route('get.delivered.orders')}}"><i class="icon icon-truck"></i>Delivered</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-close"></i>Cancelled</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/cancelled/orders') !== false) active @endif">
+                                    <a href="{{route('get.cancelled.orders')}}"><i class="icon icon-close"></i>Cancelled</a>
                                 </li>
                                 <li><a href="panel-page-products-create.html"><i class="icon icon-ban"></i>Stock Cancelled (Stock Cancelled)</a>
                                 </li>

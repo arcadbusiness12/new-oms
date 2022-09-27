@@ -203,6 +203,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/update/deliver', 'UpdateDeliver')->name('update.deliver');
         Route::get('/barcode/generate/{label}/{id}', 'barcodeGenerate')->name('barcode.generate');
         Route::get('/delivered/orders', 'deliveredOrders')->name('get.delivered.orders');
+        Route::get('/cancelled/orders', 'cancelledOrders')->name('get.cancelled.orders');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
