@@ -51,7 +51,7 @@
                                                 <div class="col-xs-4 col-sm-4 text-black mb-2 mt-2"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b></div>
                                                     <div class="col-xs-4 col-sm-4 mt-2 text-center">
                                                     <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['order_supplier']) { ?>
-                                                    <div class="badge badge-secondary"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
+                                                    <div class="badge badge-secondary font-weight-bold"><b> <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                                     <?php } ?>
                                                 </div>
                                                 <div class="col-xs-4 col-sm-4 text-right mt-2 from-to-text">

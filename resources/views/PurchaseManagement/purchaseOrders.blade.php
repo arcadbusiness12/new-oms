@@ -104,7 +104,7 @@
                                                     <?php } ?>
                                                     <div class="col-xs-2 col-grid text-black"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                                         <?php if($order['supplier']) { ?>
-                                                        <div class="badge badge-secondary">
+                                                        <div class="badge badge-secondary font-weight-bold">
                                                            <strong> <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></strong>
                                                         </div>
                                                         <?php } ?>
@@ -118,7 +118,7 @@
                                                             <div class="badge badge-warning orange darken-1 mb-2" style="font-size: 15px;"><strong> Urgent </strong></div>
                                                         <?php } ?>
                                                         <div>
-                                                            <div class="badge badge-secondary"><strong><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></strong></div>
+                                                            <div class="badge badge-secondary font-weight-bold"><strong><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></strong></div>
                                                         </div>
                                                     </div>
                                                  </div>

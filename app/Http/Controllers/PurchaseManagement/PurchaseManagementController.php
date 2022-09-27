@@ -1837,17 +1837,14 @@ public function cancelledOrders(Request $request) {
     $option_id = OmsSettingsModel::get('product_option','color');
     $whereClause = [];
     $relationWhereClause = [];
-        if(Input::get('order_id')){
-            if(Input::get('action') == 'normal') {
-                $whereClause[] = ['oms_purchase_order.order_id', Input::get('order_id')];
+        if($request->order_id){
+            if($request->action != 'shipped') {
+                $whereClause[] = ['oms_purchase_order.order_id', $request->order_id];
             }else {
-                $whereClause[] = ['oms_purchase_shipped_order.order_id', 'LIKE', Input::get('order_id').'%'];
+                $whereClause[] = ['oms_purchase_shipped_order.order_id', 'LIKE', $request->order_id.'%'];
             }
              
         }
-    // if($request->order_id) {
-    //     $whereClause[] = ['order_id', $request->order_id];
-    // }
     if($request->title) {
         $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
     }
@@ -1861,7 +1858,7 @@ public function cancelledOrders(Request $request) {
         $whereClause[] = ['supplier', session('user_id')];
     }
     // dd($whereClause);
-    if($request->action == 'normal') {
+    if($request->action != 'shipped') {
         $orders = OmsPurchaseOrdersModel::with([
             'orderProducts' => function($q) use($relationWhereClause) {
                 $q->where($relationWhereClause);
@@ -1879,7 +1876,7 @@ public function cancelledOrders(Request $request) {
     // dd($orders->toArray());
       foreach($orders as $order) {
           foreach($order->orderProducts as $product) {
-              if(Input::get('action') == 'normal') {
+              if($request->action != 'shipped') {
                     $options = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','name','value')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
                 }else {
                     $options = OmsPurchaseShippedOrdersProductOptionModel::select('order_product_quantity_id', 'product_option_id','name','value')->where('shipped_order_id', $product['shipped_order_id'])->where('order_product_id', $product['product_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
@@ -1887,7 +1884,7 @@ public function cancelledOrders(Request $request) {
               if($options) {
                 $cancelled_order_options = array();
                 foreach($options as $option) {
-                    if($request->action == 'normal') {
+                    if($request->action != 'shipped') {
                          $quantity = OmsPurchaseOrdersProductQuantityModel::select('quantity','order_quantity','shipped_quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
                        }else {
                          $quantity = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
@@ -1897,8 +1894,8 @@ public function cancelledOrders(Request $request) {
                                'name'              => $option['name'],
                                'value'             =>  $option['value'],
                                'quantity'          =>  $quantity['quantity'],
-                               'order_quantity'    =>  (Input::get('action') == 'normal') ? $quantity['order_quantity'] : 0,
-                               'remain_quantity'   =>  (Input::get('action') == 'normal') ? $quantity['order_quantity'] - $quantity['shipped_quantity'] : 0,
+                               'order_quantity'    =>  ($request->action != 'shipped') ? $quantity['order_quantity'] : 0,
+                               'remain_quantity'   =>  ($request->action != 'shipped') ? $quantity['order_quantity'] - $quantity['shipped_quantity'] : 0,
                                'price'             =>  $quantity['price'],
                                'total'             =>  $quantity['total'],
                            );

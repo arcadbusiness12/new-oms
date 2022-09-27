@@ -16,30 +16,30 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="body-card">
                         <div class="panel-heading">
-                            Shipped orders
+                            Cancelled orders
                           </div>
                           
                            <div id="status_changed_msg" style="display: none"></div>
                            
                            <?php if($orders['data']) { ?>
                             <?php foreach ($orders['data'] as $order) { ?>
-                            <div class="card order_list">
+                            <div class="card order_list mb-4">
                                 <div class="row top_row">
-                                    <div class="col-xs-4"><b>Order Number: #<?php echo (isset($order['shipped_id'])) ? $order['shipped_id'] : $order['order_id'] ?></b></div>
-                                    <div class="col-xs-4 text-center">
+                                    <div class="col-xs-4 col-sm-4 text-black mb-4 mt-2"><b>Order Number: #<?php echo (isset($order['shipped_id'])) ? $order['shipped_id'] : $order['order_id'] ?></b></div>
+                                    <div class="col-xs-4 col-sm-4 text-center">
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['order_supplier']) { ?>
-                                        <div class="badge">Supplier : <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
+                                        <div class="badge badge-secondary font-weight-bold" >Supplier : <?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                         <?php } ?>
                                     </div>
-                                    <div class="col-xs-4 text-right">
+                                    <div class="col-xs-4 col-sm-4 text-right">
                                         <?php if($order['urgent']) { ?>
-                                            <div class="label label-warning">Urgent</div>
+                                            <div class="badge badge-warning orange darken-1"  style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <?php if(isset($order['ship_by_sea']) && $order['ship_by_sea']) { ?>
-                                            <div class="label label-warning">Ship By Sea</div>
+                                            <div class="badge badge-warning orange darken-1">Ship By Sea</div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge"><?php echo $order['created_at'] ?></div>
+                                            <div class="badge badge-secondary font-weight-bold"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                         </div>
                                     </div>
                                 </div>
@@ -54,10 +54,10 @@
                                             <i><?php echo $product['model'] ?></i>
                                         </div>
                                         <div class="col-xs-2 col-sm-2">
-                                            <button type="button" class="btn btn-default form-control btn-collapse collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button>
+                                            <button type="button" class="btn btn-default form-control active btn-collapse text-black collapse-product-option" data-target="product-option<?php echo $order['order_id'] . $product['product_id'] ?>">Details</button>
                                         </div>
                                     </div>
-                                    <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapsible-content">
+                                    <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">
                                         <table class="table">
                                             <?php if(isset($product['options']) && $product['options']) { ?>
                                             <?php $i = 0; foreach ($product['options'] as $option) { $i++; ?>

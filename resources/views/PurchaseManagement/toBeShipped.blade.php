@@ -50,7 +50,7 @@
                                     <div class="col-xs-4 col-sm-4 text-black mb-4 mt-2"><b>Order Number: #<?php echo $order['order_id'] ?></b>
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
                                         <br>
-                                        <div class="badge badge-secondary"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
+                                        <div class="badge badge-secondary font-weight-bold"><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></div>
                                         <?php } ?>
                                     </div>
                                     <div class="col-xs-4 col-sm-4 text-center">
@@ -67,7 +67,7 @@
                                             <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge badge-secondary"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
+                                            <div class="badge badge-secondary font-weight-bold"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                         </div>
                                     </div>
                                 </div>
@@ -182,14 +182,14 @@
                                         <div class="row top_row">
                                             <div class="col-xs-4 col-sm-4 text-black mb-4"><b>Order Number: #<?php echo $shipped_order['shipped_id'] ?></b><br>
                                                 <?php if(session('role') == 'ADMIN' || session('role') == 'STAFF') { ?>
-                                                <div class="badge badge-secondary"><b>Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
+                                                <div class="badge badge-secondary font-weight-bold"><b>Shipped From: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
                                                 <?php } else { ?>
-                                                <div class="badge badge-secondary"><b>Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
+                                                <div class="badge badge-secondary font-weight-bold"><b>Shipped To: <?php echo ucfirst($shipped_order['shipped']) ?></b></div>
                                                 <?php } ?>
                                             </div>
                                             <div class="col-xs-4 col-sm-4 text-center">
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                                <div class="badge badge-secondary"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
+                                                <div class="badge badge-secondary font-weight-bold"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                             <?php } ?>
                                             </div>
                                             <?php if(session('role') != 'ADMIN' && session('role') != 'STAFF') { ?>
