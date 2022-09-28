@@ -275,7 +275,7 @@
                                                         </div>
                                                         <div class="col-sm-4 text-center col-grid mb-2 mt-2">
                                                             <?php if($shipped_order['status'] == 5){ ?>
-                                                            <div class="badge badge-success" style="font-size: 15px;">
+                                                            <div class="badge badge-danger" style="font-size: 15px;">
                                                                 <b><?php echo $shipped_order_statuses[$shipped_order['status']]; ?></b>
                                                             </div>
                                                             <?php }else{ ?>

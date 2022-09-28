@@ -186,9 +186,11 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/cancelled/orders') !== false) active @endif">
                                     <a href="{{route('get.cancelled.orders')}}"><i class="icon icon-close"></i>Cancelled</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-ban"></i>Stock Cancelled (Stock Cancelled)</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/shipped/stock/cancelled/requests') !== false) active @endif">
+                                    <a href="{{route('shipped.stock.cancelled.requests')}}"><i class="icon icon-ban"></i>Stock Cancelled (Shipped)</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-ban"></i>Stock Cancelled (To Be Shipped)
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/to/be/shipped/stock/cancelled/requests') !== false) active @endif">
+                                    <a href="{{route('to.be.shipped.stock.cancelled.requests')}}"><i class="icon icon-ban"></i>Stock Cancelled (To Be Shipped)
                                     </a>
                                 </li>
                                 <li><a href="panel-page-products-create.html"><i class="icon icon-announcement"></i>Add Complaint</a>

@@ -204,6 +204,10 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::get('/barcode/generate/{label}/{id}', 'barcodeGenerate')->name('barcode.generate');
         Route::get('/delivered/orders', 'deliveredOrders')->name('get.delivered.orders');
         Route::get('/cancelled/orders', 'cancelledOrders')->name('get.cancelled.orders');
+        Route::any('/shipped/stock/cancelled/requests', 'shippedStockCancelledRequests')->name('shipped.stock.cancelled.requests');
+        Route::post('/update/stock/cancel/order/request',  'updateStockCancelOrderRequest')->name('update.stock.cancel.order.request');
+        Route::any('/to/be/shipped/stock/cancelled/requests', 'toBeShippedStockCancelledRequests')->name('to.be.shipped.stock.cancelled.requests');
+        Route::post('/update/to/be/stock/cancel/order/request',  'updateToBeStockCancelOrderRequest')->name('update.to.be.stock.cancel.order.request');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

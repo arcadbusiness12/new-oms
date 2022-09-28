@@ -488,7 +488,7 @@ $(document).ready(function() {
     });
     $(document).delegate('.submit-cancel-order', 'click', function(e) {
         e.preventDefault();
-        if (!confirm('Are you sure to cancel this order????????????')) {
+        if (!confirm('Are you sure to cancel this order?')) {
             return false;
         } else {
             $(this).html('<i class="icon icon-spin icon-circle-o-notch"></i>');
