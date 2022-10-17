@@ -232,7 +232,7 @@
                         
                         <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
                             <a href="#">
-                                <i class="icon icon-shopping-cart s-24"></i> <span>Catalog</span>
+                                <i class="icon icon-tags s-24"></i> <span>Catalog</span>
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
@@ -243,19 +243,13 @@
                                         {{--  <li><a href="panel-page-blank-tabs.html">Customer Return Request </a></li>  --}}
                                         <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}"> Attributes </a></li>
                                         {{--  <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>  --}}
-                                        <li class="@if( Request::url() == route('orders.picking-list-awaiting') ) active @endif"><a href="{{ route('orders.picking-list-awaiting') }}">Product Listing </a>
-                                        </li>
+                                        
 
                                     </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-fingerprint text-green"></i>Reseller Orders<i
-                                        class=" icon-angle-left  pull-right"></i></a>
-                                    <ul class="treeview-menu">
-                                        <li><a href="login.html">Pending Orders</a>
-                                        </li>
-                                        <li><a href="login-2.html">Reaeller Return Request</a>
-                                        </li>
-                                    </ul>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/place/purchase/order') !== false || strpos(Request::url(), 'out/stock/product') !== false) active @endif">
+                                    <a href="{{route('place.purchase.order')}}"><i class="icon icon-list"></i>Product Listing
+                                </a>
                                 </li>
                             </ul>
                         </li>
