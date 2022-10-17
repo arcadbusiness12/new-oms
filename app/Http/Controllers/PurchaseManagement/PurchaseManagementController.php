@@ -19,6 +19,7 @@ use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseAwaitingActionCancelledModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseComplaintOrderModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseConfirmedCancelledModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
@@ -1999,6 +2000,121 @@ public function toBeShippedStockCancelledRequests(Request $request) {
     }
     $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
     return view(self::VIEW_DIR.".toBeShippedStockCancelRequests", ["orders" => $orders->toArray(), "suppliers" => $suppliers, "pagination" => $orders->render(), "old_input" => $request->all()]);
+}
+
+public function addComplaint(Request $request) {
+    $option_id = OmsSettingsModel::get('product_option','color');
+        $missing_order = array();
+        $whereClause = [];
+        if($request->all() > 0){
+            if($request->order_id){
+                $whereClause[] = ['shipped_id', $request->order_id];
+            }
+            if($request->supplier){
+                $whereClause[] = ['supplier', $request->supplier];
+            }
+        }
+        $orders = OmsPurchaseShippedOrdersModel::join('oms_purchase_shipped_order_product_quantity as psopq', 'psopq.shipped_order_id', '=', 'oms_purchase_shipped_order.shipped_order_id')
+                    ->where('oms_purchase_shipped_order.status', 3)
+                    ->having(DB::Raw('SUM(psopq.quantity)'), '!=', DB::Raw('SUM(psopq.received_quantity)'))->where($whereClause)
+                    ->groupBy('oms_purchase_shipped_order.shipped_order_id')->orderBy('oms_purchase_shipped_order.shipped_order_id','DESC')
+                    ->paginate(self::PER_PAGE)->appends(Input::all());
+                        //  dd($orders->toArray());
+                    if($orders){
+                        foreach ($orders as $key => $order) {
+                            $order = $order->toArray();
+                            $products = OmsPurchaseShippedOrdersProductModel::select('*')->where('shipped_order_id', $order['shipped_order_id'])->get()->toArray();
+            
+                            $missing_order_products = array();
+                            foreach ($products as $key => $product) {
+                                $quantities = OmsPurchaseShippedOrdersProductQuantityModel::select('*')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_id', $product['product_id'])->orderBy('order_product_quantity_id', 'ASC')->get()->toArray();
+            
+                                $missing_order_quantities = array();
+                                foreach ($quantities as $quantity) {
+                                    $options = OmsPurchaseShippedOrdersProductOptionModel::select('name','value')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+            
+                                    $missing_order_options = array();
+                                    foreach ($options as $option) {
+                                        $missing_order_options[] = array(
+                                            'name'  =>  $option['name'],
+                                            'value' =>  $option['value'],
+                                        );
+                                    }
+                                    $missing_order_quantities[] = array(
+                                        'order_product_quantity_id' =>  $quantity['order_product_quantity_id'],
+                                        'quantity'  =>  $quantity['quantity'],
+                                        'received'  =>  $quantity['received_quantity'],
+                                        'remain'    =>  ($quantity['quantity'] - $quantity['received_quantity']),
+                                        'price'     =>  $quantity['price'],
+                                        'total'     =>  $quantity['total'],
+                                        'options'   =>  $missing_order_options,
+                                    );
+                                }
+                                $missing_order_products[] = array(
+                                    'product_id'    =>  $product['product_id'],
+                                    'image'         =>  $this->get_product_image($product['type'], $product['product_id'], 300, 300),
+                                    'name'          =>  $product['name'],
+                                    'model'         =>  $product['model'],
+                                    'quantities'    =>  $missing_order_quantities,
+                                );
+                            }
+            
+                            $complaint = OmsPurchaseComplaintOrderModel::select('comment')->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $order['shipped_id'])->first();
+                            $complaint_history = array();
+                            if($complaint){
+                                $complaint_history = json_decode($complaint->comment,true);
+                            }
+                            $supplier = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_id', $order['supplier'])->first();
+                            $missing_order[] = array(
+                                'shipped_order_id'  =>  $order['shipped_order_id'],
+                                'shipped_id'        =>  $order['shipped_id'],
+                                'order_id'          =>  $order['order_id'],
+                                'supplier'          =>  $supplier ? $supplier->toArray() : array(),
+                                'shipped'           =>  $order['shipped'],
+                                'link'              =>  $order['link'],
+                                'urgent'            =>  $order['urgent'],
+                                'ship_by_sea'       =>  $order['ship_by_sea'],
+                                'order_status_id'   =>  $order['status'],
+                                'total'             =>  $order['total'],
+                                'history'           =>  $complaint_history,
+                                'products'          =>  $missing_order_products,
+                            );
+                        }
+                    }
+                    $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+                    return view(self::VIEW_DIR.".addComplaint", ["orders" => $missing_order, "suppliers" => $suppliers, "pagination" => $orders->render(), "old_input" => Input::all()]);
+}
+
+public function updateComplaintOrder(Request $request) {
+    if($request->all() > 0 && $request->submit == 'update_complaint_order'){
+        $exists = OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->exists();
+        if(!$exists){
+            $comment[] = array('Admin' => $request->comment);
+            $OmsPurchaseComplaintOrderModel = new OmsPurchaseComplaintOrderModel();
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID} = $request->order_id;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID} = $request->shipped_id;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_SUPPLIER} = $request->supplier;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_COMMENT} = json_encode($comment);
+            $OmsPurchaseComplaintOrderModel->save();
+
+            return redirect()->route('add.complaint')->with('message', 'Complaint For Order #'.$request->shipped_id.' added successfully.');
+        }else{
+            $complaint = OmsPurchaseComplaintOrderModel::select(OmsPurchaseComplaintOrderModel::FIELD_COMMENT)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->first();
+            if($complaint){
+                $comment = json_decode($complaint->comment,true);
+                $comment_new[] = array('Admin' => $request->comment);
+                $update_comment = json_encode(array_merge($comment,$comment_new));
+
+                OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID, $request->order_id)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->update(array(OmsPurchaseComplaintOrderModel::FIELD_COMMENT => $update_comment));
+            }else{
+                $comment[] = array('Admin' => $request->comment);
+                OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID, $request->order_id)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->update(array(OmsPurchaseComplaintOrderModel::FIELD_COMMENT => json_encode($comment) ));
+            }
+            return redirect()->route('add.complaint')->with('message', 'Comment For Order #'.$request->shipped_id.' added successfully.');
+        }
+    }else{
+        return redirect()->route('add.complaint')->with('message', 'Something went wrong, please try again!');
+    }
 }
 
 public function updateStockCancelOrderRequest(Request $request) {

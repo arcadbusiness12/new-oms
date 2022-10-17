@@ -36,7 +36,7 @@
                                             <div class="badge badge-warning orange darken-1"  style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <?php if(isset($order['ship_by_sea']) && $order['ship_by_sea']) { ?>
-                                            <div class="badge badge-warning orange darken-1">Ship By Sea</div>
+                                            <div class="badge badge-warning orange darken-1" style="font-size: 15px;">Ship By Sea</div>
                                         <?php } ?>
                                         <div>
                                             <div class="badge badge-secondary font-weight-bold"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>

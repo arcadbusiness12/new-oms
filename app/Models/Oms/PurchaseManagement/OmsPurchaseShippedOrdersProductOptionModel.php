@@ -20,7 +20,7 @@ class OmsPurchaseShippedOrdersProductOptionModel extends Model
     // public function productquantities() {
     //     return $this->hasMany(OmsPurchaseShippedOrdersProductQuantityModel::class, 'order_product_quantity_id');
     // }
-    public function productOptions() {
+    public function quantity() {
         return $this->belongsTo(OmsPurchaseShippedOrdersProductQuantityModel::class, 'order_product_quantity_id');
     }
 }

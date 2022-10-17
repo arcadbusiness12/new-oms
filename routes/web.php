@@ -208,6 +208,9 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/update/stock/cancel/order/request',  'updateStockCancelOrderRequest')->name('update.stock.cancel.order.request');
         Route::any('/to/be/shipped/stock/cancelled/requests', 'toBeShippedStockCancelledRequests')->name('to.be.shipped.stock.cancelled.requests');
         Route::post('/update/to/be/stock/cancel/order/request',  'updateToBeStockCancelOrderRequest')->name('update.to.be.stock.cancel.order.request');
+        Route::post('/update/to/be/stock/cancel/order/request',  'updateToBeStockCancelOrderRequest')->name('update.to.be.stock.cancel.order.request');
+        Route::get('/add/complaint', 'addComplaint')->name('add.complaint');
+        Route::any('/update/complaint/order', 'updateComplaintOrder')->name('update.complaint.order');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

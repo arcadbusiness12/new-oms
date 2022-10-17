@@ -193,7 +193,8 @@
                                     <a href="{{route('to.be.shipped.stock.cancelled.requests')}}"><i class="icon icon-ban"></i>Stock Cancelled (To Be Shipped)
                                     </a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-announcement"></i>Add Complaint</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/add/complaint') !== false) active @endif">
+                                    <a href="{{route('add.complaint')}}"><i class="icon icon-announcement"></i>Add Complaint</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-account_balance"></i>Accounts</a>
                                 </li>
