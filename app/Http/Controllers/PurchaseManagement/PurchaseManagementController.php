@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Redirect;
 use Session;
 
 class PurchaseManagementController extends Controller
-{ 
+{
     const VIEW_DIR = 'PurchaseManagement';
     const PER_PAGE = 10;
     private $opencart_image_url = '';
@@ -58,8 +58,8 @@ class PurchaseManagementController extends Controller
         $this->DB_BAOPENCART_DATABASE = env("DB_BAOPENCART_DATABASE");
 		$this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
         $this->static_option_id = OmsSettingsModel::get('product_option','color');
-		$this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
-		$this->website_image_source_url =  $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/';
+		$this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . $_SERVER["DOCUMENT_ROOT"] . '/image/';
+		$this->website_image_source_url =  isset( $_SERVER["REQUEST_SCHEME"] ) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
 		$this->oms_upload_website_image_destination_path = public_path('uploads/images/cache/');
 		$this->oms_manual_product_image_source_path = public_path('uploads/products/');
 		$this->oms_manual_product_image_source_url = url('/public/uploads/products/');
@@ -127,7 +127,7 @@ class PurchaseManagementController extends Controller
                 $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
             'orderSupplier'
-            
+
         ]
         )->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends($request->all());
         foreach($orders as $order) {
@@ -140,11 +140,11 @@ class PurchaseManagementController extends Controller
                     foreach($sorder->orderProducts as $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
                     }
-                    
+
                 }
             }
-            
-        } 
+
+        }
         $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
         $shipped_order_statuses = $this->shippedOrderStatuses();
         $pagination = $orders->render();
@@ -210,7 +210,7 @@ class PurchaseManagementController extends Controller
         //  dd($orders->toArray());
          $search_form_action = \URL::to('/PurchaseManagement/new/purchase/order');
          $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
-         return view(self::VIEW_DIR.".newOrders", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "search_form_action" => $search_form_action, "old_input" => $request->all()]);   
+         return view(self::VIEW_DIR.".newOrders", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
     }
 
     public function awaitingApproval(Request $request, $count = false) {
@@ -248,7 +248,7 @@ class PurchaseManagementController extends Controller
             ->paginate(self::PER_PAGE)
             ->appends($request->all());
             if($count == true){ return $awaiting_approval_orders->total(); }
-            
+
             foreach($awaiting_approval_orders as $order) {
                 $cancelled_status = OmsPurchaseAwaitingActionCancelledModel::select('reason','status')->where('order_id', $order['order_id'])->where('supplier', $order['supplier'])->first();
                 $order['cancelled_status'] = $cancelled_status;
@@ -310,7 +310,7 @@ class PurchaseManagementController extends Controller
             ->paginate(self::PER_PAGE)
             ->appends($request->all());
             if($count == true){ return $confirmed_orders->total(); }
-            
+
         //  dd($confirmed_orders->toArray());
             foreach($confirmed_orders as $order) {
                 $cancelled_status = OmsPurchaseConfirmedCancelledModel::select('reason','status')->where('order_id', $order['order_id'])->where('supplier', $order['supplier'])->first();;
@@ -320,7 +320,7 @@ class PurchaseManagementController extends Controller
                     $quantities = OmsPurchaseOrdersProductQuantityModel::with('productOptions')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->get();
                     $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM(order_quantity) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
                     // dd($units);
-                    $product['unit'] = $units->unit;    
+                    $product['unit'] = $units->unit;
                     $confirmed_options = array();
                         foreach($quantities as $quantity) {
                             // dd($quantity);
@@ -330,10 +330,10 @@ class PurchaseManagementController extends Controller
                                 }else{
                                     $option['static'] = 'size';
                                 }
-                                
+
                             }
                         }
-                        
+
                         // dd($quantities);
                     $product['quantities'] = $quantities;
                 }
@@ -371,7 +371,7 @@ class PurchaseManagementController extends Controller
                         'image'         =>  \URL::to('/uploads/inventory_products/' . $product['image']),
                         'sku'           =>  $product['sku'],
                     );
-        
+
                     $options = get_inventory_product_options_format($product['product_id']);
                     if($options){
                         $product_array['options'] = array();
@@ -380,9 +380,9 @@ class PurchaseManagementController extends Controller
                             foreach ($option['option_values'] as $value) {
                                 $quantity = $minimum_quantity = $average_quantity = $duration = '';
                                 $quantity = $value['available_quantity'];
-        
+
                                 $OmsInventoryStockModel = OmsInventoryStockModel::select('minimum_quantity','average_quantity','duration')->where('product_id', $product['product_id'])->where('option_id', $option['option_id'])->where('option_value_id', $value['option_value_id'])->first();
-        
+
                                 $average_quantity_shipped = getLastSaleQtyWithOptionShipped($product['product_id'], $value); //for shipped quantity
                                 $average_tot_quantity = $average_quantity_shipped->total;
                                 if($OmsInventoryStockModel){
@@ -399,8 +399,8 @@ class PurchaseManagementController extends Controller
                                 );
                             }
                             $product_array['options'][] = array(
-                                'option_id'         =>  $option['option_id'],  
-                                'static_option_id'  =>  $this->static_option_id,  
+                                'option_id'         =>  $option['option_id'],
+                                'static_option_id'  =>  $this->static_option_id,
                                 'name'              =>  $option['name'],
                                 'type'              =>  $option['type'],
                                 'option_values'     =>  $option_values,
@@ -410,7 +410,7 @@ class PurchaseManagementController extends Controller
                 }
              array_push($products, $product_array);
     		}
-            
+
             $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->where('status',1)->get()->toArray();
             return view(self::VIEW_DIR.".addProduct", ["suppliers" => $suppliers, "products" => $products]);
     }
@@ -432,7 +432,7 @@ class PurchaseManagementController extends Controller
 	                                }else{
 	                                    array_push($p_o_id_color[$product_kk], $product_values['option']);
 	                                }
-                                    
+
 	                            }
 	                        }else{
 	                        	return response()->json(array('error' => 'Options must be selected!'));
@@ -494,13 +494,13 @@ class PurchaseManagementController extends Controller
             $OmsPurchaseOrdersModel->save();
 
             $order_id = $OmsPurchaseOrdersModel->order_id;
-            
+
             $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
             $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
             $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Admin';
             $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
             $OmsPurchaseOrdersHistoryModel->save();
-            
+
             foreach ($request->purchase as $product_id => $value) {
                 if($product_id == 'product'){
                     foreach ($value as $key => $manual_product) {
@@ -563,7 +563,7 @@ class PurchaseManagementController extends Controller
 
                         if(isset($manual_product['add_to_inventory']) && $manual_product['add_to_inventory'] == 'on'){
                             $product_options = $manual_product['options'];
-                            
+
                             $groupName = $this->getGroupName($manual_product['name']);
                             $group_exist = ProductGroupModel::where('name', $groupName)->first();
                             if(!$group_exist) {
@@ -668,7 +668,7 @@ class PurchaseManagementController extends Controller
                 $this->updateOrderQuantityPrice($request, $order_id);
                 return Redirect::back()->with('message', 'Your Order #'.$order_id.' actioned successfully.');
             }else {
-                return Redirect::back()->with('message', 'You have already actioned your order!');   
+                return Redirect::back()->with('message', 'You have already actioned your order!');
             }
         }elseif($request->submit == 'update_quantity_price') {
             $error = false;
@@ -723,7 +723,7 @@ class PurchaseManagementController extends Controller
             }
         }else{
             return Redirect::back()->with('error_message', 'Something went wrong, please try again!');
-        }  
+        }
     }
 
     public function editPurchaseOrders($order_id) {
@@ -826,7 +826,7 @@ class PurchaseManagementController extends Controller
         }
         $order = OmsPurchaseOrdersModel::with(['orderProducts','orderHistories'])->where('order_id', $order_id)->whereIn('order_status_id', [2,4])
                                          ->where('supplier', session('user_id'))->first();
-        
+
         if($order) {
             $option_id = OmsSettingsModel::get('product_option','color');
             foreach($order->orderProducts as $product) {
@@ -837,8 +837,8 @@ class PurchaseManagementController extends Controller
                  if($options && is_array($options)){
                     foreach($options as $k => $option) {
                         $quantity = OmsPurchaseOrdersProductQuantityModel::select('order_quantity','shipped_quantity')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
-                        
-                        if($quantity['order_quantity'] > $quantity['shipped_quantity']){ 
+
+                        if($quantity['order_quantity'] > $quantity['shipped_quantity']){
                             if($option['product_option_id'] == $option_id) {
                                 $ship_options['static'] = array(
                                     'order_product_quantity_id'     =>  $option['order_product_quantity_id'],
@@ -864,14 +864,14 @@ class PurchaseManagementController extends Controller
                 //   dd($options);
                     $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                     $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
-                    
+
                 }else {
                     $quantity = OmsPurchaseOrdersProductQuantityModel::select('order_quantity','shipped_quantity')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
                     $product['quantity'] = $quantity['order_quantity'] - $quantity['shipped_quantity'];
                     $product['image']    = $this->omsProductImage($product['product_id'],300,300,$product['type']);
                 }
                 $product['options'] = $ship_options;
-                
+
             }
         }
         return view(self::VIEW_DIR.".ship", ["order" => $order]);
@@ -917,7 +917,7 @@ class PurchaseManagementController extends Controller
             }else{
                 $shipped_status = 1;
             }
-            $shippingOrder->{OmsPurchaseShippedOrdersModel::FIELD_STATUS} = $shipped_status; 
+            $shippingOrder->{OmsPurchaseShippedOrdersModel::FIELD_STATUS} = $shipped_status;
             $shippingOrder->save();
             $order_id = $shippingOrder->shipped_order_id;
             $shipped_id = $shippingOrder->shipped_id;
@@ -949,7 +949,7 @@ class PurchaseManagementController extends Controller
                     $quantity_details = OmsPurchaseOrdersProductQuantityModel::select('*')->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
                     $shipped_total = $option['shipped_quantity'] * $quantity_details['price'];
                     $shipped_sub_total = $shipped_sub_total + $shipped_total;
-                    
+
                     $OmsPurchaseShippedOrdersProductQuantityModel = new OmsPurchaseShippedOrdersProductQuantityModel();
                     $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_SHIPPED_ORDER_ID} = $order_id;
                     $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
@@ -958,9 +958,9 @@ class PurchaseManagementController extends Controller
                     $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_PRICE} = $quantity_details['price'];
                     $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_TOTAL} = $shipped_total;
                     $OmsPurchaseShippedOrdersProductQuantityModel->save();
-                    
+
                     $quantity_id = $OmsPurchaseShippedOrdersProductQuantityModel->order_product_quantity_id;
-                    
+
                     $options_details = OmsPurchaseOrdersProductOptionModel::select('*')->where('order_product_quantity_id', $option['order_product_quantity_id'])->get()->toArray();
                     if($options_details){
                         foreach ($options_details as $quantity_option) {
@@ -1031,7 +1031,7 @@ class PurchaseManagementController extends Controller
                 $forwarder_count = OmsPurchaseShippedOrdersModel::select(DB::raw("COUNT(shipped_order_id) as total"))->where('order_id', $request->order_id)->where('status', 1)->first();
 
                 if(($total_order_quantity == $total_shipped_quantity && $forwarder_count->total == 0)){
-                  // || Input::get('shipped') == 'dubai'                  	
+                  // || Input::get('shipped') == 'dubai'
                     OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(array('order_status_id' => 5));
 
                     $this->addOrderStatusHistory($request->order_id, 5);
@@ -1104,7 +1104,7 @@ class PurchaseManagementController extends Controller
                 $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
             },
             'orderSupplier'
-            
+
         ]
         )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')->groupBy('order_id')
         ->paginate(self::PER_PAGE)->appends($request->all());
@@ -1120,7 +1120,7 @@ class PurchaseManagementController extends Controller
                 $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
                 $quantities = OmsPurchaseOrdersProductQuantityModel::where('order_id', $order['order_id'])->where('order_product_id', $product->product_id)->get();
                 $units = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('SUM((order_quantity - shipped_quantity)) as unit'),'order_id','order_product_id')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->groupBy('order_id','order_product_id')->first();
-                $product['unit'] = $units->unit;    
+                $product['unit'] = $units->unit;
                 $any_qty_remain = 0;
                 foreach($quantities as $k => $quantity) {
                     $options = OmsPurchaseOrdersProductOptionModel::select('product_option_id','name','value')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
@@ -1131,7 +1131,7 @@ class PurchaseManagementController extends Controller
                             $to_be_shipped_options['static'] = array(
                                 'name'  =>  $option['name'],
                                 'value' =>  $option['value'],
-                            );    
+                            );
                         }else{
                             $to_be_shipped_options[] = array(
                                 'name'  =>  $option['name'],
@@ -1150,7 +1150,7 @@ class PurchaseManagementController extends Controller
                         'options'                   =>  $to_be_shipped_options,
                     );
                     $any_qty_remain = $any_qty_remain + ($quantity['order_quantity'] - $quantity['shipped_quantity']);
-                    
+
                 }
                 $product['quantities'] = $to_be_shipped_quantities;
                 if($any_qty_remain < 1) {
@@ -1170,7 +1170,7 @@ class PurchaseManagementController extends Controller
                                     $to_be_shipped_options['static'] = array(
                                         'name'  =>  $option['name'],
                                         'value' =>  $option['value'],
-                                    );    
+                                    );
                                 }else{
                                     $to_be_shipped_options[] = array(
                                         'name'  =>  $option['name'],
@@ -1181,7 +1181,7 @@ class PurchaseManagementController extends Controller
                              }
                             }
                     }
-                    
+
                 }
             }
         }
@@ -1192,7 +1192,7 @@ class PurchaseManagementController extends Controller
             'cancelled'     =>  7,
         );
         $counter = $this->productCount();
-        $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped'); 
+        $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped');
         // dd($search_form_action);
         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
         return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
@@ -1240,7 +1240,7 @@ class PurchaseManagementController extends Controller
         if($request->action == 'accept') {
             OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(['order_status_id' => 7]);
             OmsPurchaseConfirmedCancelledModel::where('order_id', $request->order_id)->update(['status' => 1]);
-            
+
             Session::flash('message', 'Your Order #'. $request->order_id .' cancelled successfully.');
 			Session::flash('alert-class', 'alert-success');
 	    	return response()->json(array('redirect' => true));
@@ -1375,7 +1375,7 @@ class PurchaseManagementController extends Controller
     }
 
     public function getGroupName($sku) {
-        
+
         if(strpos($sku,"-") !== false) {
             $pieces = explode("-", $sku);
             $first_piece = $pieces[0].'-';
@@ -1393,16 +1393,16 @@ class PurchaseManagementController extends Controller
                 $first_piece = substr($sku, 0, 1);
                 $second_piece = substr("sku",1);
             }
-           
+
         }
-        
+
         $group = $first_piece.$second_piece;
         return $group;
     }
 
     protected function statusHistory($order_id){
     	$data = array();
-    	
+
     	$history = OmsPurchaseOrdersStatusHistoryModel::where('order_id', $order_id)->get();
     	if($history->count()){
 	    	foreach ($history as $key => $value) {
@@ -1423,7 +1423,7 @@ class PurchaseManagementController extends Controller
           return '';
         }
       }
-    
+
       protected function omsProductImage($product_id = 0,$width = 0, $height = 0,$type=""){
         if( $type == "" ||  $type == "opencart"){
           $product_data = OmsInventoryProductModel::where('product_id',$product_id)->first();
@@ -1449,7 +1449,7 @@ class PurchaseManagementController extends Controller
         $return_image = '';
         if($type == 'opencart'){
             $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
-            
+
             if($product_image){
                 if(file_exists($this->website_image_source_path . $product_image->image) && !empty($width) && !empty($height)){
 					$ToolImage = new ToolImage();
@@ -1476,7 +1476,7 @@ class PurchaseManagementController extends Controller
         $whereClause = [];
         $counter = array();
         $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
-        
+
         if(session('role') != 'ADMIN' && session('role') != 'STAFF'){
             $whereClause[] = array('supplier', session('user_id'));
         }
