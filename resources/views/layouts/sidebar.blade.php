@@ -247,8 +247,8 @@
 
                                     </ul>
                                 </li>
-                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/place/purchase/order') !== false || strpos(Request::url(), 'out/stock/product') !== false) active @endif">
-                                    <a href="{{route('place.purchase.order')}}"><i class="icon icon-list"></i>Product Listing
+                                <li class="@if(strpos(Request::url(), 'catalog/product/listing') !== false) active @endif">
+                                    <a href="{{route('product.listing')}}"><i class="icon icon-list"></i>Product Listing
                                 </a>
                                 </li>
                             </ul>
