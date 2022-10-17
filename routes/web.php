@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
 use App\Http\Controllers\Exchange\ExchangeOrdersController;
 use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\TextUI\XmlConfiguration\Group;
 
 /*
 |--------------------------------------------------------------------------
@@ -220,5 +222,13 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/add/product', 'addProduct')->name('add.product');
     });
 });
+
+
+Route::prefix('Catalog')->middleware('auth')->group(function() {
+    Route::controller(ProductListingController::class)->group(function() {
+        Route::get('/product/listing', 'ProductListing')->name('product.listing');
+    });
+});
+
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);

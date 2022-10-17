@@ -236,7 +236,7 @@
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Attributes<i
+                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/Catalog') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Attributes<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">Attributes Group</a></li>
@@ -247,7 +247,7 @@
 
                                     </ul>
                                 </li>
-                                <li class="@if(strpos(Request::url(), 'catalog/product/listing') !== false) active @endif">
+                                <li class="@if(strpos(Request::url(), 'Catalog/product/listing') !== false) active @endif">
                                     <a href="{{route('product.listing')}}"><i class="icon icon-list"></i>Product Listing
                                 </a>
                                 </li>
