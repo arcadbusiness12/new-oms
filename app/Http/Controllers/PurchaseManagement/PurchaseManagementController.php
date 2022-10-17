@@ -3,17 +3,23 @@
 namespace App\Http\Controllers\PurchaseManagement;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\inventoryManagement\InventoryManagementController;
 use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\InventoryManagement\OmsDetails;
+use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryShippedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryStockModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
+use App\Models\Oms\OmsAccountSummaryModel;
+use App\Models\Oms\OmsAccountTransactionModel;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseAwaitingActionCancelledModel;
+use App\Models\Oms\PurchaseManagement\OmsPurchaseComplaintOrderModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseConfirmedCancelledModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersHistoryModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseOrdersModel;
@@ -32,6 +38,7 @@ use App\Models\Oms\PurchaseManagement\OmsPurchaseShippedOrdersTotalModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseStockCancelledModel;
 use App\Models\Oms\PurchaseManagement\OmsPurchaseTabsModel;
 use App\Models\OpenCart\Products\OptionValueDescriptionModel;
+use App\Models\OpenCart\Products\ProductSkuModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use App\Platform\Helpers\ToolImage;
 use Carbon\Carbon;
@@ -39,6 +46,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Session;
+use Illuminate\Support\Facades\Request AS Input;
 
 class PurchaseManagementController extends Controller
 {
@@ -1051,6 +1059,42 @@ class PurchaseManagementController extends Controller
         }
     }
 
+    public function shipToDubai(Request $request) {
+        if($request->submit == 'update_ship_to_dubai'){
+            $shipping_info = array();
+            $shipping = OmsPurchaseShippedOrdersModel::select('shipping')->where('order_id', $request->order_id)->where('shipped_id', $request->shipped_id)->first();
+            if($shipping->shipping) $shipping_info = json_decode($shipping->shipping,1);
+            $shipping_new['dubai'] = array(
+                'name'      =>  $request->shipping_name,
+                'tracking'  =>  $request->tracking_number,
+                'date'      =>  date('Y-m-d'),
+            );
+            $shipping_info = array_merge($shipping_info, $shipping_new);
+
+            OmsPurchaseShippedOrdersModel::where('order_id', $request->order_id)->where('shipped_id', $request->shipped_id)->update(array('shipped' =>  'dubai', 'shipping' => json_encode($shipping_info), 'status' => 2));
+
+            $total_order_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(order_quantity) as total_quantity'))->where('order_id', $request->order_id)->first()->total_quantity;
+            $total_shipped_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(shipped_quantity) as total_quantity'))->where('order_id', $request->order_id)->first()->total_quantity;
+
+            $forwarder_count = OmsPurchaseShippedOrdersModel::select(DB::raw("COUNT(shipped_order_id) as total"))->where('order_id', $request->order_id)->where('status', 1)->first();
+
+            $order_status_id = OmsPurchaseOrdersModel::select('order_status_id')->where('order_id', $request->order_id)->first();
+
+            if($order_status_id->order_status_id !== 7){
+                if($total_order_quantity == $total_shipped_quantity && $forwarder_count->total == 0){
+                    OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(array('order_status_id'   => 5));
+
+                    $this->addOrderStatusHistory($request->order_id, 5);
+                }else{
+                    OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(array('order_status_id'   => 4));
+
+                    $this->addOrderStatusHistory($request->order_id, 4);
+                }
+            }
+            return redirect()->back()->with('message', 'Your Order #'.$request->shipped_id.' shipped successfully.');
+        }
+    }
+
     public function getToBeShipped(Request $request, $count = false) {
         // dd("Ok");
         $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
@@ -1106,7 +1150,7 @@ class PurchaseManagementController extends Controller
             'orderSupplier'
 
         ]
-        )->where($whereClause)->whereIn('order_status_id', [4,7])->orderBy('order_id', 'DESC')->groupBy('order_id')
+        )->where($whereClause)->whereIn('order_status_id', [4])->orderBy('order_id', 'DESC')->groupBy('order_id')
         ->paginate(self::PER_PAGE)->appends($request->all());
         if($count == true){ return $orders->count(); }
         // dd($orders->toArray());
@@ -1159,9 +1203,8 @@ class PurchaseManagementController extends Controller
                 // dd($product);
             }
             $order['total'] = $order_total;
-            if(count((array)$order->shipped_orders) > 0) {
                 foreach($order->shippedOrders as $sorder) {
-                    foreach($sorder->orderProducts as $sproduct) {
+                    foreach($sorder->orderProducts as $k => $sproduct) {
                         $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
                         foreach($sproduct->orderProductQuantities as $squantity) {
                             $to_be_shipped_options = array();
@@ -1183,9 +1226,7 @@ class PurchaseManagementController extends Controller
                     }
 
                 }
-            }
         }
-        // dd($orders->toArray());
         $statuses = array(
             'to_be_shipped' =>  4,
             'shipped'       =>  5,
@@ -1193,10 +1234,1192 @@ class PurchaseManagementController extends Controller
         );
         $counter = $this->productCount();
         $search_form_action = \URL::to('/PurchaseManagement/get/to/be/shipped');
-        // dd($search_form_action);
+        // dd($orders->toArray());
         $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
         return view(self::VIEW_DIR.".toBeShipped", ["orders" => $orders->toArray(),"pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "counter" => $counter, "statuses" => $statuses, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
     }
+
+    public function viewConfirmed($order_id) {
+        $option_id = OmsSettingsModel::get('product_option','color');
+        if($order_id) {
+            $order = OmsPurchaseOrdersModel::with(['orderProducts', 'orderTotals' => function($q) {
+                $q->orderBy('sort_order', 'ASC');
+            },'orderHistories'])->where('order_id', $order_id)->where('order_status_id', 4)->first();
+
+            foreach($order->orderProducts as $k => $product) {
+                $units = OmsPurchaseOrdersProductQuantityModel::select(DB::RAW('SUM(order_quantity - shipped_quantity) as unit'))->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                $quantities = OmsPurchaseOrdersProductQuantityModel::with('productOptions')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->get()->toArray();
+
+                $qutites = [];
+                $any_qty_remain = 0;
+                foreach($quantities as $quantity) {
+                    foreach($quantity['product_options'] as $key =>$option) {
+                        if($option['product_option_id'] == $option_id){
+                            $quantity['product_options'][$key]['static'] = 'static';
+                        }else{
+                            $quantity['product_options'][$key]['static'] = 'size';
+                        }
+                    }
+
+                    $any_qty_remain = $any_qty_remain + ($quantity['order_quantity'] - $quantity['shipped_quantity']);
+                    $remainquantity = $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                    if($remainquantity == 0) {
+                        unset($quantity);
+                        continue;
+                    }
+                    array_push($qutites, $quantity);
+                }
+                $product['quantities'] = $qutites;
+                $product['unit'] = $units['unit'];
+                if($any_qty_remain < 1) {
+                    unset($order->orderProducts[$k]);
+                }
+            }
+
+        }
+
+        return view(self::VIEW_DIR.".viewConfirmed", ["order" => $order]);
+    }
+
+    public function shippedOrders(Request $request) {
+        $count = false;
+        $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+        // $tabs = $this->orderTabs();
+        $search_form_action = \URL::to('/PurchaseManagement/shipped/orders');
+        $whereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+        }
+        if($request->supplier) {
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+        if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+            $whereClause[] = ['supplier', session('user_id')];
+        }
+        $shippedWhereClause = [];
+        if($request->order_status_id) {
+            $shippedWhereClause[] = ['status', $request->order_status_id];
+        }
+        $orders = OmsPurchaseOrdersModel::with([
+            'orderProducts','orderProducts.orderProductQuantities' => function($qu) {
+                $qu->orderBy('order_product_quantity_id', 'ASC');
+            },'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+                $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },'orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },'orderHistories',
+            'shippedOrders' => function($sh) use($shippedWhereClause) {
+                $sh->where('status', 2)->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
+            },'shippedOrders.orderTotals' => function($q1) {
+                $q1->orderBy('sort_order', 'ASC');
+            },'shippedOrders.orderProducts','shippedOrders.orderProductQuantities' =>function($soproq) {
+                $soproq->orderBy('order_product_quantity_id', 'ASC');
+            },'shippedOrders.orderProducts.orderProductQuantities' =>function($soproq) {
+                $soproq->orderBy('order_product_quantity_id', 'ASC');
+            },'shippedOrders.orderProducts.orderProductQuantities.productOptions' =>function($soproop) {
+                $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+            },'orderSupplier'
+        ])->where($whereClause)->whereIn('order_status_id', [4,5])->whereHas('shippedOrders', function ($query) {
+            $query->where('status', 2);
+            })->orderBy('order_id', 'DESC')->groupBy('order_id')
+          ->paginate(self::PER_PAGE)->appends($request->all());
+        foreach($orders as $order) {
+            $stock_cancel = false;
+            foreach($order->orderProducts as $key => $product) {
+                $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+            }
+            foreach($order['shippedOrders'] as $shipped_order) {
+                foreach($shipped_order->orderProducts as $k => $sproduct) {
+                    $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+                }
+                $shipped_order['shipping'] = json_decode($shipped_order['shipping'], true);
+                $stock_cancel = OmsPurchaseStockCancelledModel::where(OmsPurchaseStockCancelledModel::FIELD_ORDER_ID, $order['order_id'])->where('shiped_order_id',$shipped_order['shipped_id'])->where(OmsPurchaseStockCancelledModel::FIELD_SUPPLIER, session('user_id'))->where(OmsPurchaseStockCancelledModel::FIELD_STATUS, 0)->exists();
+
+            }
+            $order['stock_cancel'] = $stock_cancel;
+        }
+        // dd($orders->toArray());
+        if($count == true){ return $orders->count(); }
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        return view(self::VIEW_DIR.".shipped", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, 'tabs' => $tabs, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
+    }
+
+    public function addToDeliver(Request $request) {
+        $option_id = OmsSettingsModel::get('product_option', 'color');
+        $search_form_action = \URL::to('/PurchaseManagement/add/to/deliver/orders');
+        $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+        $whereClause = [];
+        if($request->order_id) {
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->product_title) {
+            $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+        }
+        if($request->product_model) {
+            $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+        }
+        if($request->supplier) {
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+        $shippedWhereClause = [];
+        if($request->order_status_id) {
+            $shippedWhereClause[] = ['status', $request->order_status_id];
+        }
+        $orders = OmsPurchaseShippedOrdersModel::with(['orderProducts','orderTotals' => function($q) {
+            $q->orderBy('sort_order', 'ASC');
+        },'orderHistories','orderSupplier'])->where('status', 2)->where($whereClause)->orderBy('shipped_order_id', 'DESC')->groupBy('shipped_order_id')->paginate(self::PER_PAGE)->appends($request->all());
+
+        foreach($orders as $order) {
+            foreach($order['orderProducts'] as $product) {
+                $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+                $opencartSku = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
+                $options = OmsPurchaseShippedOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','product_option_value_id','name','value')->where('shipped_order_id', $order['shipped_order_id'])
+                                                                       ->where('order_product_id', $product['product_id'])->groupBy('product_option_id','product_option_value_id')->orderBy('order_product_option_id', 'ASC')
+                                                                       ->get()->toArray();
+                $ship_options = array();
+                if($options && is_array($options)) {
+                    foreach($options as $option) {
+                        $quantity = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_id', $product['product_id'])->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
+                        if($option['product_option_id'] == $option_id) {
+                            $ship_options['static'] = array(
+                                'order_product_quantity_id'     =>  $option['order_product_quantity_id'],
+                                'product_option_id'             =>  $option['product_option_id'],
+                                'product_option_value_id'       =>  $option['product_option_value_id'],
+                                'name'                          =>  $option['name'],
+                                'value'                         =>  $option['value'],
+                                'quantity'                      =>  $quantity['quantity'],
+                            );
+                        }else {
+                            $ship_options[] = array(
+                                'order_product_quantity_id'     =>  $option['order_product_quantity_id'],
+                                'product_option_id'             =>  $option['product_option_id'],
+                                'product_option_value_id'       =>  $option['product_option_value_id'],
+                                'name'                          =>  $option['name'],
+                                'value'                         =>  $option['value'],
+                                'quantity'                      =>  $quantity['quantity'],
+                            );
+                        }
+                    }
+                    $product['sku'] = $opencartSku ? $opencartSku->sku : '-';
+                    $product['options'] = $ship_options;
+                }else{
+                    $quantity = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity','order_product_quantity_id')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_id', $product['product_id'])->first();
+                    if($quantity){
+                      $quantity = $quantity->toArray();
+                    }
+                    $product['sku'] = $opencartSku ? $opencartSku->sku : '-';
+                    $product['quantity'] = $quantity['quantity'];
+                }
+            }
+        //    $products = OmsPurchaseShippedOrdersProductModel::where('shipped_order_id', $order['shipped_order_id'])
+        }
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        return view(self::VIEW_DIR.".deliver", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "search_form_action" => $search_form_action, 'tabs' => $tabs, "old_input" => $request->all()]);
+    }
+
+    public function UpdateDeliver(Request $request) {
+        // dd($request->all());
+        $error = false;
+        $less_recieved_status = false;
+        foreach($request->product as $product) {
+            foreach($product['options'] as $quantity) {
+                if($quantity['received_quantity'] > $quantity['old_received_quantity']) {
+                    $error = true;
+                }
+                if($quantity['received_quantity'] < $quantity['old_received_quantity']) {
+                   $less_recieved_status = true;
+                }
+            }
+        }
+        if($error) {
+            return redirect()->back()->with('error_message', 'Do not enter greater than order quantity!');
+        }
+        if($less_recieved_status){
+            $this->addToshipAfterLessQuantityRecieved($request->order_id);
+        }
+        $exist = OmsPurchaseShippedOrdersModel::where('order_id', $request->order_id)->where('shipped_order_id', $request->shipped_order_id)->where('status', 5)->exists();
+        if(!$exist) {
+            $order_status_id = OmsPurchaseOrdersModel::select('order_status_id')->where('order_id', $request->order_id)->first();
+            // dd($order_status_id);
+            if($order_status_id->order_status_id != 7) {
+                $remain_deliver = OmsPurchaseShippedOrdersModel::select(DB::Raw('COUNT(oms_purchase_shipped_order.shipped_order_id) as total_deliver'))
+                                                                 ->join('oms_purchase_order as po', 'po.order_id', '=', 'oms_purchase_shipped_order.order_id')
+                                                                 ->where('oms_purchase_shipped_order.order_id', $request->order_id)
+                                                                ->whereIn('oms_purchase_shipped_order.status', [2,1])
+                                                                ->whereIn('po.order_status_id', [5,7])
+                                                                ->first();
+                if($remain_deliver->total_deliver == 1 && !$less_recieved_status) {
+                    OmsPurchaseOrdersModel::where('order_id', $request->order_id)->update(['order_status_id' => 6]);
+                    $this->addOrderStatusHistory($request->order_id, 6);
+                }
+            }
+            if($request->instruction){
+                $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+                $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $request->order_id;
+                $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Admin';
+                $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = $request->instruction;
+                $OmsPurchaseOrdersHistoryModel->save();
+            }
+            $sub_total_amount = 0;
+            if($request->product) {
+                foreach($request->product as $product) {
+                    foreach($product['options'] as $quantity) {
+                        $order_quantity_data = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity','price')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->first();
+                        $update_total = $quantity['received_quantity'] * $order_quantity_data->price;
+                        $sub_total_amount = $sub_total_amount + $update_total;
+                        OmsPurchaseShippedOrdersProductQuantityModel::where('order_product_quantity_id', $quantity['order_product_quantity_id'])
+                                                                      ->update(['received_quantity' => $quantity['received_quantity'], 'total' => $update_total]);
+                    }
+                }
+                // order total
+                 $supplier = OmsPurchaseOrdersModel::select('supplier')->where('order_id', $request->order_id)->first();
+                 $supplier_commission = OmsUserModel::select('commission','commission_on')->where('user_id', (int)$supplier->supplier)->first();
+                 $order_totals = OmsPurchaseShippedOrdersTotalModel::select('code','title','value','sort_order')->where('shipped_order_id', $request->shipped_order_id)->orderBy('sort_order','ASC')->get()->toArray();
+                 $totals_array = array();
+                 $sub_total_value = $sub_total_amount;
+                 $local_express_cost_value = 0;
+                 $local_shipping_cost_value = 0;
+                 $total_value = 0;
+                 $commission_value = 0;
+                 $grand_total_value = 0;
+                 foreach ($order_totals as $key => $value) {
+                	if($value['title'] == 'local_express_cost'){
+                		$local_express_cost_value = $value['value'];
+                	}else if($value['title'] == 'local_shipping_cost'){
+                		$local_shipping_cost_value = $value['value'];
+                	}
+                }
+                $total_value = $sub_total_value + $local_express_cost_value + $local_shipping_cost_value;
+                $totals_array[] = array(
+                    'title' => 'sub_total',
+                    'code'  => 'Sub Total',
+                    'value' => $sub_total_value,
+                    'sort_order' => 1
+                );
+                $totals_array[] = array(
+                    'title'  		=>  'local_express_cost',
+					'code'  		=>  'Local Express Cost',
+					'value'  		=>  $local_express_cost_value,
+					'sort_order'  	=>  2
+                );
+                $totals_array[] = array(
+					'title'  		=>  'local_shipping_cost',
+					'code'  		=>  'Local Shipping Cost',
+					'value'  		=>  $local_shipping_cost_value,
+					'sort_order'  	=>  3
+        		);
+        		$totals_array[] = array(
+					'title'  		=>  'total',
+					'code'  		=>  'Total',
+					'value'  		=>  $total_value,
+					'sort_order'  	=>  4
+        		);
+                if($supplier_commission && $supplier_commission->commission_on && $supplier_commission->commission_on == 'stock_total'){
+                	$commission_value = ($sub_total_value * $supplier_commission->commission) / 100;
+            		$totals_array[] = array(
+						'title'  		=>  'commission',
+						'code'  		=>  $supplier_commission->commission . '% Commission',
+						'value'  		=>  $commission_value,
+						'sort_order'  	=>  5
+            		);
+	            }
+                $grand_total_value = $total_value + $commission_value;
+        		$totals_array[] = array(
+					'title'  		=>  'grand_total',
+					'code'  		=>  'Grand Total',
+					'value'  		=>  $grand_total_value,
+					'sort_order'  	=>  $commission_value ? 6 : 5
+        		);
+                OmsPurchaseShippedOrdersTotalModel::where('shipped_order_id', $request->shipped_order_id)->delete();
+                foreach ($totals_array as $total) {
+                    $OmsPurchaseShippedOrdersTotalModel = new OmsPurchaseShippedOrdersTotalModel();
+                    $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SHIPPED_ORDER_ID} = $request->shipped_order_id;
+                    $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_CODE} = $total['code'];
+                    $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_TITLE} = $total['title'];
+                    $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_VALUE} = $total['value'];
+                    $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SORT_ORDER} = $total['sort_order'];
+                    $OmsPurchaseShippedOrdersTotalModel->save();
+                }
+                // End Order Totals
+                OmsPurchaseShippedOrdersModel::where('shipped_order_id', $request->shipped_order_id)->update(array('status' => 3));
+                $supplier = OmsPurchaseShippedOrdersModel::select('supplier')->where('order_id', $request->order_id)->first();
+                $account_summary = OmsAccountSummaryModel::where(OmsAccountSummaryModel::FIELD_USER_ID, $supplier->supplier)->first();
+
+                OmsAccountSummaryModel::where(OmsAccountSummaryModel::FIELD_USER_ID, $supplier->supplier)->update(array('balance' => DB::raw('balance+'. $grand_total_value)));
+                $OmsAccountTransactionModel = new OmsAccountTransactionModel();
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_ACCOUNT_ID} = $account_summary->account_id;
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_ORDER_ID} = $request->order_id;
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_DESCRIPTION} = 'Received from Order #'.$request->shipped_id;
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_CREDIT} = $grand_total_value;
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_DEBIT} = 0;
+                $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_BALANCE} = ($account_summary->balance + $grand_total_value);
+                $OmsAccountTransactionModel->save();
+                $this->addInventoryStock($request->order_id, $request->product);
+                ?> <script>window.open('/oms/PurchaseManagement/barcode/generate/<?php echo $request->print_label ?>/<?php echo $request->shipped_order_id ?>', '_blank');</script> <?php
+                return redirect()->back()->with('message', 'Your Order #'.$request->order_id.' delivered successfully.');
+            }else {
+                return redirect()->back()->with('message', 'Your order already delivered!');
+            }
+        }else {
+            return redirect()->back()->with('message', 'Something went wrong, please try again!');
+        }
+    }
+
+    protected function addToshipAfterLessQuantityRecieved($order_id){
+        if(count(Input::all()) > 0){
+            OmsPurchaseStockCancelledModel::where('order_id', $order_id)->delete();
+                $valid = true;
+                $ordered_products = OmsPurchaseOrdersProductModel::where("order_id",$order_id)->get()->toArray();
+
+                  if(1){
+                    $total_order_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(order_quantity) as total_quantity'))->where('order_id', $order_id)->first()->total_quantity;
+                    $total_shipped_orders = OmsPurchaseShippedOrdersModel::select(DB::Raw('count(shipped_order_id) as total_shipped_orders'))->where('order_id', $order_id)->first()->total_shipped_orders;
+
+                    $prev_shipped_data = OmsPurchaseShippedOrdersModel::where('order_id', $order_id)->orderBy("shipped_order_id",'DESC')->first();
+                    // dd($prev_shipped_data->toArray());
+                    $OmsPurchaseShippedOrdersModel = new OmsPurchaseShippedOrdersModel();
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPED_ID} = $order_id . '-' . ($total_shipped_orders + 1);
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_ORDER_ID} = $order_id;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPED} = $prev_shipped_data->shipped;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_LINK} = $prev_shipped_data->link;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_URGENT} = $prev_shipped_data->urgent;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SUPPLIER} = $prev_shipped_data->supplier;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPING} = $prev_shipped_data->shipping;
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_TOTAL} = 0;
+                    if($prev_shipped_data->shipped == 'dubai'){
+                        $shipped_status = 2;
+                    }else{
+                        $shipped_status = 1;
+                    }
+                    $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_STATUS} = $shipped_status;
+                    $OmsPurchaseShippedOrdersModel->save();
+
+                    $shipped_order_id = $OmsPurchaseShippedOrdersModel->shipped_order_id;
+                    $shipped_id = $OmsPurchaseShippedOrdersModel->shipped_id;
+
+                    if(Input::get('instruction')){
+                        $OmsPurchaseOrdersHistoryModel = new OmsPurchaseOrdersHistoryModel();
+                        $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_ORDER_ID} = $order_id;
+                        $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_NAME} = 'Supplier';
+                        $OmsPurchaseOrdersHistoryModel->{OmsPurchaseOrdersHistoryModel::FIELD_COMMENT} = Input::get('instruction');
+                        $OmsPurchaseOrdersHistoryModel->save();
+                    }
+
+                    $shipped_sub_total = 0;
+                    foreach (Input::get('product') as $product_id => $options) {
+                        $stop_main_iteration = 1;
+                        foreach ($options['options'] as $key => $option) {
+                            // $remaining_to_ship =  $option['old_received_quantity'] - $option['received_quantity'];
+                            if( ( $option['old_received_quantity'] - $option['received_quantity'] ) > 0 ){
+                                $stop_main_iteration = 0;
+                                break;
+                            }
+                        }
+                        if($stop_main_iteration){
+                            continue;
+                        }
+                        $order_product_type = OmsPurchaseOrdersProductModel::select('*')->where('product_id', $product_id)->where('order_id', $order_id)->first();
+                        $product_name = $product_model = '';
+                        if($order_product_type){
+                            $product_model = $order_product_type->model;
+                            $product_name = $order_product_type->name;
+                        }
+                        $OmsPurchaseShippedOrdersProductModel = new OmsPurchaseShippedOrdersProductModel();
+                        $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_SHIPPED_ORDER_ID} = $shipped_order_id;
+                        $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_PRODUCT_ID} = $product_id;
+                        $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_NAME} = $product_name;
+                        $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_MODEL} = $product_model;
+                        $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_TYPE} =$order_product_type ? $order_product_type->type : 'opencart';
+                        $OmsPurchaseShippedOrdersProductModel->save();
+
+                        foreach ($options['options'] as $key => $option) {
+                            $remaining_to_ship =  $option['old_received_quantity'] - $option['received_quantity'];
+                            if( $remaining_to_ship < 1 ) continue;
+                            $quantity_details = OmsPurchaseShippedOrdersProductQuantityModel::select('*')->where('order_product_quantity_id', $option['order_product_quantity_id'])->first()->toArray();
+
+                            $shipped_total = $remaining_to_ship * $quantity_details['price'];
+                            $shipped_sub_total = $shipped_sub_total + $shipped_total;
+
+                            $OmsPurchaseShippedOrdersProductQuantityModel = new OmsPurchaseShippedOrdersProductQuantityModel();
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_SHIPPED_ORDER_ID} = $shipped_order_id;
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_QUANTITY} = $remaining_to_ship;
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_RECEIVED_QUANTITY} = 0;
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_PRICE} = $quantity_details['price'];
+                            $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_TOTAL} = $shipped_total;
+                            $OmsPurchaseShippedOrdersProductQuantityModel->save();
+
+                            $quantity_id = $OmsPurchaseShippedOrdersProductQuantityModel->order_product_quantity_id;
+
+                            $required_order_product_quantity_id = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id')
+                                ->where('order_product_id', $product_id)->where('order_id',$order_id)->where('product_option_id',$option['product_option_id'])->where('product_option_value_id',$option['product_option_value_id'])
+                                ->where('name',$option['option_name'])->where('value',$option['option_value'])->first();
+                                if(!empty($required_order_product_quantity_id)){
+                                    $options_details = OmsPurchaseOrdersProductOptionModel::select('*')->where('order_product_quantity_id',$required_order_product_quantity_id->order_product_quantity_id)->get()->toArray();
+                                }
+                            if($options_details){
+                                foreach ($options_details as $quantity_option) {
+                                    $OmsPurchaseShippedOrdersProductOptionModel = new OmsPurchaseShippedOrdersProductOptionModel();
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_ORDER_PRODUCT_QUANTITY_ID} = $quantity_id;
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_SHIPPED_ORDER_ID} = $shipped_order_id;
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_ORDER_PRODUCT_ID} = $product_id;
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_PRODUCT_OPTION_ID} = $quantity_option['product_option_id'];
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_PRODUCT_OPTION_VALUE_ID} = $quantity_option['product_option_value_id'];
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_NAME} = $quantity_option['name'];
+                                    $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_VALUE} = $quantity_option['value'];
+                                    $OmsPurchaseShippedOrdersProductOptionModel->save();
+                                }
+                            }
+                            // for supplier shipped issue the below query is commented
+                            // OmsPurchaseOrdersProductQuantityModel::where('order_product_quantity_id', $option['order_product_quantity_id'])->update(array('shipped_quantity' => DB::raw('shipped_quantity+'.$remaining_to_ship)));
+                        }
+                    }
+
+                    $order_totals = OmsPurchaseOrdersTotalModel::select('code','title','value','sort_order')->where('order_id', $order_id)->orderBy('sort_order', 'ASC')->get()->toArray();
+                    $local_shipping = array(
+                        'code'  =>  'Local Shipping Cost',
+                        'title'  =>  'local_shipping_cost',
+                        'value'  =>  0, ///local cost to be from
+                        'sort_order'  =>  count($order_totals)
+                    );
+                    $main_total = end($order_totals);
+                    $main_total['value'] = $shipped_sub_total;
+                    foreach ($order_totals as $key => $value) {
+                        if($value['title'] === 'sub_total'){
+                            $order_totals[$key]['value'] = $shipped_sub_total;
+                        }
+                        if($value['title'] === 'local_express_cost'){
+                            $value['value'] = 0;
+                            $main_total['value'] = $main_total['value'] + $value['value'];
+                        }
+                    }
+                    $main_total['value'] = $main_total['value'] + $local_shipping['value'];
+                    $main_total['sort_order'] = count($order_totals) + 1;
+                    array_pop($order_totals);
+                    array_push($order_totals, $local_shipping);
+                    array_push($order_totals, $main_total);
+                    foreach ($order_totals as $total) {
+                        if($total['title'] == "local_express_cost"){
+                            $valuee = 0;
+                        }else{
+                            $valuee = $total['value'];
+                        }
+                        $OmsPurchaseShippedOrdersTotalModel = new OmsPurchaseShippedOrdersTotalModel();
+                        $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SHIPPED_ORDER_ID} = $shipped_order_id;
+                        $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_CODE} = $total['code'];
+                        $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_TITLE} = $total['title'];
+                        $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_VALUE} = $valuee;
+                        $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SORT_ORDER} = $total['sort_order'];
+                        $OmsPurchaseShippedOrdersTotalModel->save();
+                    }
+
+                    OmsPurchaseShippedOrdersModel::where('shipped_order_id', $shipped_order_id)->update(array('total' => $main_total['value']));
+                    $total_shipped_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(shipped_quantity) as total_quantity'))->where('order_id', $order_id)->first()->total_quantity;
+                    $order_status_id = OmsPurchaseOrdersModel::select('order_status_id')->where('order_id', $order_id)->first();
+
+                if($order_status_id->order_status_id !== 1){
+                    $forwarder_count = OmsPurchaseShippedOrdersModel::select(DB::raw("COUNT(shipped_order_id) as total"))->where('order_id', $order_id)->where('status', 1)->first();
+
+                    if(($total_order_quantity == $total_shipped_quantity && $forwarder_count->total == 0) || $prev_shipped_data->shipped == 'dubai'){
+
+                    if($total_order_quantity == $total_shipped_quantity){
+
+                        OmsPurchaseOrdersModel::where('order_id', $order_id)->update(array('order_status_id'   => 5));
+                        $this->addOrderStatusHistory($order_id, 5);
+                    }else{
+
+                        OmsPurchaseOrdersModel::where('order_id', $order_id)->update(array('order_status_id'   => 4));
+                        $this->addOrderStatusHistory($order_id, 4);
+                    }
+
+                    return redirect()->route('confirmed.purchase.orders')->with('message', 'Your Order #'.$order_id.' shipped successfully.');
+
+                    }else{
+
+                        $test=  OmsPurchaseOrdersModel::where('order_id', $order_id)->update(array('order_status_id'   => 4));
+                        $this->addOrderStatusHistory($order_id, 4);
+                        return redirect()->route('confirmed.purchase.orders')->with('message', 'Your Order #'.$order_id.' shipped successfully.');
+
+                    }
+
+        }else{
+            return redirect()->route('confirmed.purchase.orders')->with('message', 'Your Order #'.$shipped_id.' shipped successfully.');
+        }
+    }else{
+        return redirect()->route('add.to.ship')->with('message', 'Do not enter greater than order quantity!');
+    }
+
+ }
+
+}
+
+public function deliveredOrders(Request $request) {
+    $count = false;
+    $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+    $search_form_action = \URL::to('/PurchaseManagement/delivered/orders');
+    $whereClause = [];
+    $relationWhereClause = [];
+    if($request->order_id) {
+        $whereClause[] = ['order_id', $request->order_id];
+    }
+    if($request->product_title) {
+        $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+    }
+    if($request->product_model) {
+        $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+    }
+    if($request->supplier) {
+        $whereClause[] = ['supplier', $request->supplier];
+    }
+    if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+        $whereClause[] = ['supplier', session('user_id')];
+    }
+    $shippedWhereClause = [];
+        if($request->order_status_id) {
+            $shippedWhereClause[] = ['status', $request->order_status_id];
+        }
+
+    $orders = OmsPurchaseOrdersModel::with([
+        'orderProducts','orderProductQuantities' => function($q) {
+            $q->orderBy('order_product_quantity_id', 'ASC');
+        },
+        'orderProducts.orderProductQuantities' => function($qu) {
+            $qu->orderBy('order_product_quantity_id', 'ASC');
+        },'orderProducts.orderProductQuantities.productOptions' => function($qo) {
+            $qo->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+        },'orderTotals' => function($q1) {
+            $q1->orderBy('sort_order', 'ASC');
+        },'orderHistories',
+        'shippedOrders' => function($sh) use($shippedWhereClause) {
+            $sh->where('status', 3)->where($shippedWhereClause)->orderBy('shipped_order_id', 'ASC');
+        },'shippedOrders.orderTotals' => function($q1) {
+            $q1->orderBy('sort_order', 'ASC');
+        },'shippedOrders.orderProducts','shippedOrders.orderProductQuantities' =>function($soproq) {
+            $soproq->orderBy('order_product_quantity_id', 'ASC');
+        },'shippedOrders.orderProducts.orderProductQuantities' =>function($soproq) {
+            $soproq->orderBy('order_product_quantity_id', 'ASC');
+        },'shippedOrders.orderProducts.orderProductQuantities.productOptions' =>function($soproop) {
+            $soproop->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC');
+        },'orderSupplier'
+    ])->where($whereClause)->whereIn('order_status_id', [4,5,6])->whereHas('shippedOrders', function ($query) {
+        $query->where('status', 3);
+        })->orderBy('order_id', 'DESC')->groupBy('order_id')
+      ->paginate(self::PER_PAGE)->appends($request->all());
+      foreach($orders as $order) {
+        $order['status_history'] = $this->statusHistory($order['order_id']);
+        $stock_cancel = false;
+        foreach($order->orderProducts as $key => $product) {
+            $product['image'] = $this->omsProductImage($product->product_id, 300, 300, $product->type);
+        }
+        foreach($order['shippedOrders'] as $shipped_order) {
+            foreach($shipped_order->orderProducts as $k => $sproduct) {
+                $sproduct['image'] = $this->omsProductImage($sproduct->product_id, 300, 300, $sproduct->type);
+            }
+            $shipped_order['shipping'] = json_decode($shipped_order['shipping'], true);
+        }
+    }
+    // dd($orders->toArray());
+    $order_statuses = OmsPurchaseOrdersStatusModel::get()->toArray();
+    $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+    return view(self::VIEW_DIR.".delivered", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "search_form_action" => $search_form_action, 'order_statuses' => $order_statuses, "old_input" => $request->all()]);
+
+}
+
+public function cancelledOrders(Request $request) {
+    $count = false;
+    $tabs = OmsPurchaseTabsModel::orderBy('sort_order', 'ASC')->get()->toArray();
+    $search_form_action = \URL::to('/PurchaseManagement/cancelled/orders');
+    $option_id = OmsSettingsModel::get('product_option','color');
+    $whereClause = [];
+    $relationWhereClause = [];
+        if($request->order_id){
+            if($request->action != 'shipped') {
+                $whereClause[] = ['oms_purchase_order.order_id', $request->order_id];
+            }else {
+                $whereClause[] = ['oms_purchase_shipped_order.order_id', $request->order_id];
+            }
+
+        }
+    if($request->title) {
+        $relationWhereClause[] = ['name', 'LIKE', '%'. $request->product_title . '%'];
+    }
+    if($request->model) {
+        $relationWhereClause[] = ['model', 'LIKE', $request->product_model .'%'];
+    }
+    if($request->supplier) {
+        $whereClause[] = ['supplier', $request->supplier];
+    }
+    if(session('role') != 'ADMIN' && session('role') != 'STAFF') {
+        $whereClause[] = ['supplier', session('user_id')];
+    }
+    // dd($whereClause);
+    if($request->action != 'shipped') {
+        $orders = OmsPurchaseOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },'orderSupplier'
+        ])->where($whereClause)->where('order_status_id', 7)->orderBy('order_id', 'DESC')
+        ->paginate(self::PER_PAGE)->appends($request->all());
+    }else {
+        $orders = OmsPurchaseShippedOrdersModel::with([
+            'orderProducts' => function($q) use($relationWhereClause) {
+                $q->where($relationWhereClause);
+            },'orderSupplier'
+        ])->where($whereClause)->where('status', 5)->orderBy('shipped_order_id', 'DESC')
+        ->paginate(self::PER_PAGE)->appends($request->all());
+    }
+      foreach($orders as $order) {
+          foreach($order->orderProducts as $product) {
+              if($request->action != 'shipped') {
+                    $options = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','name','value')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+                }else {
+                    $options = OmsPurchaseShippedOrdersProductOptionModel::select('order_product_quantity_id', 'product_option_id','name','value')->where('shipped_order_id', $product['shipped_order_id'])->where('order_product_id', $product['product_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+                }
+              if($options) {
+                $cancelled_order_options = array();
+                foreach($options as $option) {
+                    if($request->action != 'shipped') {
+                         $quantity = OmsPurchaseOrdersProductQuantityModel::select('quantity','order_quantity','shipped_quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                       }else {
+                         $quantity = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                       }
+                       if($option['product_option_id'] != $option_id) {
+                           $cancelled_order_options[] = array(
+                               'name'              => $option['name'],
+                               'value'             =>  $option['value'],
+                               'quantity'          =>  $quantity['quantity'],
+                               'order_quantity'    =>  ($request->action != 'shipped') ? $quantity['order_quantity'] : 0,
+                               'remain_quantity'   =>  ($request->action != 'shipped') ? $quantity['order_quantity'] - $quantity['shipped_quantity'] : 0,
+                               'price'             =>  $quantity['price'],
+                               'total'             =>  $quantity['total'],
+                           );
+                       }
+                }
+                $product['options'] = $cancelled_order_options;
+              }
+              $product['image'] = $this->omsProductImage($product['product_id'], 300, 300,$product['type']);
+          }
+      }
+    //   dd($orders->toArray());
+      $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+      return view(self::VIEW_DIR.".cancelledOrders", ["orders" => $orders->toArray(), "pagination" => $orders->render(), "suppliers" => $suppliers, "tabs" => $tabs, "search_form_action" => $search_form_action, "old_input" => $request->all()]);
+}
+
+public function shippedStockCancelledRequests() {
+    $option_id = OmsSettingsModel::get('product_option','color');
+    $whereClause = [];
+    if(Input::all() > 0){
+        if(Input::get('order_id')){
+            $whereClause[] = ['order_id', Input::get('order_id')];
+        }
+        if(Input::get('supplier')){
+            $whereClause[] = ['supplier', Input::get('supplier')];
+        }
+    }
+    $orders = OmsPurchaseStockCancelledModel::with(['shippedOrder','shippedOrder.orderProducts','shippedOrder.orderProducts.ProductsSizes','orderSupplier'])->where('status', 0)->whereNotNull('shiped_order_id')->whereNot('shiped_order_id', '')->where($whereClause)->paginate(self::PER_PAGE)->appends(Input::all());
+    foreach ($orders as $order) {
+        foreach($order->shippedOrder->orderProducts as $product) {
+            $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+            $stock_cancelled_order_options = array();
+            foreach($product->ProductsSizes as $k => $option) {
+                $quantity = OmsPurchaseShippedOrdersProductQuantityModel::select('quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                if($option['product_option_id'] != $option_id){
+                    $stock_cancelled_order_options[] = array(
+                        'name'              =>  $option['name'],
+                        'value'             =>  $option['value'],
+                        'order_quantity'    =>  $quantity['quantity'],
+                        // 'remain_quantity'   =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                        'price'             =>  $quantity['price'],
+                        'total'             =>  $quantity['total'],
+                    );
+                }
+                $product->ProductsSizes[$k] = $stock_cancelled_order_options;
+            }
+
+        }
+    }
+    $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+    return view(self::VIEW_DIR.".stockCancelRequests", ["orders" => $orders->toArray(), "suppliers" => $suppliers, "pagination" => $orders->render(), "old_input" => Input::all()]);
+}
+
+public function toBeShippedStockCancelledRequests(Request $request) {
+    $option_id = OmsSettingsModel::get('product_option','color');
+    $whereClause = [];
+    if($request->all() > 0){
+        if($request->order_id){
+            $whereClause[] = ['order_id', $request->order_id];
+        }
+        if($request->supplier){
+            $whereClause[] = ['supplier', $request->supplier];
+        }
+    }
+    $orders = OmsPurchaseStockCancelledModel::with(['purchasedOrder','purchasedOrder.orderProducts','orderSupplier'])->where('status', 0)->whereNull('shiped_order_id')->orWhere('shiped_order_id', '')->where($whereClause)->paginate(self::PER_PAGE)->appends(Input::all());
+
+    foreach ($orders as $kk => $order) {
+        foreach($order->purchasedOrder->orderProducts as $key => $product) {
+            $product['image'] = $this->omsProductImage($product['product_id'],300,300,$product['type']);
+            $stock_cancelled_order_options = array();
+            $options = OmsPurchaseOrdersProductOptionModel::select('order_product_quantity_id','product_option_id','name','value')->where('order_id', $order['order_id'])->where('order_product_id', $product['product_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+
+            if($options && count($options) > 0) {
+                foreach($options as $k => $option) {
+                    $quantity = OmsPurchaseOrdersProductQuantityModel::select('quantity','order_quantity','shipped_quantity','received_quantity','price','total')->where('order_product_quantity_id', $option['order_product_quantity_id'])->where('order_product_id', $product['product_id'])->first()->toArray();
+                    if($option['product_option_id'] != $option_id){
+                        $stock_cancelled_order_options[] = array(
+                            'name'              =>  $option['name'],
+                            'value'             =>  $option['value'],
+                            'order_quantity'    =>  $quantity['quantity'],
+                            'remain_quantity'   =>  $quantity['order_quantity'] - $quantity['shipped_quantity'],
+                            'price'             =>  $quantity['price'],
+                            'total'             =>  $quantity['total'],
+                        );
+                    }
+                }
+                if($stock_cancelled_order_options && count($stock_cancelled_order_options) > 0) {
+                    $order->purchasedOrder->orderProducts[$key]['products_sizes'] = $stock_cancelled_order_options;
+                }else {
+                    $order->purchasedOrder->orderProducts[$key]['order_quantity']  =  $quantity['order_quantity'];
+                    $order->purchasedOrder->orderProducts[$key]['remain_quantity'] =  $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                    $order->purchasedOrder->orderProducts[$key]['price']           =  $quantity['price'];
+                    $order->purchasedOrder->orderProducts[$key]['total']           =  $quantity['total'];
+                }
+            }else {
+                $quantity = OmsPurchaseOrdersProductQuantityModel::select('quantity','order_quantity','shipped_quantity','received_quantity','price','total')->where('order_product_id', $product['product_id'])->where('order_id', $order['order_id'])->first()->toArray();
+                $order->purchasedOrder->orderProducts[$key]['order_quantity']  =  $quantity['order_quantity'];
+                $order->purchasedOrder->orderProducts[$key]['remain_quantity'] =  $quantity['order_quantity'] - $quantity['shipped_quantity'];
+                $order->purchasedOrder->orderProducts[$key]['price']           =  $quantity['price'];
+                $order->purchasedOrder->orderProducts[$key]['total']           =  $quantity['total'];
+            }
+        }
+    }
+    $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+    return view(self::VIEW_DIR.".toBeShippedStockCancelRequests", ["orders" => $orders->toArray(), "suppliers" => $suppliers, "pagination" => $orders->render(), "old_input" => $request->all()]);
+}
+
+public function addComplaint(Request $request) {
+    $option_id = OmsSettingsModel::get('product_option','color');
+        $missing_order = array();
+        $whereClause = [];
+        if($request->all() > 0){
+            if($request->order_id){
+                $whereClause[] = ['shipped_id', $request->order_id];
+            }
+            if($request->supplier){
+                $whereClause[] = ['supplier', $request->supplier];
+            }
+        }
+        $orders = OmsPurchaseShippedOrdersModel::join('oms_purchase_shipped_order_product_quantity as psopq', 'psopq.shipped_order_id', '=', 'oms_purchase_shipped_order.shipped_order_id')
+                    ->where('oms_purchase_shipped_order.status', 3)
+                    ->having(DB::Raw('SUM(psopq.quantity)'), '!=', DB::Raw('SUM(psopq.received_quantity)'))->where($whereClause)
+                    ->groupBy('oms_purchase_shipped_order.shipped_order_id')->orderBy('oms_purchase_shipped_order.shipped_order_id','DESC')
+                    ->paginate(self::PER_PAGE)->appends(Input::all());
+                        //  dd($orders->toArray());
+                    if($orders){
+                        foreach ($orders as $key => $order) {
+                            $order = $order->toArray();
+                            $products = OmsPurchaseShippedOrdersProductModel::select('*')->where('shipped_order_id', $order['shipped_order_id'])->get()->toArray();
+
+                            $missing_order_products = array();
+                            foreach ($products as $key => $product) {
+                                $quantities = OmsPurchaseShippedOrdersProductQuantityModel::select('*')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_id', $product['product_id'])->orderBy('order_product_quantity_id', 'ASC')->get()->toArray();
+
+                                $missing_order_quantities = array();
+                                foreach ($quantities as $quantity) {
+                                    $options = OmsPurchaseShippedOrdersProductOptionModel::select('name','value')->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->orderBy('name', 'ASC')->orderBy('order_product_option_id', 'ASC')->get()->toArray();
+
+                                    $missing_order_options = array();
+                                    foreach ($options as $option) {
+                                        $missing_order_options[] = array(
+                                            'name'  =>  $option['name'],
+                                            'value' =>  $option['value'],
+                                        );
+                                    }
+                                    $missing_order_quantities[] = array(
+                                        'order_product_quantity_id' =>  $quantity['order_product_quantity_id'],
+                                        'quantity'  =>  $quantity['quantity'],
+                                        'received'  =>  $quantity['received_quantity'],
+                                        'remain'    =>  ($quantity['quantity'] - $quantity['received_quantity']),
+                                        'price'     =>  $quantity['price'],
+                                        'total'     =>  $quantity['total'],
+                                        'options'   =>  $missing_order_options,
+                                    );
+                                }
+                                $missing_order_products[] = array(
+                                    'product_id'    =>  $product['product_id'],
+                                    'image'         =>  $this->get_product_image($product['type'], $product['product_id'], 300, 300),
+                                    'name'          =>  $product['name'],
+                                    'model'         =>  $product['model'],
+                                    'quantities'    =>  $missing_order_quantities,
+                                );
+                            }
+
+                            $complaint = OmsPurchaseComplaintOrderModel::select('comment')->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $order['shipped_id'])->first();
+                            $complaint_history = array();
+                            if($complaint){
+                                $complaint_history = json_decode($complaint->comment,true);
+                            }
+                            $supplier = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_id', $order['supplier'])->first();
+                            $missing_order[] = array(
+                                'shipped_order_id'  =>  $order['shipped_order_id'],
+                                'shipped_id'        =>  $order['shipped_id'],
+                                'order_id'          =>  $order['order_id'],
+                                'supplier'          =>  $supplier ? $supplier->toArray() : array(),
+                                'shipped'           =>  $order['shipped'],
+                                'link'              =>  $order['link'],
+                                'urgent'            =>  $order['urgent'],
+                                'ship_by_sea'       =>  $order['ship_by_sea'],
+                                'order_status_id'   =>  $order['status'],
+                                'total'             =>  $order['total'],
+                                'history'           =>  $complaint_history,
+                                'products'          =>  $missing_order_products,
+                            );
+                        }
+                    }
+                    $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+                    return view(self::VIEW_DIR.".addComplaint", ["orders" => $missing_order, "suppliers" => $suppliers, "pagination" => $orders->render(), "old_input" => Input::all()]);
+}
+
+public function updateComplaintOrder(Request $request) {
+    if($request->all() > 0 && $request->submit == 'update_complaint_order'){
+        $exists = OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->exists();
+        if(!$exists){
+            $comment[] = array('Admin' => $request->comment);
+            $OmsPurchaseComplaintOrderModel = new OmsPurchaseComplaintOrderModel();
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID} = $request->order_id;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID} = $request->shipped_id;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_SUPPLIER} = $request->supplier;
+            $OmsPurchaseComplaintOrderModel->{OmsPurchaseComplaintOrderModel::FIELD_COMMENT} = json_encode($comment);
+            $OmsPurchaseComplaintOrderModel->save();
+
+            return redirect()->route('add.complaint')->with('message', 'Complaint For Order #'.$request->shipped_id.' added successfully.');
+        }else{
+            $complaint = OmsPurchaseComplaintOrderModel::select(OmsPurchaseComplaintOrderModel::FIELD_COMMENT)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->first();
+            if($complaint){
+                $comment = json_decode($complaint->comment,true);
+                $comment_new[] = array('Admin' => $request->comment);
+                $update_comment = json_encode(array_merge($comment,$comment_new));
+
+                OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID, $request->order_id)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->update(array(OmsPurchaseComplaintOrderModel::FIELD_COMMENT => $update_comment));
+            }else{
+                $comment[] = array('Admin' => $request->comment);
+                OmsPurchaseComplaintOrderModel::where(OmsPurchaseComplaintOrderModel::FIELD_ORDER_ID, $request->order_id)->where(OmsPurchaseComplaintOrderModel::FIELD_SHIPPED_ID, $request->shipped_id)->update(array(OmsPurchaseComplaintOrderModel::FIELD_COMMENT => json_encode($comment) ));
+            }
+            return redirect()->route('add.complaint')->with('message', 'Comment For Order #'.$request->shipped_id.' added successfully.');
+        }
+    }else{
+        return redirect()->route('add.complaint')->with('message', 'Something went wrong, please try again!');
+    }
+}
+
+public function updateStockCancelOrderRequest(Request $request) {
+    if($request->all() > 0 && $request->submit == 'update_stock_cancelled'){
+
+        OmsPurchaseStockCancelledModel::where('order_id', $request->order_id)->where('supplier', $request->supplier)->where('shiped_order_id', $request->shiped_order_id)->update(array('status' => 1));
+        OmsPurchaseShippedOrdersModel::where('order_id', $request->order_id)->where('shipped_id', $request->shiped_order_id)->update(array('status' => 5));
+
+        $this->addOrderStatusHistory($request->shiped_order_id, 5);
+        return redirect()->back()->with('message', 'Your Order #'.$request->shiped_order_id.' cancelled successfully.');
+    }elseif( $request->all() > 0 && $request->submit == 'cancel_stock_cancelled' ){
+      OmsPurchaseStockCancelledModel::where('order_id', $request->order_id)->where('supplier', $request->supplier)->where('shiped_order_id', $request->shiped_order_id)->delete();
+
+      return redirect()->back()->with('message', 'Your Order #'.$request->shiped_order_id.' Disapproved successfully.');
+    }
+}
+
+public function updateToBeStockCancelOrderRequest(Request $request) {
+      $order_id = $request->order_id;
+      $supplier = $request->supplier;
+      if( $request->submit == 'approve_stock_cancelled' ){
+        $this->add_to_ship_for_cancelation($order_id, $supplier);
+        return redirect()->back();
+      }elseif( $request->submit == 'cancel_stock_cancelled' ){
+        OmsPurchaseStockCancelledModel::where('order_id', $order_id)->whereNull('shiped_order_id')->delete();
+        return redirect()->back()->with('message', 'Your Order #'.$order_id.' Request cancelled successfully.');
+      }
+}
+
+public function add_to_ship_for_cancelation($main_order_id, $supplier){
+    if( $main_order_id != "" && $main_order_id > 0 ){
+      $total_order_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(order_quantity) as total_quantity'))->where('order_id', $main_order_id)->first()->total_quantity;
+      $total_shipped_orders = OmsPurchaseShippedOrdersModel::select(DB::Raw('count(shipped_order_id) as total_shipped_orders'))->where('order_id', $main_order_id)->first()->total_shipped_orders;
+      $shipping['cancel'] = array(
+        'name'      =>  'cancel',
+        'tracking'  =>  'cancel',
+        'date'      =>  '',
+      );
+      $OmsPurchaseShippedOrdersModel = new OmsPurchaseShippedOrdersModel();
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPED_ID} = $main_order_id . '-' . ($total_shipped_orders + 1);
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_ORDER_ID} = $main_order_id;
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPED} = 'canceled';
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_LINK} = '';
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_URGENT} = 0;
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SUPPLIER} = $supplier;
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_SHIPPING} = json_encode($shipping);
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_TOTAL} = 0;
+      $shipped_status = 2;
+      $OmsPurchaseShippedOrdersModel->{OmsPurchaseShippedOrdersModel::FIELD_STATUS} = $shipped_status;
+      $OmsPurchaseShippedOrdersModel->save();
+
+      $order_id = $OmsPurchaseShippedOrdersModel->shipped_order_id;
+      $shipped_id = $OmsPurchaseShippedOrdersModel->shipped_id;
+
+      $shipped_sub_total = 0;
+      $ordered_products = OmsPurchaseOrdersProductModel::where('order_id',$main_order_id)->get();
+      foreach ($ordered_products as $ordered_product) {
+
+          $OmsPurchaseShippedOrdersProductModel = new OmsPurchaseShippedOrdersProductModel();
+          $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_SHIPPED_ORDER_ID} = $order_id;
+          $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_PRODUCT_ID} = $ordered_product->product_id;
+          $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_NAME} = $ordered_product->name;
+          $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_MODEL} = $ordered_product->model;
+          $OmsPurchaseShippedOrdersProductModel->{OmsPurchaseShippedOrdersProductModel::FIELD_TYPE} = $ordered_product->type;
+          $OmsPurchaseShippedOrdersProductModel->save();
+          $ordered_quantities = OmsPurchaseOrdersProductQuantityModel::select('*')->where('order_id', $main_order_id)->where('order_product_id', $ordered_product->product_id)->get();
+          foreach ($ordered_quantities as $ordered_quantity) {
+              $shipped_quantity = $ordered_quantity->order_quantity - $ordered_quantity->shipped_quantity;
+              if($shipped_quantity < 1) continue;
+              $shipped_total  = $shipped_quantity * $ordered_quantity->price;
+              $shipped_sub_total = $shipped_sub_total + $shipped_total;
+              $OmsPurchaseShippedOrdersProductQuantityModel = new OmsPurchaseShippedOrdersProductQuantityModel();
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_SHIPPED_ORDER_ID} = $order_id;
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_ORDER_PRODUCT_ID} = $ordered_quantity->order_product_id;
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_QUANTITY} = $shipped_quantity;
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_RECEIVED_QUANTITY} = 0;
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_PRICE} = $ordered_quantity->price;
+              $OmsPurchaseShippedOrdersProductQuantityModel->{OmsPurchaseShippedOrdersProductQuantityModel::FIELD_TOTAL} = $shipped_total;
+              $OmsPurchaseShippedOrdersProductQuantityModel->save();
+
+              $quantity_id = $OmsPurchaseShippedOrdersProductQuantityModel->order_product_quantity_id;
+
+              $options_details = OmsPurchaseOrdersProductOptionModel::select('*')->where('order_product_quantity_id', $ordered_quantity->order_product_quantity_id)->get()->toArray();
+              if($options_details){
+                  foreach ($options_details as $quantity_option) {
+                      $OmsPurchaseShippedOrdersProductOptionModel = new OmsPurchaseShippedOrdersProductOptionModel();
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_ORDER_PRODUCT_QUANTITY_ID} = $quantity_id;
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_SHIPPED_ORDER_ID} = $order_id;
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_ORDER_PRODUCT_ID} = $ordered_quantity->order_product_id;
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_PRODUCT_OPTION_ID} = $quantity_option['product_option_id'];
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_PRODUCT_OPTION_VALUE_ID} = $quantity_option['product_option_value_id'];
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_NAME} = $quantity_option['name'];
+                      $OmsPurchaseShippedOrdersProductOptionModel->{OmsPurchaseShippedOrdersProductOptionModel::FIELD_VALUE} = $quantity_option['value'];
+                      $OmsPurchaseShippedOrdersProductOptionModel->save();
+                  }
+              }
+
+              OmsPurchaseOrdersProductQuantityModel::where('order_product_quantity_id', $ordered_quantity->order_product_quantity_id)->update(array('shipped_quantity' => DB::raw('shipped_quantity+'.$shipped_quantity)));
+          }
+
+      }
+
+      $order_totals = OmsPurchaseOrdersTotalModel::select('code','title','value','sort_order')->where('order_id', $main_order_id)->orderBy('sort_order', 'ASC')->get()->toArray();
+      $local_shipping = array(
+          'code'  =>  'Local Shipping Cost',
+          'title'  =>  'local_shipping_cost',
+          'value'  =>  0,
+          'sort_order'  =>  count($order_totals)
+      );
+      $main_total = end($order_totals);
+      $main_total['value'] = $shipped_sub_total;
+      foreach ($order_totals as $key => $value) {
+          if($value['title'] === 'sub_total'){
+              $order_totals[$key]['value'] = $shipped_sub_total;
+          }
+          if($value['title'] === 'local_express_cost'){
+              $main_total['value'] = $main_total['value'] + $value['value'];
+          }
+      }
+      $main_total['value'] = $main_total['value'] + $local_shipping['value'];
+      $main_total['sort_order'] = count($order_totals) + 1;
+      array_pop($order_totals);
+      array_push($order_totals, $local_shipping);
+      array_push($order_totals, $main_total);
+      foreach ($order_totals as $total) {
+          $value_amount = $total['value'];
+
+          $OmsPurchaseShippedOrdersTotalModel = new OmsPurchaseShippedOrdersTotalModel();
+          $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SHIPPED_ORDER_ID} = $order_id;
+          $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_CODE} = isset($total['code']) ? $total['code'] : '';
+          $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_TITLE} = isset($total['title']) ? $total['title'] : '';
+          $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_VALUE} = $value_amount;
+          $OmsPurchaseShippedOrdersTotalModel->{OmsPurchaseShippedOrdersTotalModel::FIELD_SORT_ORDER} = $total['sort_order'];
+          $OmsPurchaseShippedOrdersTotalModel->save();
+      }
+
+      OmsPurchaseShippedOrdersModel::where('shipped_order_id', $order_id)->update(array('total' => $main_total['value']));
+      $total_shipped_quantity = OmsPurchaseOrdersProductQuantityModel::select(DB::Raw('sum(shipped_quantity) as total_quantity'))->where('order_id', Input::get('order_id'))->first()->total_quantity;
+      $order_status_id = OmsPurchaseOrdersModel::select('order_status_id')->where('order_id', $main_order_id)->first();
+
+      if($order_status_id->order_status_id !== 7){
+          $forwarder_count = OmsPurchaseShippedOrdersModel::select(DB::raw("COUNT(shipped_order_id) as total"))->where('order_id', $main_order_id)->where('status', 1)->first();
+
+          if(($total_order_quantity == $total_shipped_quantity && $forwarder_count->total == 0)){
+            // || Input::get('shipped') == 'dubai'
+            OmsPurchaseOrdersModel::where('order_id', $main_order_id)->update(array('order_status_id'   => 5));
+
+            $this->addOrderStatusHistory($main_order_id, 5);
+              $this->cancelFromToBeShipped($main_order_id,$shipped_id);
+              return redirect()->route('get.shipped.orders')->with('message', 'Your Order #'.$shipped_id.' shipped and Approved successfully.');
+          }else{
+              OmsPurchaseOrdersModel::where('order_id', $main_order_id)->update(array('order_status_id'   => 5));
+
+              $this->addOrderStatusHistory($main_order_id, 5);
+              $this->cancelFromToBeShipped($main_order_id,$shipped_id);
+              return redirect()->route('get.shipped.orders')->with('message', 'Your Order #'.$shipped_id.' shipped and Approved successfully.');
+          }
+
+      }else{
+          $this->cancelFromToBeShipped($main_order_id,$shipped_id);
+          return redirect()->route('get.shipped.orders')->with('message', 'Your Order #'. $shipped_id .' shipped and Approved  successfully.');
+      }
+    }
+  }
+  protected function cancelFromToBeShipped($main_order_id,$shipped_id){
+    OmsPurchaseStockCancelledModel::where('order_id', $main_order_id)->whereNull('shiped_order_id')->update(array('status' => 1));
+    $shipped_orders = OmsPurchaseShippedOrdersModel::where('order_id', $main_order_id)
+                                                          ->where('shipped_id', $shipped_id)
+                                                          ->update(array('status' => 5));
+    $this->addOrderStatusHistory($shipped_id, 5);
+  }
+
+protected function addInventoryStock($order_id, $products){
+      foreach ($products as $product_id => $value) {
+          $product_data = OmsPurchaseOrdersProductModel::select('type','model')->where('order_id', $order_id)->where('product_id', $product_id)->first();
+          $omsProduct = OmsInventoryProductModel::select('option_value AS size','option_name AS Color','product_id','sku')->where('sku',$product_data->model)->first();
+
+          if($omsProduct){
+              if($omsProduct->size != 0){
+          $quantity_data = "";
+          $total_quantity = 0;
+          foreach ($value['options'] as $key => $val) {
+            $total_quantity = $total_quantity + $val['received_quantity'];
+            $quantity_data .= $val['option_value'] . "-(" . $val['received_quantity'] . "), ";
+
+            OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)->where('option_id', $val['product_option_id'])->where('option_value_id', $val['product_option_value_id'])->update(array('available_quantity' => DB::Raw('available_quantity+' . $val['received_quantity'])));
+          }
+
+          $comment = "This quantity added from the purchase #".$order_id." .<br>Quantity: ". rtrim($quantity_data, ", ");
+          $OmsInventoryAddStockHistoryModel = new OmsInventoryAddStockHistoryModel();
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_USER_ID} = session('user_id');
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_COMMENT} = $comment;
+          $OmsInventoryAddStockHistoryModel->save();
+
+          //OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)->where('option_id', $this->static_option_id)->where('option_value_id', $omsProduct->color)->update(array('available_quantity' => DB::Raw('available_quantity+' . $total_quantity)));
+
+          foreach ($value['options'] as $key => $val) {
+            $OmsInventoryAddStockOptionModel = new OmsInventoryAddStockOptionModel();
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_HISTORY_ID} = $OmsInventoryAddStockHistoryModel->history_id;
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_ID} = $val['product_option_id'];
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_VALUE_ID} = $val['product_option_value_id'];
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_QUANTITY} = $val['received_quantity'];
+            $OmsInventoryAddStockOptionModel->save();
+          }
+              }else{
+            // dd($value['options']);
+            $quantity_data = "";
+            foreach ($value['options'] as $key => $val) {
+              $quantity_data .= $val['option_value'] . "-(" . $val['received_quantity'] . "), ";
+               OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)->where('option_id', $val['product_option_id'])->where('option_value_id', $val['product_option_value_id'])->update(array('available_quantity' => DB::Raw('available_quantity+' . $val['received_quantity'])));
+            }
+          $comment = "This quantity added from the purchase #".$order_id." .<br>Quantity: ". rtrim($quantity_data, ", ");
+          $OmsInventoryAddStockHistoryModel = new OmsInventoryAddStockHistoryModel();
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_USER_ID} = session('user_id');
+          $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_COMMENT} = $comment;
+          $OmsInventoryAddStockHistoryModel->save();
+
+          foreach ($value['options'] as $key => $val) {
+            $OmsInventoryAddStockOptionModel = new OmsInventoryAddStockOptionModel();
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_HISTORY_ID} = $OmsInventoryAddStockHistoryModel->history_id;
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_ID} = $val['product_option_id'];
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_VALUE_ID} = $val['product_option_value_id'];
+            $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_QUANTITY} = $val['received_quantity'];
+            $OmsInventoryAddStockOptionModel->save();
+          }
+              }
+
+            //   InventoryManagementController::updateSitesStock($omsProduct->sku);
+            updateSitesStock($omsProduct->sku);
+          }
+      }
+  }
+
+  public function barcodeGenerate($label_type = 'small', $shipped_order_id = '') {
+    $order = OmsPurchaseShippedOrdersModel::where('shipped_order_id', $shipped_order_id)->where('status', 3)->first();
+  $barcode_generate = array();
+  if($order){
+      $products = OmsPurchaseShippedOrdersProductModel::where('shipped_order_id', $order['shipped_order_id'])->get()->toArray();
+      foreach ($products as $product) {
+        if($product['type'] == 'manual'){
+          $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $product['name'])->first();
+        }else{
+          $opencartSKU = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
+          $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $opencartSKU->sku)->first();
+        }
+
+        if($omsProduct){
+            $quantities = OmsPurchaseShippedOrdersProductQuantityModel::select('order_product_quantity_id','received_quantity')->where('shipped_order_id', $shipped_order_id)->where('order_product_id', $product['product_id'])->get()->toArray();
+            foreach ($quantities as $quantity) {
+                $options = OmsPurchaseShippedOrdersProductOptionModel::select('product_option_id','product_option_value_id','name','value')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->get()->toArray();
+
+                $barcode = $omsProduct->product_id;
+
+                $color = '';
+            foreach ($options as $key => $option) {
+                if(count($options) > 1 && $option['product_option_id'] == $this->static_option_id){
+                    $option_value_name = OptionValueDescriptionModel::select('name')->where('option_value_id', $option['product_option_value_id'])->first();
+                    $color = $option_value_name->name;
+                    unset($options[$key]);
+                }
+            }
+
+              $option_array = array();
+                foreach ($options as $option) {
+                    $barcode .= $option['product_option_value_id'];
+                if($option['product_option_id'] == $this->static_option_id){
+                    $option_array = array(
+                        'color'   =>  $option['value'],
+                        'size'  =>  '',
+                    );
+                }else{
+                    $option_array = array(
+                        'color'  =>  $color,
+                        'size'   =>  $option['value'],
+                    );
+                }
+                }
+
+                $product_sku = ProductSkuModel::select('*')->where('product_id', $product['product_id'])->where('sku', $barcode)->exists();
+                if($product_sku == false){
+                    $ProductSkuModel = new ProductSkuModel();
+                    $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_ID} = $product['product_id'];
+                    $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_OPTION} = json_encode($options);
+                    $ProductSkuModel->{ProductSkuModel::FIELD_SKU} = $barcode;
+                    $ProductSkuModel->save();
+                }
+
+              for ($i=0; $i < $quantity['received_quantity']; $i++) {
+                    $barcode_generate[$label_type][] = array(
+                        'product_image' =>  $this->get_oms_product_image($omsProduct->image, 100, 100),
+                        'product_sku'   =>  $omsProduct->sku,
+                        'option'        =>  $option_array,
+                        'barcode'       =>  $barcode,
+                    );
+              }
+            }
+        }
+      }
+  }
+  return view(self::VIEW_DIR.".barcodeGenerate", ["labels" => $barcode_generate, "label_type" => $label_type]);
+}
 
     public function supplierCancelledAwaitingActionOrderRequest(Request $request) {
         if($request->order_id && $request->supplier && $request->comment) {
@@ -1371,6 +2594,23 @@ class PurchaseManagementController extends Controller
               return redirect()->back()->with('message', 'Your Order #'. $order_id .' cancelled request send successfully.');
         }else {
             return redirect()->back()->with('message', 'Something went wrong!');
+        }
+    }
+
+    public function toBeShipOrderCancelRequest(Request $request) {
+        if($request->all() > 0 && $request->submit == 'cancel'){
+            $StockCancel = new OmsPurchaseStockCancelledModel();
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_ORDER_ID} = $request->order_id;
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_SUPPLIER} = session('user_id');
+            $StockCancel->{OmsPurchaseStockCancelledModel::FIELD_STATUS} = 0;
+            if(isset($request->shiped_order_id)) {
+                $StockCancel->shiped_order_id = $request->shiped_order_id;
+            }
+            $StockCancel->save();
+            return response()->json([
+                'success' => true
+            ]);
+            // return redirect()->back()->with('message', 'Your Order #'. $request->order_id .' cancelled request send successfully.');
         }
     }
 

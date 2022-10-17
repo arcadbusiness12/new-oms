@@ -52,7 +52,7 @@
                                     </div>
                                     <div class="col-sm-4 text-center col-grid text-black mb-4 mt-2">
                                         <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                        <div class="badge badge-secondary"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
+                                        <div class="badge badge-secondary font-weight-bold"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                         <?php } ?>
                                     </div>
                                     <div class="col-sm-4 text-right col-grid text-black mb-4 mt-2">
@@ -60,7 +60,7 @@
                                             <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                         <?php } ?>
                                         <div>
-                                            <div class="badge badge-secondary"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
+                                            <div class="badge badge-secondary font-weight-bold"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                         </div>
                                     </div>
                                 </div>

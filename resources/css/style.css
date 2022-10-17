@@ -153,7 +153,7 @@ input[type="checkbox"] {
 .sw-theme-circles>ul.step-anchor>li.active>a {
     background: #11e531;
 }
-.sw-theme-circles>ul.step-anchor>li.next-active>a {
+.sw-theme-circles>ul.step-anchor>li.active-next>a {
     background: #11ace5;
 }
 .sw-theme-circles>ul.step-anchor {
@@ -294,4 +294,15 @@ input[type="checkbox"] {
 .sidebar-top-box {
     background-color: #3f51b5;
     color: white;
+}
+.from-to-text .badge {
+    font-weight: 900 !important;
+}
+
+.hidden-section {
+    display: none;
+}
+.total_box {
+    border: 2px solid black;
+    background-color: aliceblue;
 }

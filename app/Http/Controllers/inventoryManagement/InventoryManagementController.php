@@ -4,6 +4,7 @@ namespace App\Http\Controllers\inventoryManagement;
 
 use App\Http\Controllers\Controller;
 use App\Models\DressFairOpenCart\Products\DressFairOptionDescriptionModel;
+use App\Models\DressFairOpenCart\Products\DressFairProductOptionValueModel;
 use App\Models\DressFairOpenCart\Products\DressFairProductsModel;
 use App\Models\Oms\GroupCategoryModel;
 use App\Models\Oms\GroupSubCategoryModel;
@@ -519,7 +520,7 @@ use Carbon\Carbon;
           }
           // die("test twelve".$key);
           DB::commit();
-          $this->updateSitesStock($request->sku);
+          updateSitesStock($request->sku); // helper function 
           Session::flash('message','Stock updated successfully.');
         } catch (\Exception $e) {
         DB::rollback();
@@ -535,6 +536,7 @@ use Carbon\Carbon;
     // echo "<pre>"; print_r($user_update->toArray()); die;
     return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update'));
   }
+
 
   public function destoryInventoryProduct($id) {
     $deletedProduct = OmsInventoryProductModel::where(['product_id' => $id])->delete();

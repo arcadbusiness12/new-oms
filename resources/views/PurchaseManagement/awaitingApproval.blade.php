@@ -57,7 +57,7 @@
                                     </div>
                                         <div class="col-sm-4 text-center col-grid text-black mb-4 mt-2">
                                             <?php if((session('role') == 'ADMIN' || session('role') == 'STAFF') && $order['supplier']) { ?>
-                                            <div class="badge badge-secondary"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
+                                            <div class="badge badge-secondary font-weight-bold"><b><?php echo ucfirst($order['order_supplier']['firstname'] . " " . $order['order_supplier']['lastname']) ?></b></div>
                                             <?php } ?>
                                         </div>
                                         <div class="col-sm-4 text-right col-grid text-black mb-4 mt-2">
@@ -65,7 +65,7 @@
                                                 <div class="badge badge-warning orange darken-1" style="font-size: 15px;"><b>Urgent</b></div>
                                             <?php } ?>
                                             <div>
-                                                <div class="badge badge-secondary"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
+                                                <div class="badge badge-secondary font-weight-bold"><b><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></b></div>
                                             </div>
                                         </div>
                                     </div>
@@ -80,7 +80,7 @@
                                                 <i><?php echo $product['model'] ?></i>
                                             </div>
                                             <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn btn-default active form-control btn-collapse collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">Details</button>
+                                                <button type="button" class="btn btn-default active form-control btn-collapse active collapse-product-option" data-toggle="collapse" data-target="#product-option<?php echo $order['order_id'] . $product['product_id'] ?>" aria-expanded="false" aria-controls="collapseExample">Details</button>
                                             </div>
                                         </div>
                                         <div id="product-option<?php echo $order['order_id'] . $product['product_id'] ?>" class="options_row table-responsive collapse">

@@ -506,11 +506,12 @@ $(document).ready(function() {
                     $this.prop('disabled', true);
                 },
                 success: function(data) {
-                    console.log(data);
+                    console.log(data.success);
                     
                     if (data.success) {
+                        console.log("Yessssssss");
                         // $('.stock-cancel-request-tag').html('<div class="label label-warning">Cancel Request Sent</div>');
-                        $this.html('<div class="label label-warning">Cancel Request Sent</div>');
+                        $(this).html('<div class="badge badge-danger font-weight-bold ml-3 active" style="font-size: 14px;"> Cancel Request Sent</div>');
                         $(order).remove();
                         $('.message').html('<div class="alert alert-success alert-dismissible"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + data.message + '</div>');
                     } else {
@@ -519,11 +520,11 @@ $(document).ready(function() {
                     }
                 },
                 complete: function(r) {
-                    // console.log(r.status);
-                    $('.cancel-btn').html('');
-                    if(r.status == 200) {
+                    console.log(r);
+                    // $('.cancel-btn').html('');
+                    if(r.success) {
                         // $('.stock-cancel-request-tag').html('<div class="label label-warning">Cancel Request Sent</div>');
-                        $this.closest('.stock-cancel-request-tag').html('<div class="label label-warning">Cancel Request Sent</div>');
+                        $(this).closest('.stock-cancel-request-tag').html('<div class="badge badge-danger font-weight-bold ml-3 active" style="font-size: 14px;"> Cancel Request Sent</div>');
                     }
                     $this.prop('disabled', false);
                 }

@@ -25,7 +25,7 @@
                     <div class="relative brand-wrapper sticky b-b sidebar-top-box">
                         <div class="d-flex justify-content-between align-items-center p-3">
                             <div class="text-xs-center">
-                                <span class="font-weight-lighter s-18"><?php echo session('firstname'). ' '. session('lastname') ?></span>
+                                <span class="font-weight-bold s-18" style="text-shadow: 2px -4px 5px orangered;"><?php echo session('firstname'). ' '. session('lastname') ?></span>
                             </div>
                             {{-- <div class="badge badge-danger r-0">New Panel</div> --}}
                         </div>
@@ -172,21 +172,29 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/get/to/be/shipped') !== false) active @endif">
                                     <a href="{{route('get.to.be.shipped')}}"><i class="icon icon-ship"></i>To Be Shipped</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-ship"></i>Shipped</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/shipped/orders') !== false) active @endif">
+                                    <a href="{{route('get.shipped.orders')}}"><i class="icon icon-ship"></i>Shipped</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-truck"></i>Deliver
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/add/to/deliver/orders') !== false) active @endif">
+                                    <a href="{{route('add.to.deliver')}}"><i class="icon icon-truck"></i>
+                                        Deliver
                                     </a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-truck"></i>Delivered</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/delivered/orders') !== false) active @endif">
+                                    <a href="{{route('get.delivered.orders')}}"><i class="icon icon-truck"></i>Delivered</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-close"></i>Cancelled</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/cancelled/orders') !== false) active @endif">
+                                    <a href="{{route('get.cancelled.orders')}}"><i class="icon icon-close"></i>Cancelled</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-ban"></i>Stock Cancelled (Stock Cancelled)</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/shipped/stock/cancelled/requests') !== false) active @endif">
+                                    <a href="{{route('shipped.stock.cancelled.requests')}}"><i class="icon icon-ban"></i>Stock Cancelled (Shipped)</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-ban"></i>Stock Cancelled (To Be Shipped)
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/to/be/shipped/stock/cancelled/requests') !== false) active @endif">
+                                    <a href="{{route('to.be.shipped.stock.cancelled.requests')}}"><i class="icon icon-ban"></i>Stock Cancelled (To Be Shipped)
                                     </a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-announcement"></i>Add Complaint</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/add/complaint') !== false) active @endif">
+                                    <a href="{{route('add.complaint')}}"><i class="icon icon-announcement"></i>Add Complaint</a>
                                 </li>
                                 <li><a href="panel-page-products.html"><i class="icon icon-account_balance"></i>Accounts</a>
                                 </li>
@@ -218,6 +226,36 @@
                                 <li class="@if(strpos(Request::url(), 'inventoryManagement/inventory/options') !== false) active @endif"><a href="{{route('inventory.options')}}"><i class="icon icon-server"></i>Inventory Options</a>
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'option/connection') !== false) active @endif"><a href="{{route('option.connection')}}"><i class="icon icon-link"></i>Options Connection</a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
+                            <a href="#">
+                                <i class="icon icon-shopping-cart s-24"></i> <span>Catalog</span>
+                                <i class=" icon-angle-left  pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Attributes<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">Attributes Group</a></li>
+                                        {{--  <li><a href="panel-page-blank-tabs.html">Customer Return Request </a></li>  --}}
+                                        <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}"> Attributes </a></li>
+                                        {{--  <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>  --}}
+                                        <li class="@if( Request::url() == route('orders.picking-list-awaiting') ) active @endif"><a href="{{ route('orders.picking-list-awaiting') }}">Product Listing </a>
+                                        </li>
+
+                                    </ul>
+                                </li>
+                                <li><a href="#"><i class="icon icon-fingerprint text-green"></i>Reseller Orders<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="login.html">Pending Orders</a>
+                                        </li>
+                                        <li><a href="login-2.html">Reaeller Return Request</a>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                         </li>
