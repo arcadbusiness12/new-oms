@@ -61,7 +61,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="panel-heading">
-                            Inventory Options
+                            Product Listing
                           </div>
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
@@ -83,6 +83,7 @@
                                </tr>
                     
                              </thead>
+                             @if(count($productLists) > 0)
                                 @foreach($productLists as $list)
     
                                 <tr>
@@ -90,18 +91,40 @@
                                     <td class="text-center">
                                         <img src="{{URL::asset('uploads/inventory_products/'.$list->image)}}" class="img-responsive img-thumbnail" />    
                                     </td>
-{{--                                         
+                                        
                                         <td class="text-center">
-                                            <a class="btn btn-primary" href="javascript:;" onclick="viewAndEdit({{$option->id}})" data-toggle="modal" data-target=".porduct_location_modal"><i class="icon-mode_edit"></i>View & Edit</a>
+                                            {{(count($list->productDescriptions) > 0) ? $list->productDescriptions[0]->name : ''}}
                                         </td>
                                     <td class="text-center">
-                                <a href="{{route('destroy.option',$option->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class="btn btn-danger"><i class="icon-close"></i></a></td> --}}
+                                       {{$list->productGroups->name}}
+                                    </td>
+                                    <td class="text-center">
+                                       {{$list->sku}}
+                                    </td>
+                                    <td class="text-center">
+                                        {{(count($list->productDescriptions) > 0) ? $list->productDescriptions[0]->price : ''}}
+                                     </td>
+                                     <td class="text-center">
+                                        @if($list->status == 1) 
+                                            <span class="badge badge-success font-weight-bold">Active</span>
+                                        @else 
+                                            <span class="badge badge-danger font-weight-bold">In-Active</span>
+                                        @endif
+                                     </td>
+                                     
+                                     <td class="text-center">
+                                       <a href="{{route('edit.product.listing', $list->product_id)}}"><i class="icon icon-edit"></i> </a>
+                                     </td>
                                 </tr>
                                 @endforeach
+                                @else 
+                                <tr>
+                                    <td>
+                                        No Product Available
+                                    </td>
+                                </tr>
+                                @endif
                              <tbody>
-                             
-                    
-                     </tbody>
                      
                     </table>
                     
