@@ -10,7 +10,7 @@ class OmsInventoryProductImageModel extends Model
     use HasFactory;
     protected $table = 'oms_inventory_product_images';
 
-    public function productImages() {
-        return $this->hasMany(OmsInventoryProductModel::class, 'inventory_product_id');
+    public function inventoryProduct() {
+        return $this->belongsTo(OmsInventoryProductModel::class, 'product_id');
     }
 }

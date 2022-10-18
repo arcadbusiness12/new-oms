@@ -226,7 +226,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
 
 Route::prefix('Catalog')->middleware('auth')->group(function() {
     Route::controller(ProductListingController::class)->group(function() {
-        Route::get('/product/listing', 'ProductListing')->name('product.listing');
+        Route::any('/product/listing', 'ProductListing')->name('product.listing');
     });
 });
 

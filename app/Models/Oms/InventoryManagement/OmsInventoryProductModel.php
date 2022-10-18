@@ -4,6 +4,7 @@
 
 namespace App\Models\Oms\InventoryManagement;
 
+use App\Models\Oms\InventoryManagement\OmsInventoryProductDescriptionModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Reseller\PriceHistoryModel;
 use App\Models\Reseller\ResellerProductModel;
@@ -71,6 +72,18 @@ class OmsInventoryProductModel extends Model
   public function productOptions(){
 
     return $this->hasMany(OmsInventoryProductOptionModel::class, 'product_id');
+  }
+  public function productDescriptions() {
+    return $this->hasMany(OmsInventoryProductDescriptionModel::class, 'product_id');
+  }
+  public function productImages() {
+    return $this->hasMany(OmsInventoryProductImageModel::class, 'product_id');
+  }
+  public function productSpecials() {
+    return $this->hasMany(OmsInventoryProductSpecialModel::class, 'product_id');
+  }
+  public function seoUrls() {
+    return $this->hasMany(OmsSeoUrlModel::class, 'product_id');
   }
     // public function omsOptionDetails()
     // {
