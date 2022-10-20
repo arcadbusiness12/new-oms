@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Catalog\AttributeController;
 use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
 use App\Http\Controllers\Exchange\ExchangeOrdersController;
@@ -227,6 +228,17 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
 Route::prefix('Catalog')->middleware('auth')->group(function() {
     Route::controller(ProductListingController::class)->group(function() {
         Route::any('/product/listing', 'ProductListing')->name('product.listing');
+    });
+    Route::controller(AttributeController::class)->group(function() {
+        Route::any('/attribute', 'attributes')->name('attributes');
+        //attribute group routes
+        Route::any('/attribute/groups', 'attributeGroups')->name('attribute.groups');
+        Route::any('/attribute/groups/add', 'attributeGroupsAdd')->name('attribute.groups.add');
+        Route::any('/attribute/groups/save', 'attributeGroupsSave')->name('attribute.groups.save');
+        Route::get('/attribute/groups/{row}/edit', 'attributeGroupsEdit')->name('attribute.groups.edit');
+        Route::any('/attribute/groups/update', 'attributeGroupsUpdate')->name('attribute.groups.update');
+        //attribute templates routes
+        Route::any('/attribute/templates', 'attributeTemplates')->name('attribute.templates');
     });
 });
 

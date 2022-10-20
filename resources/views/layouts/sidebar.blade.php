@@ -229,21 +229,21 @@
                                 </li>
                             </ul>
                         </li>
-                        
-                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
+
+                        <li class="treeview @if( str_contains(Request::url(), '/Catalog') ) active @endif">
                             <a href="#">
                                 <i class="icon icon-tags s-24"></i> <span>Catalog</span>
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/Catalog') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Attributes<i
+                                <li class="@if( str_contains(Request::url(), '/Catalog/attribute') ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Attributes<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">Attributes Group</a></li>
-                                        {{--  <li><a href="panel-page-blank-tabs.html">Customer Return Request </a></li>  --}}
-                                        <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}"> Attributes </a></li>
-                                        {{--  <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>  --}}
-                                        
+                                        <li class="@if( Request::url() == route('attribute.groups') ) active @endif"><a href="{{ route('attribute.groups') }}"> Attributes Group </a></li>
+
+                                        <li class="@if( Request::url() == route('attributes') ) active @endif"><a href="{{ route('attributes') }}"> Attributes </a></li>
+
+                                        <li class="@if( Request::url() == route('attribute.templates') ) active @endif"><a href="{{ route('attribute.templates') }}"> Attributes Templates </a></li>
 
                                     </ul>
                                 </li>
