@@ -228,6 +228,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
 Route::prefix('Catalog')->middleware('auth')->group(function() {
     Route::controller(ProductListingController::class)->group(function() {
         Route::any('/product/listing', 'ProductListing')->name('product.listing');
+        Route::get('/edit/product/listing/{product}', 'EditProductListing')->name('edit.product.listing');
     });
     Route::controller(AttributeController::class)->group(function() {
         Route::any('/attribute', 'attributes')->name('attributes');
