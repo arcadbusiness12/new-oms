@@ -230,7 +230,7 @@
                             </ul>
                         </li>
                         
-                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/Catalog')) ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-tags s-24"></i> <span>Catalog</span>
                                 <i class=" icon-angle-left  pull-right"></i>

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OmsInventoryProductDescriptionModel extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     protected $table = 'oms_inventory_product_descriptions';
 
     public function inventoryProduct() {

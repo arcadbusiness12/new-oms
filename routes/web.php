@@ -10,6 +10,7 @@ use App\Http\Controllers\inventoryManagement\InventoryManagementController;
 use App\Http\Controllers\Orders\OrdersAjaxController;
 use App\Http\Controllers\Orders\OrdersController;
 use App\Http\Controllers\PlaceOrder\PlaceOrderController;
+use App\Http\Controllers\productgroup\ProductGroupController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
@@ -228,6 +229,19 @@ Route::prefix('Catalog')->middleware('auth')->group(function() {
     Route::controller(ProductListingController::class)->group(function() {
         Route::any('/product/listing', 'ProductListing')->name('product.listing');
         Route::get('/edit/product/listing/{product}', 'EditProductListing')->name('edit.product.listing');
+        Route::post('/save/listing/description', 'saveListingDescription')->name('save.listing.description');
+    });
+});
+
+Route::prefix('productgroup')->middleware('auth')->group(function() {
+    Route::controller(ProductGroupController::class)->group(function() {
+        Route::get('/add/main/category/to/group/{cate}/{group}', 'addMainCategoryToGroup')->name('add.main.category.to.group');
+        // Route::post('/add/sub/category/to/group', 'addSubCategoryToGroup')->name('add.sub.category.to.group');
+        Route::get('/add/sub/category/to/group/{cate}/{group}', 'addSubCategoryToGroup')->name('add.sub.category.to.group');
+        Route::get('/change/group/type/{type}/{group}', 'changeGroupType')->name('change.group.type');
+        Route::any('/product/group/change/product/status', 'groupChangeProductStatus')->name('group.change.product.status');
+        Route::any('/get/product/size/chart', 'getProductSizeChart')->name('get.product.size.chart');
+        Route::any('/update/product/size/chart', 'updateProductSizeChart')->name('update.product.size.chart');
     });
 });
 
