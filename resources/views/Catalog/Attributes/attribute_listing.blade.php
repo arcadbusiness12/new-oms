@@ -18,7 +18,7 @@
                         @endif
 
                         <div class="card-header white">
-                            <form action="{{route('add.option.name')}}" method="post" name="form-setting">
+                            <form action="" method="post" name="form-setting">
                                 {{ csrf_field() }}
                                      <div class="form-group">
 
@@ -26,7 +26,7 @@
                                                 <div class="row" style="width: 210%!important;">
                                                     <div class="inserted-row mt-4">
                                                         <div class="col-lg-4">
-                                                            <input type="text" name="value[]" class="form-control m-input" placeholder="Enter Option Details" autocomplete="off">
+                                                            <input type="text" name="name" class="form-control m-input" placeholder="Search By Name" autocomplete="off">
                                                         </div>
 
                                                     </div>
@@ -40,13 +40,14 @@
                                             </div>
                                     <div class="row" >
                                         <div class="col-md-2" style="margin-left: 28px;">
-                                            <input type="submit" name="submit" value="Save Options" class="btn btn-success btn-lg">
+                                            <input type="submit" name="submit" value="Filter" class="btn btn-primary btn-lg">
                                         </div>
 
                                         <div class=" col-md-2">
-                                        <button id="addRow" type="button" class="btn btn-primary col-md-6">
-                                            <i class="icon-plus-circle"></i>
+                                        <a href="{{route('add.attribute')}}"> <button id="" type="button" class="btn btn-primary active col-md-6">
+                                            <i class="icon-plus-circle"></i>  New
                                         </button>
+                                        </a>
                                         </div>
 
                                 </div>
@@ -61,7 +62,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="panel-heading">
-                            Attribute
+                            Attributes
                           </div>
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
@@ -72,30 +73,36 @@
                               <tr
                               style="background-color: #3f51b5;color:white"
                               >
-                                <th scope="col"><center>image</center></th>
-                                <th scope="col"><center>Product Name</center></th>
-                                <th scope="col"><center>Group</center></th>
-                                <th scope="col"><center>Sku</center></th>
-                                <th scope="col"><center>Price</center></th>
+                                <th scope="col"><center>Attribute Name</center></th>
+                                <th ><center>Category</center></th>
                                 <th scope="col"><center>Status</center></th>
                                 <th scope="col"><center>Action</center></th>
 
                                </tr>
 
                              </thead>
-                                @foreach($productLists as $list)
+                                @foreach($attributes as $list)
 
                                 <tr>
 
                                     <td class="text-center">
-                                        <img src="{{URL::asset('uploads/inventory_products/'.$list->image)}}" class="img-responsive img-thumbnail" />
+                                        {{$list->name}}
                                     </td>
-{{--
-                                        <td class="text-center">
-                                            <a class="btn btn-primary" href="javascript:;" onclick="viewAndEdit({{$option->id}})" data-toggle="modal" data-target=".porduct_location_modal"><i class="icon-mode_edit"></i>View & Edit</a>
-                                        </td>
                                     <td class="text-center">
-                                <a href="{{route('destroy.option',$option->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class="btn btn-danger"><i class="icon-close"></i></a></td> --}}
+                                        {{$list->category->name}}
+                                    </td>
+                                    <td class="text-center">
+                                        @if($list->status == 1)
+                                        <span class="badge badge-success r-5">Active</span>
+                                        @else 
+                                        <span class="badge badge-danger r-5">In-Active</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                    <a href="{{route('edit.attribute',$list->id)}}"  class=""><i class="icon-edit"></i></a>
+                                    <a href="{{route('destroy.option',$list->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class=""><i class="icon-close2 text-danger-o text-danger"></i></a>
+                                
+                            </td>
                                 </tr>
                                 @endforeach
                              <tbody>
@@ -148,25 +155,6 @@
 
 @push('scripts')
 <script>
-
-    $("#addRow").click(function () {
-            var html = '';
-            html += '<div class="inserted-row mt-4">';
-            html += '<div class="row">';
-            html += '<div class="col-lg-4"> <input type="text" name="value[]" class="form-control m-input" placeholder="Enter Option Details" autocomplete="off"></div>';
-            html += '<div class="col-md-1"><button id="removeRow" type="button" class="btn btn-danger col-md-6"><i class="icon-close"></i></button></div>';
-            // html += '<div class="input-group-append">';
-            // html += '<button id="removeRow" type="button" class="btn btn-danger">Remove</button>';
-            html += '</div>';
-            html += '</div>';
-
-            $('#newRow').append(html);
-        });
-
-        // remove row
-        $(document).on('click', '#removeRow', function () {
-            $(this).parent().parent().parent().remove();
-        });
 
         function viewAndEdit(id) {
             console.log(id);

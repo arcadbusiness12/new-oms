@@ -186,15 +186,15 @@
                              
                               ?>
                             @if(!$product->category_id)
-                            <select class="custom-select form-control" id="product_change_status" onchange="addMainCategory(this.value,{{ $product->id }})">
+                            <select class="custom-select form-control" id="product_change_status" disabled onchange="addMainCategory(this.value,{{ $product->id }})">
                             
-                            <option value="">Category</option>
-                            @foreach($main_categories as $cate)
-                            <option value="{{$cate->id}}" {{ ($product->category_id== $cate->id) ? "selected" : "" }}>{{$cate->name}}</option>
-                            @endforeach
-                          </select><br><br>
-                          <div class="sub_categs" id="sub_categs{{$product->id}}">
-                          </div>
+                              <option value="">Category</option>
+                              @foreach($main_categories as $cate)
+                              <option value="{{$cate->id}}" {{ ($product->category_id== $cate->id) ? "selected" : "" }}>{{$cate->name}}</option>
+                              @endforeach
+                            </select><br><br>
+                            <div class="sub_categs" id="sub_categs{{$product->id}}">
+                            </div>
                           @else
                           <select class="custom-select form-control" id="product_change_status" onchange="addSubCategory(this.value,{{ $product->id }})">
                             @if($product->category)
@@ -208,19 +208,27 @@
                           </select>
                           @endif
                           <?php } ?>
+                          <br><br>
+                          @if( session('role') == 'ADMIN' || (array_key_exists('assign/group/attribute', $user_perm)) )
+                          <a href="{{route('assign.attributes.form', [$product->id,$product->category_id])}}" class="btn btn-sm" style="width: 149px;" data-group="{{ $product->name }}_{{ $product->id }}">
+                            <button type="button" class="btn btn-primary btn-sm" style="float: left;
+                            width: 127px;"> Attributes </button></a><br>
+                        @endif 
                             <!-- <button type="button" onclick="productDetails({{$product->id}})" class="btn btn-info" class="btn btn-sm" data-toggle="modal" data-target=".porduct_view_modal" title="view">Promotion</button> -->
       
                           </center>
                         </td>
                         
-                        <td class="column col-xs-2 td-valign" style="vertical-align: top;"><center>
+                        <td class="column col-xs-2 td-valign" style=""><center>
                             <?php $OmsUserGroupModel = new \App\Models\Oms\OmsUserGroupModel;
                               $promotion_options = $OmsUserGroupModel::oms_group_page_options_routes();
-                              $color = ($product->size_chart == 1) ? 'green' : 'red';
+                              $color = ($product->size_chart_value_count > 0) ? 'green' : 'red';
                             ?>
                             
                             <?php if( session('user_group_id') == 1 || session('user_group_id') == 5 ) { ?>
-                              <a href="javascript:void(0)" class="btn btn-sm btn-size-chart" data-group="{{ $product->name }}_{{ $product->id }}"><i class="icon icon-bar-chart icon-2x" aria-hidden="true" title="" data-toggle="tooltip" data-original-title="Size Chart" style="color: {{$color}}"></i></a><br>
+                              <a href="javascript:void(0)" class="btn btn-sm btn-size-chart" data-group="{{ $product->name }}_{{ $product->id }}">
+                                <i class="icon icon-bar-chart icon-2x" aria-hidden="true" title="" data-toggle="tooltip" data-original-title="Size Chart" style="color: {{$color}} {{$product->size_chart_exist_count}}"></i>
+                              </a><br>
                             <?php } ?>
                               
                             <?php if(session('role') == 'ADMIN' || array_key_exists('change/group/type', $user_perm) ) {?>
@@ -240,7 +248,10 @@
                              
                             </select>
                             @endif
-                            <!-- <button type="button" onclick="productDetails({{$product->id}})" class="btn btn-info" class="btn btn-sm" data-toggle="modal" data-target=".porduct_view_modal" title="view">Promotion</button> -->
+                            {{-- <br><br>
+                          @if( session('role') == 'ADMIN' || array_key_exists('assign/group/attribute', $user_perm) )
+                            <button type="button" class="btn btn-success">Attributes</button>
+                            @endif --}}
       
                           </center>
                         </td>

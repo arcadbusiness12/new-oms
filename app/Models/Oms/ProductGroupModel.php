@@ -2,6 +2,7 @@
 
 namespace App\Models\Oms;
 
+use App\Models\Oms\InventoryManagement\Attribute\AttributeModel;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\ProductPhotographyModel;
@@ -24,6 +25,12 @@ class ProductGroupModel extends Model
   public function category() {
       return $this->belongsTo(GroupCategoryModel::class, 'category_id');
   }
+  public function attributes() {
+        return $this->belongsToMany(AttributeModel::class, 'oms_inventory_product_group_attributes', 'group_id', 'attribute_id')->withPivot('id','group_id','attribute_id','attribute_preset_id','text');
+  }
+  public function sizeChartValue() {
+    return $this->hasMany(OmsProductSizeChartValueModel::class, 'group_id');
+  } 
   public function productsQuantity() {
     return $this->hasMany(OmsInventoryProductModel::class, 'group_id')
             ->join('oms_inventory_product_option','oms_inventory_product_option.product_id','=','oms_inventory_product.product_id')

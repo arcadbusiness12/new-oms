@@ -65,11 +65,11 @@ class ProductListingController extends Controller
         }
         $groupProducts = ProductGroupModel::with(['products' => function($q) use($productStatusWhereClause) {
             $q->where($productStatusWhereClause);
-        },'producType','category.subCategories'])->where($whereClause)
+        },'producType','category.subCategories'])->withCount('sizeChartValue')->where($whereClause)
         ->whereHas('products', function ($query) use($productStatusWhereClause) {
           $query->where($productStatusWhereClause);
         })->orderByRaw('SUBSTRING_INDEX(name,"-",1),CAST(SUBSTRING_INDEX(name,"-",-1) AS SIGNED INTEGER)')->paginate(20);
-    //    dd($productLists->toArray()); 
+    //    dd($groupProducts->toArray()); 
         $types_for_organic = PromotionTypeModel::where('status', 1)->where('product_status', 1)->get();
         $types_for_setting = PromotionTypeModel::where('status', 1)->get();
         $stores = storeModel::where('status', 1)->get();

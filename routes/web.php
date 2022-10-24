@@ -246,6 +246,15 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
     });
     Route::controller(AttributeController::class)->group(function() {
         Route::any('/attribute', 'attributes')->name('attributes');
+        Route::any('/add/attribute', 'addAttribute')->name('add.attribute');
+        Route::any('/save/attribute', 'saveAttribute')->name('save.attribute');
+        Route::any('/edit/attribute/{attribute}', 'editAttribute')->name('edit.attribute');
+        Route::any('/destory/preset', 'destoryPreset')->name('destory.preset');
+        Route::post('/update/attribute', 'updateAttribute')->name('update.attribute');
+        Route::get('/assign/attributes/form/{group}/{cate}', 'assignAttributeForm')->name('assign.attributes.form');
+        Route::get('/fetch/preset/values/{attribute}', 'fetchPresetValues')->name('fetch.preset.values');
+        Route::post('/save/assigned/attributes', 'saveAssignAttribute')->name('save.assign.attributes');
+        Route::any('/destory/attribute', 'destoryAttribute')->name('attribute.destory');
         //attribute group routes
         Route::any('/attribute/groups', 'attributeGroups')->name('attribute.groups');
         Route::any('/attribute/groups/add', 'attributeGroupsAdd')->name('attribute.groups.add');
