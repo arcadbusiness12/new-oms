@@ -28,7 +28,7 @@ class OmsInventoryProductModel extends Model
 
     const FIELD_IMAGE = 'image';
 
-    
+
 
     const FIELD_OPTION = 'option_value';
 
@@ -44,7 +44,7 @@ class OmsInventoryProductModel extends Model
 
     const FIELD_STATUS = 'status';
 
-    
+
 
     public function ProductsSizes(){
 

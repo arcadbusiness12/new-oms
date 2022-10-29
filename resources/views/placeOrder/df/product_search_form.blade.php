@@ -1,15 +1,16 @@
-<?php if($products) { ?>
+<table class="table" style="border:1px solid #3f51b5">
+@if( $product )
 <thead>
-    <tr>
-        <th>Image</th>
-        <th>Name</th>
-        <th>Quantity</th>
-        <th>Amount</th>
-        <th>Options</th>
+    <tr style="background-color: #3f51b5;color:white">
+        <th><strong>Image</strong></th>
+        <th><strong>Name</strong></th>
+        <th style="width: 14%"><strong><center>Size</strong></center></th>
+        <th style="width: 5%"><strong><center>Quantity</strong></center></th>
+        <th><strong><center>Price</strong></center></th>
+        <th><strong><center>Action</strong></center></th>
     </tr>
 </thead>
-<tbody>        
-@foreach ($products as $product)
+<tbody>
 <?php
 $unique = uniqid();
 if(isset($product['special'])){
@@ -19,38 +20,38 @@ if(isset($product['special'])){
 }
 ?>
 <tr class="cart-product-row">
-    <td><img width="80" src="{{env('DF_OPEN_CART_IMAGE_URL')}}{{$product['image']}}" /></td>
-    <td><strong>{{$product['name']}}</strong><br/>
-        <i>{{$product['model']}}</i><br/>
-        @foreach ($product['options'] as $option)
-        <span> {{$option['name']}}</span>
-        @if($option['type'] == 'select' || $option['type'] == 'radio' || $option['type'] == 'checkbox')
-        <select class="form-control" name='product[option][{{$option["product_option_id"]}}]'>
-            @foreach ($option['option_values'] as $values)
-            @if($values['quantity'])
-            <option value="{{$values['product_option_value_id']}}">{{$values['name']}}</option>
-            @endif
+    <td><img width="80" src="{{ URL::asset('uploads/inventory_products/'.$product->image) }}" /></td>
+    <td><strong>{{ $product->name }}</strong><br/>
+        <span>{{ $product->sku }} : {{ $product->option_name  }}</span>
+    </td>
+    <td>
+        <select class="form-control" name='product_option_id' required>
+            <option value="">-Select Size/Color-</option>
+            @foreach ($product->ProductsSizes as $key => $size)
+                @if( $size->available_quantity > 0 )
+                    <option value="{{ $size->product_option_id  }}">{{ $size->value  }}</option>
+                @endif
             @endforeach
         </select>
-        @endif
-        @endforeach
     </td>
-    <td style="vertical-align: middle;">
-        <input class="form-control" type="text" name="product[qty]" value="1" required="required" placeholder="Quantity" />
-        <input type="hidden" name="product[product_id]" value="{{$product['product_id']}}" />
-        <input type="hidden" name="product[name]" value="{{$product['name']}}" />
-        <input type="hidden" name="product[model]" value="{{$product['model']}}" />
-        <input type="hidden" name="product[price]" value="{{$price}}" />
+    <td>
+        <input type="hidden" name="product_id" value="{{$product->product_id}}" />
+        <input type="hidden" name="product_color" value="{{$product->option_name}}" />
+        <input type="hidden" name="product_image" value="{{$product->image}}" />
+        <input type="hidden" name="product_name" value="{{ $product->name }}" />
+        <input type="hidden" name="product_sku" value="{{ $product->sku }}" />
+        <input type="hidden" name="product_price" value="{{ $product->price }}" />
+        <input class="form-control" type="text" name="product_quantity" value="1" required="required" placeholder="Quantity" size="1" />
     </td>
-    <td style="vertical-align: middle;"><b>{{$price}}</b></td>
-    <td style="vertical-align: middle;"><button type="button" class="btn btn-danger" id="btn-add-cart-product">Add To Cart</button></td>
+    <td style="vertical-align: middle;"><center>{{$price}}</center></td>
+    <td style="vertical-align: middle;"><center><button type="submit" class="btn btn-success active" id="btn-add-cart-product">Add To Cart</button></center></td>
 </tr>
-@endforeach
 </tbody>
-<?php } else { ?>
-<thead>
-    <tr>
-        <th class="text-center text-danger">No Match Found!</th>
-    </tr>
-</thead>
-<?php } ?>
+@else
+    <thead>
+        <tr>
+            <th class="text-center text-danger">No Match Found!</th>
+        </tr>
+    </thead>
+@endif
+</table>

@@ -36,14 +36,14 @@
                             <i class="icon icon-sailing-boat-water s-24"></i> <span>Dashboard</span>
                             </a>
                         </li>
-                        <li class="treeview @if( str_contains(Request::url(), '/placeOrder') ) active @endif"><a href="#"><i class="icon icon-shopping-cart s-24"></i>Place Order<i
+                        <li class="treeview @if( str_contains(Request::url(), '/place/order') ) active @endif"><a href="#"><i class="icon icon-shopping-cart s-24"></i>Place Order<i
                                 class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">
-                                    <li class="@if( str_contains(Request::url(), '/placeOrder') ) active @endif"><a href="#"><i class="icon icon-circle-o"></i>Add Order</a>
+                                    <li class="@if( str_contains(Request::url(), '/place/order') ) active @endif"><a href="#"><i class="icon icon-circle-o"></i>Add Order</a>
                                         <ul class="treeview-menu">
-                                            <li class="@if( str_contains(Request::url(), '/placeOrder') && str_contains(Request::url(), '/placeOrder/df') != 1  ) active @endif"><a href="{{ route('place.order') }}"><i class="icon icon-circle-o"></i>Business Arcade</a>
+                                            <li class="@if( str_contains(Request::url(), '/place/order') && str_contains(Request::url(), '/place/order/df') != 1  ) active @endif"><a href="{{ route('place.order',1) }}"><i class="icon icon-circle-o"></i>Business Arcade</a>
                                             </li>
-                                            <li class="@if( str_contains(Request::url(), '/placeOrder/df') ) active @endif"><a href="{{ route('df.place.order') }}"><i class="icon icon-circle-o"></i>Dress Fair</a>
+                                            <li class="@if( str_contains(Request::url(), '/place/order/df') ) active @endif"><a href="{{ route('place.order',2) }}"><i class="icon icon-circle-o"></i>Dress Fair</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -229,7 +229,7 @@
                                 </li>
                             </ul>
                         </li>
-                        
+
                         <li class="treeview @if( (str_contains(Request::url(), '/Catalog')) ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-tags s-24"></i> <span>Catalog</span>
