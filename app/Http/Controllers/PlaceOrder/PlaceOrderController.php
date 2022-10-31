@@ -3,6 +3,8 @@ namespace App\Http\Controllers\PlaceOrder;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Oms\Country;
+use App\Models\Oms\Customer;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\OmsUserGroupInterface;
@@ -99,7 +101,12 @@ class PlaceOrderController extends Controller
         $store = $request->store;
         $data = OmsCart::where("session_id",$server_session_id)->where("product_id",$product_id)->where("product_option_id",$product_option_id)->first();
         if($data){
-            $data->product_quantity = ($data->product_quantity + $product_quantity);
+            $request_quantity = ($data->product_quantity + $product_quantity);
+            $availabe_quantity = $this->checkAvailableQuantity($data->product_id,$data->product_option_id);
+            if( $request_quantity > $availabe_quantity   ){
+                return response()->json(['status'=>0,"msg"=>"Quantity not in stock, Available quantity is <strong>$availabe_quantity</strong>"]);
+            }
+            $data->product_quantity = $request_quantity;
             $data->product_price = $product_price;
             $create_update_cart = $data->save();
         }else{
@@ -134,19 +141,28 @@ class PlaceOrderController extends Controller
         $cart_id  = $request->cart_id;
         $quantity = $request->quantity;
 
-
+        $data = OmsCart::where("id",$cart_id)->first();
+        $availabe_quantity = 0;
+        if($data){
+            $availabe_quantity = $this->checkAvailableQuantity($data->product_id,$data->product_option_id);
+        }
+        if( $quantity > $availabe_quantity   ){
+            return response()->json(['status'=>0,"msg"=>"Quantity not in stock, Available quantity is <strong>$availabe_quantity</strong>"]);
+        }
 
         $data = OmsCart::where("id",$cart_id)->update(['product_quantity'=>$quantity]);
         if($data){
             return response()->json(['status'=>1,"msg"=>"Item updated in cart successfully."]);
         }else{
-            return response()->json(['status'=>0,"msg"=>"Error."]);
+            return response()->json(['status'=>0,"msg"=>"Error, cart not updated"]);
         }
     }
     private function checkAvailableQuantity($product_id,$product_option_id){
         $data = OmsInventoryProductOptionModel::where("product_id",$product_id)->where("product_option_id",$product_option_id)->first();
         if($data){
-
+            return $data->available_quantity;
+        }else{
+            return 0;
         }
     }
     public function removeCart(Request $request){
@@ -159,144 +175,23 @@ class PlaceOrderController extends Controller
         }
     }
     public function searchCustomer(Request $request){
-      $customer = array();
-      $orders = array();
-
-      if (count(Input::all()) > 0){
-          if(Input::get('type') == 'search'){
-              $order_id = Input::get('customer');
-              $name = Input::get('name');
-              $number = Input::get('number');
-              $email = Input::get('email');
-              // $customer_data = CustomersModel::select('*')->where('telephone', 'LIKE', $telephone)->first();
-              $customer_data = OrdersModel::select('*');
-              if(!empty($name)){
-                  $customer_data = $customer_data->where('firstname', 'LIKE', $name . "%");
-              }
-              if(!empty($number)){
-                  $customer_data = $customer_data->where('telephone', 'LIKE', "%" . $number . "%");
-              }
-              if(!empty($email)){
-                  $customer_data = $customer_data->where('email', 'LIKE', $email . "%");
-              }
-              $customer_data = $customer_data->orderBy('order_id', 'DESC')->get();
-
-              $df_customer_data = $this->dfOrdersHistory($name,$number,$email);
-              // echo "<pre>";print_r($customer_data);echo "</pre>";die;
-              $registered_customer = CustomersModel::where('telephone', 'LIKE', "%" . $number . "%")->first();
-
-              if($customer_data OR $df_customer_data OR $registered_customer){
-                  // $address_data = DB::table(env("DB_BAOPENCART_DATABASE").'.oc_address')->select('*')->where('address_id', $customer_data->address_id)->first();
-                  $address_street_building = "";
-                  $address_villa_flate = "";
-                  if(isset($customer_data[0]) && $customer_data[0]->shipping_address_2 != "" ){
-                      $address_2 = explode(",-",$customer_data[0]->shipping_address_2);
-                    //   dd($address_2);
-                      if(is_array($address_2) && count($address_2) > 0){
-                          $address_street_building = $address_2[0];
-                          $address_villa_flate    = count($address_2) > 1 ? $address_2[1] : '';
-                      }
-                  }
-                  if($customer_data && $customer_data->count() > 0){
-                    $customer = array(
-                      'customer_id' => isset($registered_customer) ? $registered_customer->customer_id : "",
-                      'customer_group_id' => isset($customer_data[0]) ? $customer_data[0]->customer_group_id : "",
-                      'firstname' => isset($customer_data[0]) ? $customer_data[0]->firstname : "",
-                      'lastname' => isset($customer_data[0]) ? $customer_data[0]->lastname : "",
-                      'email' => isset($customer_data[0]) ? $customer_data[0]->email : "",
-                      'telephone' => isset($customer_data[0]) ? $customer_data[0]->telephone : "",
-                      'alternate_phone' => isset($customer_data[0]) ? $customer_data[0]->alternate_number : "",
-                      'gmap_link'=> isset($customer_data[0]) ? $customer_data[0]->google_map_link : "",
-                      'fax' => isset($customer_data[0]) ? $customer_data[0]->fax : "",
-                      'address_1' => isset($customer_data[0]) ? $customer_data[0]->shipping_address_1 : "",
-                      'address_street_building' => $address_street_building,
-                      'address_villa_flate' => $address_villa_flate,
-                      'city' => isset($customer_data[0]) ? $customer_data[0]->shipping_city : "",
-                      'area' => isset($customer_data[0]) ? $customer_data[0]->shipping_area : "",
-                      'country_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_country_id : 0,
-                      'zone_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_zone_id : 0,
-                   );
-
-                 }else{
-                    $customer = array(
-                      'customer_id' => isset($registered_customer) ? $registered_customer->customer_id : "",
-                      'customer_group_id' => isset($registered_customer) ? $registered_customer->customer_group_id : "",
-                      'firstname' => isset($registered_customer) ? $registered_customer->firstname : "",
-                      'lastname' => isset($registered_customer) ? $registered_customer->lastname : "",
-                      'email' => isset($registered_customer) ? $registered_customer->email : "",
-                      'telephone' => isset($registered_customer) ? $registered_customer->telephone : "",
-                      'alternate_phone' => "",
-                      'gmap_link'=> "",
-                      'fax' => '',
-                      'address_1' => '',
-                      'address_street_building' => '',
-                      'address_villa_flate' => '',
-                      'city' => '',
-                      'area' => '',
-                      'country_id' => '',
-                      'zone_id' => '',
-                    );
-                 }
-              }
-              $customer_data = $customer_data->merge($df_customer_data);
-              $customer_data = $customer_data->sortByDesc('date_added');
-              // dd($customer_data->toArray());
-              foreach ($customer_data as $order) {
-
-                  $user = OmsPlaceOrderModel::select('ou.username','store')->join('oms_user as ou', 'ou.user_id', '=', 'oms_place_order.user_id')
-                          ->where('oms_place_order.order_id', $order['order_id'])->first();
-                  // echo "<pre>"; dd($user->toArray());
-                  if($user){
-                    if( $user->store == 1 ){
-                      $store_name = "BA";
-                      $product_total = OrderedProductModel::select(DB::Raw('COUNT(*) AS total'))->where('order_id', $order['order_id'])->first();
-                    }else if( $user->store == 2 ){
-                      $store_name = "DF";
-                      $product_total = DFOrderedProductModel::select(DB::Raw('COUNT(*) AS total'))->where('order_id', $order['order_id'])->first();
-                    }
-                  }else{
-                    $store_name = "";
-                  }
-                  // $voucher_total = OrderVoucherModel::select(DB::Raw('COUNT(*) AS total'))->where('order_id', $order['order_id'])->first();
-
-                  $orders[] = array(
-                      'order_id'   => $order['order_id'],
-                      'user'       => $user ? $user->username : "-",
-                      'store_name' => $store_name,
-                      'name'       => $order['firstname'] . ' ' . $order['lastname'],
-                      'status'     => $order['status'],
-                      'date_added' => $order['date_added'],
-                      'products'   => @$product_total ? $product_total->total : 0,
-                      'total'      => $order['total'],
-                  );
-              }
-          }else{
-              $customer = array(
-                  'customer_id' => 0,
-                  'customer_group_id' => 1,
-                  'firstname' => "",
-                  'lastname' => "",
-                  'email' => "",
-                  'telephone' => "",
-                  'alternate_phone' => "",
-                  'gmap_link'=> "",
-                  'fax' => "",
-                  'address_1' => "",
-                  'address_street_building' => "",
-                  'address_villa_flate' => "",
-                  'city' => "",
-                  'area' => "",
-                  'country_id' => "",
-                  'zone_id' => "",
-              );
-          }
-      }
-      $countries = CountryModel::select('country_id','name')->get()->toArray();
-      $setting = SettingModel::get('config', 'config_login_countries');
-      $login_countries = json_decode($setting, true);
-      $country_phonecodes = CountryPhoneCodeModel::select('nicename', 'phonecode')->whereIn('id', $login_countries)->get();
-
-      return view(self::VIEW_DIR . '.customer_search_form', ['customer' => $customer, 'orders' => $orders, 'countries' => $countries, 'login_countries' => $country_phonecodes]);
+        //  dd($request->all());
+     $store   = $request->store;
+     $sub_dir = $store == 1 ? "ba" : "df";
+     $name = $request->name;
+     $mobile = $request->mobile;
+     $email = $request->email;
+     $data = Customer::with(['addresses'])
+        ->when($mobile,function($query) use ($mobile){
+            return $query->where('mobile','LIKE',"%".$mobile."%");
+        })
+        ->when($email,function($query) use ($email){
+            return $query->where('email',$email);
+        })
+        ->first();
+     $countries = Country::where('status',1)->get();
+     //  dd($countries->toArray());
+     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('data','countries'));
   }
   protected function dfOrdersHistory($name,$number,$email){
     $customer_data = DFOrdersModel::select('*');

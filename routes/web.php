@@ -47,7 +47,7 @@ Route::prefix('place/order')->middleware('auth')->group(function(){
         Route::post('/get/cart', 'getCart')->name('place.order.get.cart');
         Route::post('/remove/cart', 'removeCart')->name('place.order.remove.cart');
         Route::post('/update/cart', 'updateCart')->name('place.order.update.cart');
-        // Route::post('/ajax/searchCustomer', 'searchCustomer')->name('place.order.ajax.search.Customer');
+        Route::post('/search/customer', 'searchCustomer')->name('place.order.ajax.search.customer');
         // Route::post('/ajax/getCustomerDetails', 'getCustomerDetails')->name('place.order.ajax.getCustomerDetails');
         // Route::post('/ajax/addUserOrder', 'addUserOrder')->name('place.order.ajax.addUserOrder');
         // Route::post('/ajax/save_customer', 'save_customer')->name('place.order.ajax.save_customer');

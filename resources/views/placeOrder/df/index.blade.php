@@ -12,7 +12,7 @@
         margin-top:5px !important;
     }
     .place_order .card{
-        margin-top: 5px;
+        margin-top: 15px;
     }
 </style>
 <input type="hidden" id="txtbox_store_id" value="2">
@@ -67,6 +67,10 @@
                             <div class="clearfix"></div>
                         </div>
                         <div class="panel-body collapse" id="step-2">
+                            <div class="alert alert-danger d-none" id="alert_error_cart">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <span></span>
+                            </div>
                             <div id="step-2-cart" class="p-40">
                             </div>
                         </div>
@@ -84,16 +88,16 @@
                                 {{csrf_field()}}
                                     <input type="hidden" name="type" />
                                     <div class="col-sm-3 col-grid">
-                                        <input type="text" name="name" placeholder="Name" class="form-control" />
+                                        <input type="text" name="name" id="customer_name" placeholder="Name" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid col-grid">
-                                        <input type="text" name="number" placeholder="Mobile Number" class="form-control" />
+                                        <input type="text" name="number" id="customer_mobile" placeholder="Mobile Number" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid">
-                                        <input type="text" name="email" placeholder="Email Address" class="form-control" />
+                                        <input type="text" name="email" id="customer_email" placeholder="Email Address" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid">
-                                        <button type="button" name="search" class="btn btn-primary search_customer">
+                                        <button type="submit" name="search" class="btn btn-primary search_customer">
                                             <i class="fa fa-filter"></i>
                                             Search
                                         </button>

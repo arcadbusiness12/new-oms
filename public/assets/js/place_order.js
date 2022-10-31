@@ -44,6 +44,10 @@ $(document).on('submit', '#frm_add_to_cart', function(e) {
         data: form_data + '&store=' + store,
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
+        if (data.status) {} else if (data.status == 0) {
+            $('#alert_error_cart').removeClass('d-none');
+            $('#alert_error_cart span').html(data.msg);
+        }
         getCart();
     });
 });
@@ -92,7 +96,8 @@ $(document).on('click', '.btn-cart-remove', function() {
 $(document).on('click', '.btn-cart-update', function() {
     var cart_id = $(this).attr('cart-id');
     var quantity = $('#product_quantity' + cart_id).val();
-    $('#step-2-cart').html("<center><h4>Updating please wait...</center>");
+    // $('#step-2-cart').html("<center><h4>Updating please wait...</center>");
+    $('#alert_error_cart').addClass('d-none');
     $.ajax({
         method: "POST",
         url: APP_URL + "/place/order/update/cart",
@@ -100,8 +105,26 @@ $(document).on('click', '.btn-cart-update', function() {
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         console.log(data);
-        if (data.status) {
-            getCart();
+        if (data.status) {} else if (data.status == 0) {
+            $('#alert_error_cart').removeClass('d-none');
+            $('#alert_error_cart span').html(data.msg);
         }
+        getCart();
+    });
+});
+$(document).on('submit', '#filter_customers', function(e) {
+    e.preventDefault();
+    var name = $('#customer_name').val();
+    var email = $('#customer_email').val();
+    var mobile = $('#customer_mobile').val();
+    const request_data = { name: name, email: email, mobile: mobile, store: store };
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/search/customer",
+        data: request_data,
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        console.log(data);
+        $(".product_search_table").html(data);
     });
 });
