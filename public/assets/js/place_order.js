@@ -125,6 +125,27 @@ $(document).on('submit', '#filter_customers', function(e) {
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         console.log(data);
-        $(".product_search_table").html(data);
+        $(".customer_search_table").html(data);
+    });
+});
+$(document).on('change', '#city_id', function() {
+    var city_id = $(this).val();
+    alert(city_id);
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/load/areas",
+        data: { city_id: city_id },
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        // $(".customer_search_table").html(data);
+        // var data = JSON.parse(data);
+        var area_html = "";
+        // alert(data);
+        if (data) {
+            for (const row of data) {
+                area_html += "<option value='" + row.id + "'>" + row.name + "</option>";
+            }
+            $('#area').html(area_html);
+        }
     });
 });

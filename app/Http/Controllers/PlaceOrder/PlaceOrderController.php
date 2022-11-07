@@ -3,6 +3,8 @@ namespace App\Http\Controllers\PlaceOrder;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Oms\City;
+use App\Models\Oms\CityArea;
 use App\Models\Oms\Country;
 use App\Models\Oms\Customer;
 use App\Models\Oms\OmsSettingsModel;
@@ -178,10 +180,10 @@ class PlaceOrderController extends Controller
         //  dd($request->all());
      $store   = $request->store;
      $sub_dir = $store == 1 ? "ba" : "df";
-     $name = $request->name;
-     $mobile = $request->mobile;
-     $email = $request->email;
-     $data = Customer::with(['addresses'])
+     $name    = $request->name;
+     $mobile  = $request->mobile;
+     $email   = $request->email;
+     $customer  = Customer::with(['addresses'])
         ->when($mobile,function($query) use ($mobile){
             return $query->where('mobile','LIKE',"%".$mobile."%");
         })
@@ -189,24 +191,17 @@ class PlaceOrderController extends Controller
             return $query->where('email',$email);
         })
         ->first();
+     $default_country = 221;
      $countries = Country::where('status',1)->get();
+     $cities    = City::where('status',1)->where("country_id",$default_country)->get();
+     $orders = [];
      //  dd($countries->toArray());
-     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('data','countries'));
+     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('customer','countries','cities','default_country','customer','orders'));
   }
-  protected function dfOrdersHistory($name,$number,$email){
-    $customer_data = DFOrdersModel::select('*');
-    if(!empty($name)){
-        $customer_data = $customer_data->where('firstname', 'LIKE', $name . "%");
-    }
-    if(!empty($number)){
-        $customer_data = $customer_data->where('telephone', 'LIKE', "%" . $number . "%");
-    }
-    if(!empty($email)){
-        $customer_data = $customer_data->where('email', 'LIKE', $email . "%");
-    }
-    $customer_data = $customer_data->orderBy('order_id', 'DESC')->get();
-
-    return $customer_data;
+  public function loadAreas(Request $request){
+    $city_id = $request->city_id;
+    $data = CityArea::where("city_id",$city_id)->get();
+    return response()->json($data);
   }
   public function save_customer(Request $request){
     $json = array();

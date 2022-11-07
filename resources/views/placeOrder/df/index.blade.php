@@ -83,7 +83,7 @@
                         </div>
                         <div class="panel-body collapse" id="step-3">
                             <div id="alert-response"></div>
-                            <div>
+                            <div class="p-40">
                                 <form name="filter_customers" id="filter_customers" method="get">
                                 {{csrf_field()}}
                                     <input type="hidden" name="type" />
@@ -108,7 +108,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="customer_search_table p-t-50">
+                            <div class="customer_search_table p-40">
 
                             </div>
                         </div>
@@ -148,12 +148,13 @@ var shipping_methods = '';
 var shipping_method = '';
 var payment_method = '';
 var customer = {};
-$(function() {
-    $('select').selectpicker('destroy');
-    $('select').select2();
-});
 </script>
-<link rel="stylesheet" href="{{URL::asset('assets/plugins/select2/select2.min.css') }}">
-<script src="{{URL::asset('assets/plugins/select2/select2.full.min.js') }}"></script>
+{{--  <link rel="stylesheet" href="{{URL::asset('assets/plugins/select2/select2.min.css') }}">
+<script src="{{URL::asset('assets/plugins/select2/select2.full.min.js') }}"></script>  --}}
 <script type="text/javascript" src="{{URL::asset('assets/js/place_order.js') }}?_=<?php echo time() ?>"></script>
+
+{{--  $(function() {
+    $('select').selectpicker('destroy');
+});  --}}
+
 @endpush

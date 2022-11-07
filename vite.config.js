@@ -12,6 +12,8 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/jquery.main',
                 'resources/js/theme.js',
+                'resources/js/select2.full.min.js',
+
             ],
             refresh: true,
         }),
