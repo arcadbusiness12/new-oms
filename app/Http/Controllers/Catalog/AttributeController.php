@@ -72,13 +72,14 @@ class AttributeController extends Controller
     public function saveAttribute(Request $request) {
       $this->validate($request, [
         'category' => 'required',
-        'name' => 'required'
+        'name' => 'required',
+        'status' => 'required'
       ]);
       $prests = $request->prests;
       $attribute = new AttributeModel();
       $attribute->name = $request->name;
       $attribute->category_id = $request->category;
-      $attribute->status = 1;
+      $attribute->status = $request->status;
       if($attribute->save()) {
         foreach($prests as $prest) {
           $prst = new AttributePresetModel(); 
@@ -104,16 +105,17 @@ class AttributeController extends Controller
     }
     
     public function updateAttribute(Request $request) {
-      // dd($request->all());
       $this->validate($request, [
         'category' => 'required',
-        'name' => 'required'
+        'name' => 'required',
+        'status' => 'required'
       ]);
       $prests = $request->prests ? $request->prests : [];
       $prestsOld = $request->prests_old ? $request->prests_old : [];
       $attribute = AttributeModel::find($request->attribute_id);
       $attribute->name = $request->name;
       $attribute->category_id = $request->category;
+      $attribute->status = $request->status;
       $attribute->update();
       foreach($prests as $prest) {
         $prst = new AttributePresetModel(); 

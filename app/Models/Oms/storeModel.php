@@ -14,4 +14,8 @@ class storeModel extends Model
     public function productDescriptions() {
         return $this->hasMany(OmsInventoryProductDescriptionModel::class, 'store_id');
       }
+
+      public function specialPrices() {
+        return $this->hasMany(OmsInventoryProductSpecialModel::class, 'store_id');
+      }
 }

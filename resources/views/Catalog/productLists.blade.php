@@ -135,7 +135,7 @@
                               </td>
       
                                 <td class="column col-sm-6" style="vertical-align: top;">
-                                    <table class="" style="display: inline-block;">
+                                    {{-- <table class="" style="display: inline-block;">
                                       <thead style="background-color: {{ $tab_bg_color }};">
                                         <th><center><label>{{ ($product['products'][0]->omsOptions) ? $product['products'][0]->omsOptions->option_name : "Color"}}</label></center></th>
                                         
@@ -150,7 +150,7 @@
                                       <td><center><strong>Total</strong></center></td>
                                       </tr>
                                       
-                                    </table>
+                                    </table> --}}
                                 @foreach($product['products'] as $key=>$productt)
                                   
                                     <table class="" style="display: inline-block;">
@@ -162,11 +162,13 @@
                                         @$sum_available_quantity = 0;
                                       @endphp
                                       
-                                      @foreach($productt->ProductsSizes as $key=>$val)
+                                      @foreach($productt->productDescriptions as $key=>$val)
                                       <tr>
                                         <td style="
                                         font-size: 13px;
-                                    "><center>{{$val->available_quantity}}</center></td>
+                                    "><center>
+                                      <a href="{{route('product.listing.details', [$productt->product_id, $val->store->id])}}"> {{$val->store->name}} </a>
+                                    </center></td>
                                         
                                       </tr>
                                       @php 
@@ -175,7 +177,7 @@
                                       @endforeach
                                       <tr style="background-color: {{ $tab_bg_color }}">
                                         <!-- <td><center><strong>Total</strong></center></td> -->
-                                        <td><center><strong>{{ $sum_available_quantity }}</strong></center></td>
+                                        <td><center><strong>n</strong></center></td>
                                       </tr>
                                     </table>
                                 @endforeach

@@ -231,6 +231,14 @@ Route::prefix('Catalog')->middleware('auth')->group(function() {
         Route::any('/product/listing', 'ProductListing')->name('product.listing');
         Route::get('/edit/product/listing/{product}', 'EditProductListing')->name('edit.product.listing');
         Route::post('/save/listing/description', 'saveListingDescription')->name('save.listing.description');
+        Route::get('/product/listing/details/{product}/{store}', 'productListingDetails')->name('product.listing.details');
+        Route::post('/upload/cropped/image', 'uploadCroppedImage')->name('upload.cropped.image');
+        Route::post('/upload/gsllery/images', 'uploadGalleryImages')->name('upload.gallery.images');
+        Route::post('/remove/gsllery/image', 'removeGalleryImage')->name('remove.gallery.image');
+        Route::post('/generate/product/seo/url', 'generateSeoUrl')->name('generate.product.seo.url');
+        Route::post('save/special/price', 'saveSpecialPrice')->name('save.special.price');
+        Route::post('remove/special/price', 'removeSpecialPrice')->name('remove.speacial.price');
+        Route::post('/save/listing/data/form', 'saveListingDataForm')->name('save.listing.data.form');
     });
 });
 

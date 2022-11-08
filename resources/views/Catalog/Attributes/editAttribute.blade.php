@@ -41,7 +41,7 @@
                                                     </span>
                                                 @enderror
                                             </div>
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                              <label>Name</label>
                                                 <input type="text" name="name" class="form-control m-input" value="{{ $attribute->name }}" placeholder="Enter Name" autocomplete="off">
                                                 @error('name')
@@ -50,6 +50,19 @@
                                                     </span>
                                                 @enderror
                                             </div>
+                                            <div class="col-lg-2">
+                                                <label>Status</label>
+                                                    <select name="status" class="custom-select form-control" >
+                                                        <option value="">Select Status</option>
+                                                        <option value="1" @selected($attribute->status == 1)>Active</option>
+                                                        <option value="0" @selected($attribute->status == 0)>In-Active</option>
+                                                    </select>
+                                                    @error('status')
+                                                       <span class="invalid-feedback" role="alert">
+                                                           <strong>{{ $message }}</strong>
+                                                       </span>
+                                                   @enderror
+                                               </div>
                                         </div>
                                         <div class="row" id="newRow">
                                             @foreach($attribute->presets as $preset)
