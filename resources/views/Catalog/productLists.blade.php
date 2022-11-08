@@ -551,8 +551,8 @@ function changeProductStatusAjax(status,product_id){
   });
   
   $('.add-details').on('click', function() {
-    console.log("Oj=kl");
-    $($(this).data('modal')).modal();
+    console.log($(this).data('modal'));
+    $($(this).data('modal')).modal('show');
     $('#single-product').val($(this).data('id'));
   });
   
