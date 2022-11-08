@@ -167,7 +167,7 @@
                                         <td style="
                                         font-size: 13px;
                                     "><center>
-                                      <a href="{{route('product.listing.details', [$productt->product_id, $val->store->id])}}"> {{$val->store->name}} {{$productt->product_id}} </a>
+                                      <a href="{{route('product.listing.details', [$productt->product_id, $val->store->id])}}"> {{$val->store->name}}  </a>
                                     </center></td>
                                         
                                       </tr>
@@ -177,7 +177,7 @@
                                       @endforeach
                                       <tr style="background-color: {{ $tab_bg_color }}">
                                         <!-- <td><center><strong>Total</strong></center></td> -->
-                                        <td><center><strong>No store {{$productt->product_id}}</strong></center></td>
+                                        <td><center><strong><button class="btn btn-primary btn-xs add-details" id="add-details" data-id="{{$productt->product_id}}" data-modal="#selectStoreModel">Add Details</button></strong></center></td>
                                       </tr>
                                     </table>
                                 @endforeach
@@ -361,6 +361,36 @@
     </div>
   </div>
   <!-- product location modal end -->
+
+  <!-- product location modal start -->
+ <div class="modal iconde selectStoreModel" id="selectStoreModel" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content" >
+      <div class="modal-header">
+        <h5 class="modal-title text-black" id="exampleModalCenterTitle">Select store and continue</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="porduct_location_content">
+        <div class="text-center" id="loader">
+          <input type="hidden" id="single-product" value="" >
+          <select name="store" id="selected-store" class="form-control custom-select">
+            <option value="">Select Store</option>
+            @foreach($stores as $store)
+              <option value="{{$store->id}}">{{$store->name}}</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <a type="button" class="btn btn-primary" id="store-continue">Continue</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- product location modal end -->
 @endsection
 
 @push('scripts')
@@ -520,5 +550,17 @@ function changeProductStatusAjax(status,product_id){
     });
   });
   
+  $('.add-details').on('click', function() {
+    console.log("Oj=kl");
+    $($(this).data('modal')).modal();
+    $('#single-product').val($(this).data('id'));
+  });
+  
+  $('#store-continue').on('click', function() {
+    var store = $('#selected-store').find(':selected').val();
+    var product = $('#single-product').val();
+    window.location.href = "{{url('/Catalog/product/listing/details/')}}/" +product + "/" + store;
+    console.log($('#selected-store').find(':selected').val());
+  });
 </script>
 @endpush

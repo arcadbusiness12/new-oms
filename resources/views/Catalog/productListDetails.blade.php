@@ -48,7 +48,7 @@
                                     </ul>
                                 </div>
                                 <div class="align-self-center">
-                                   <span style="text-shadow: 2px 4px 6px #00bef3;"> <strong>{{$productList->productDescriptions[0]->store->name}}</strong></span>
+                                   <span style="text-shadow: 2px 4px 6px #00bef3;"> <strong>{{@$store->name}}</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -64,7 +64,8 @@
                                             <img src="{{URL::asset('uploads/inventory_products/'.$productList->image)}}" class="img-thumbnail featured-img" style="position:relative;top:0;left:0;" id="feature-image">
                                             <input type="button" name="images" id="change_featured_img_btn" class="btn btn-success btn-block change-featured-img-btn " value="Change Image" style="">
                                             <input type="file" name="images" class="featured-img-btn btn btn-primary btn-block" id="upload-file" style="
-                                            position:absolute;top: 406px;
+                                            position:absolute;  bottom: 2px;
+                                            /* top: 406px; */
                                             /* left: 95px; */
                                             z-index: 2;
                                             opacity: 0;" 
@@ -105,25 +106,25 @@
                                 </div>
 
                                 <div class="tab-pane fade" id="w5-general" role="tabpanel" aria-labelledby="w5-general">
-                                  @foreach($productList->productDescriptions as $k => $description)
+                                  {{-- @foreach($productList->productDescriptions as $k => $description) --}}
                                     <div class="card no-b">
                                         <div class="card-body no-p">
                                             <div class="tab-content">
-                                                <div class="tab-pane fade {{($k == 0) ? 'active' : ''}} show" id="w5-{{$description->store->name}}" role="tabpanel" aria-labelledby="w5-{{$description->store->name}}">
+                                                {{-- <div class="tab-pane fade {{($k == 0) ? 'active' : ''}} show" id="w5-{{$description->store->name}}" role="tabpanel" aria-labelledby="w5-{{$description->store->name}}"> --}}
                                                    <div class="tab-title text-center text-black pt-2">
                                                        {{-- <h5 class="text-black font-weight-bold">{{$description->store->name}}</h5> --}}
                                                    </div>
                                                     <div class="form-content p-4">
-                                                        <form id="{{$description->store->name}}-form" action="" method="POST">
+                                                        <form id="{{@$store->name}}-form" action="" method="POST">
                                                             {{ csrf_field() }}
                                                             <div class="row">
-                                                                <input type="hidden" name="store" value="{{$description->store_id}}">
-                                                                <input type="hidden" id="product_id" name="product_id" value="{{$productList->product_id}}">
-                                                                <input type="hidden" name="description_id" value="{{$description->id}}">
+                                                                <input type="hidden" name="store" value="{{$store->id}}">
+                                                                <input type="hidden" id="product_id" name="product_id" value="{{@$productList->product_id}}">
+                                                                <input type="hidden" name="description_id" value="{{@$productList->productDescriptions[0]->id}}">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Name </strong><span class="text-danger"><b>*</b></span></label>
                                                                 <div class="col-10">
-                                                                    <input type="text" name="product_name" value="{{$description->name}}" id="{{$description->store->name}}-form-name" class="form-control product-title">
-                                                                    <input type="hidden" id="seourl" name="seourl" value="{{$productList->seoUrls}}">
+                                                                    <input type="text" name="product_name" value="{{@$productList->productDescriptions[0]->name}}" id="{{@$store->name}}-form-name" class="form-control product-title">
+                                                                    <input type="hidden" id="seourl" name="seourl" value="{{@$productList->productDescriptions[0]->seoUrls}}">
                                                                     <span class="invalid-feedback name-error" role="alert">
                                                                     </span>
                                                                 </div>
@@ -131,13 +132,13 @@
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Description </strong></label>
                                                                 <div class="col-10">
-                                                                    <textarea rows="25" cols="118" name="description" class="summernote text-black">{!! $description->product_description !!}</textarea>
+                                                                    <textarea rows="25" cols="118" name="description" class="summernote text-black">{!! @$productList->productDescriptions[0]->product_description !!}</textarea>
                                                                 </div>
                                                             </div>
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Meta Tag Title <span class="text-danger">*</span></strong></label>
                                                                 <div class="col-10">
-                                                                    <input type="text" name="meta_title" value="{{$description->meta_title}}" id="{{$description->store->name}}-form-meta-title" class="form-control">
+                                                                    <input type="text" name="meta_title" value="{{@$productList->productDescriptions[0]->meta_title}}" id="{{@$store->name}}-form-meta-title" class="form-control">
                                                                     <span class="invalid-feedback meta-title-error" role="alert">
                                                                     </span>
                                                                 </div>
@@ -146,27 +147,27 @@
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Meta Tag Description </strong></label>
                                                                 <div class="col-10">
-                                                                    <textarea rows="8" cols="118" name="meta_description" class="text-black">{{ $description->meta_description }}</textarea>
+                                                                    <textarea rows="8" cols="118" name="meta_description" class="text-black">{{ @$productList->productDescriptions[0]->meta_description }}</textarea>
                                                                 </div>
                                                             </div>
 
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Meta Tag Keywords </strong></label>
                                                                 <div class="col-10">
-                                                                    <textarea rows="5" name="meta_keyword" cols="118">{{$description->meta_keywords}}</textarea>
+                                                                    <textarea rows="5" name="meta_keyword" cols="118">{{@$productList->productDescriptions[0]->meta_keywords}}</textarea>
                                                                 </div>
                                                             </div>
 
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Tags </strong></label>
                                                                 <div class="col-10">
-                                                                    <input type="text" name="product_tags" value="{{$description->product_tags}}" class="form-control">
+                                                                    <input type="text" name="product_tags" value="{{@$productList->productDescriptions[0]->product_tags}}" class="form-control">
                                                                 </div>
                                                             </div>
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Price <span class="text-danger">*</span></strong></label>
                                                                 <div class="col-10">
-                                                                    <input type="text" name="product_price" value="{{$description->price}}" id="{{$description->store->name}}-form-price" class="form-control">
+                                                                    <input type="text" name="product_price" value="{{@$productList->productDescriptions[0]->price}}" id="{{@$store->name}}-form-price" class="form-control">
                                                                     <span class="invalid-feedback price-error" role="alert">
                                                                     </span>
                                                                 </div>
@@ -174,29 +175,29 @@
 
                                                             <div class="row pt-4">
                                                                 <div class="col-12">
-                                                                    <button type="button" id="add_manually" value="{{$description->store->name}}-form" class="btn btn-primary float-right save-description" data-action="">
+                                                                    <button type="button" id="add_manually" value="{{@$store->name}}-form" class="btn btn-primary float-right save-description" data-action="">
                                                                         Save
                                                                     </button>
                                                                 </div>
                                                             </div>
                                                         </form>
                                                     </div>
-                                                </div>
+                                                {{-- </div> --}}
                                             </div>
                     
                                         </div>
                                     </div>
-                                  @endforeach
+                                  {{-- @endforeach --}}
                                 </div>
                                 <div class="tab-pane fade text-center p-5" id="w5-data" role="tabpanel" aria-labelledby="w5-data">
                                     <div class="form-content p-4">
-                                        <form id="{{$description->store->name}}-data-form" action="" method="POST">
+                                        <form id="{{@$store->name}}-data-form" action="" method="POST">
                                             {{ csrf_field() }}
                                             <div class="row">
                                                 <input type="hidden" name="product_id" value="{{$productList->product_id}}">
                                                 <label class="col-2 control-lable text-black"><strong> Product SKU </strong><span class="text-danger"><b>*</b></span></label>
                                                 <div class="col-10">
-                                                    <input type="text" name="product_sku" value="{{$productList->sku}}" id="{{$description->store->name}}-data-form-sku" readonly class="form-control">
+                                                    <input type="text" name="product_sku" value="{{$productList->sku}}" id="{{@$store->name}}-data-form-sku" readonly class="form-control">
                                                     <span class="invalid-feedback sku-error" role="alert">
                                                     </span>
                                                 </div>
@@ -249,7 +250,7 @@
                                             </div>
                                             <div class="row pt-4">
                                                 <div class="col-12">
-                                                    <button type="button" id="add_manually" value="{{$description->store->name}}-data-form" class="btn btn-primary float-right save-data" data-action="">
+                                                    <button type="button" id="add_manually" value="{{@$store->name}}-data-form" class="btn btn-primary float-right save-data" data-action="">
                                                         Save
                                                     </button>
                                                 </div>
@@ -269,7 +270,7 @@
                                     <form id="special-price-form" action="" method="POST">
                                         {{ csrf_field() }}
                                         <div class="row">
-                                            <input type="hidden" name="store" value="{{$productList->productDescriptions[0]->store->id}}">
+                                            <input type="hidden" name="store" value="{{@$store->id}}">
                                             <input type="hidden" name="product_id" value="{{$productList->product_id}}">
                                             <div class="col-md-12 col-sm-12">
                                                 <div class="card no-b">

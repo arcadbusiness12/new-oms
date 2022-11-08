@@ -56,9 +56,9 @@ class ProductListingController extends Controller
         }, 'seoUrls' => function($s) use($store) {
             $s->where('store_id', $store);
         }])->where('product_id', $product)->first();
-        // dd($productList);
+        $store = storeModel::find($store);
         $weightClasses = ProductWeightClassModel::all();
-        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses'));
+        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses', 'store'));
     }
 
     public function ProductListing(Request $request) {
