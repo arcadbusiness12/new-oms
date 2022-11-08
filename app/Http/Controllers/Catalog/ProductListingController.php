@@ -110,7 +110,6 @@ class ProductListingController extends Controller
             $g['name'] = $name;
         }
         $old_input = $request->all();
-
         return view(self::VIEW_DIR. '.productLists')->with(compact('groupProducts', 'types_for_organic','types_for_setting', 'socials', 'stores', 'categories','old_input','main_categories'));
     }
 

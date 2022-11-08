@@ -167,7 +167,7 @@
                                         <td style="
                                         font-size: 13px;
                                     "><center>
-                                      <a href="{{route('product.listing.details', [$productt->product_id, $val->store->id])}}"> {{$val->store->name}} </a>
+                                      <a href="{{route('product.listing.details', [$productt->product_id, $val->store->id])}}"> {{$val->store->name}} {{$productt->product_id}} </a>
                                     </center></td>
                                         
                                       </tr>
@@ -177,7 +177,7 @@
                                       @endforeach
                                       <tr style="background-color: {{ $tab_bg_color }}">
                                         <!-- <td><center><strong>Total</strong></center></td> -->
-                                        <td><center><strong>n</strong></center></td>
+                                        <td><center><strong>No store {{$productt->product_id}}</strong></center></td>
                                       </tr>
                                     </table>
                                 @endforeach
