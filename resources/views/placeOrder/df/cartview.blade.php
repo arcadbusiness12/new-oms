@@ -1,5 +1,5 @@
-<?php if($products) { ?>
-<?php if($errors) { ?>
+@if($data)
+{{--  <?php if($errors) { ?>
 <div class="alert alert-danger">
     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
     <?php echo $errors['stock'] ?>
@@ -11,70 +11,64 @@
   <script>
     $('#search_customer').show();
   </script>
-<?php } ?>
+<?php } ?>  --}}
 <form name="cart-product-form" id="cart-product-form">
     {{csrf_field()}}
-    <table class="table">
+    <table class="table" >
         <thead>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Model</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-                <th>Action</th>
+            <tr style="background-color: #3f51b5;color:white">
+                <th><center><strong>Image</strong></center></th>
+                <th><center><strong>Name</strong></center></th>
+                <th><center><strong>SKU/Color</strong></center></th>
+                <th style="width:7%"><center><strong>Quantity</strong></center></th>
+                <th><center><strong>Price</strong></center></th>
+                <th><center><strong>Total</strong></center></th>
+                <th><center><strong>Action</strong></center></th>
             </tr>
         </thead>
-        <tbody class="response-products">
-            <?php foreach ($products as $key => $product) { ?>
-                <tr class="cart-product-row">
-                    <td><img width="80" src="<?php echo $product['image'] ?>" /></td>
-                    <td><strong><?php echo $product['name'] ?></strong><br/>
-                        <?php foreach ($product['options'] as $option) { ?>
-                        <span><b><?php echo $option['name'] ?> : </b></span>
-                        <span><?php echo $option['value'] ?></span><br>
-                        <?php } ?>
-                        <?php if($product['stock'] == 'false') { ?>
-                        <small class="text-danger">***</small>
-                        <?php } ?>
-                    </td>
-                    <td><?php echo $product['model'] ?></td>
-                    <td><input type="number" name="product[<?php echo $key ?>][quantity]" class="form-control" value="<?php echo $product['quantity'] ?>" /></td>
-                    <td><?php echo $product['price'] ?></td>
-                    <td><b><?php echo $product['total'] ?></b></td>
+        <tbody style="border:1px solid #3f51b5">
+            @php
+                $total = 0;
+            @endphp
+            @foreach ($data as $key => $val)
+                @php
+                    $sub_total = $val->product_price * $val->product_quantity;
+                    $total    += $sub_total
+                @endphp
+                <tr style="border-bottom:1px solid lightgray">
+                    <td><center><img width="80" src="{{ URL::asset('uploads/inventory_products/'.$val->product_image) }}" /></center></td>
+                    <td><center>{{ $val->product_name }}<br>
+                            <strong>Size</strong>: {{ $val->cartProductSize->value }} <strong>Color</strong>: {{ $val->product_color }} <br>
+                    </center></td>
+                    <td><center>{{ $val->product_sku }}</center></td>
+                    <td><center><input type="number" name="product_quantity[]" id="product_quantity{{ $val->id }}" size="1" class="form-control" value="{{ $val->product_quantity }}" /></center></td>
+                    <td><center>{{ $val->product_price }}</center></td>
+                    <td><center><strong>{{ $sub_total }}</strong></center></td>
                     <td>
-                        <input type="hidden" name="product[<?php echo $key ?>][product_id]" value="<?php echo $product['product_id'] ?>">
-                        <?php foreach ($product['options'] as $option) { ?>
-                        <input type="hidden" name="product[<?php echo $key ?>][option][<?php echo $option['product_option_id'] ?>]" value="<?php echo $option['product_option_value_id'] ?>">
-                        <?php } ?>
-                        <button type="button" class="btn btn-warning btn-cart-update" value="<?php echo $product['cart_id'] ?>"><i class="fa fa-pencil"></i></button>
-                        <button type="button" class="btn btn-danger btn-cart-remove" value="<?php echo $product['cart_id'] ?>"><i class="fa fa-trash"></i></button>
+                        <input type="hidden" name="product_id[]" value="{{ $val->product_id }}">
+                        <center>
+                        <button type="button" class="btn btn-info active btn-sm btn-cart-update" cart-id="{{ $val->id }}">Update</button>
+                        <button type="button" class="btn btn-danger active btn-sm btn-cart-remove" cart-id="{{ $val->id }}">Delete</button>
+                        </center>
                     </td>
                 </tr>
-            <?php } ?>
+            @endforeach
+            <tr>
+                <td colspan="4"></td>
+                <td><center><strong>Total:</strong></center></td>
+                <td><center><strong>{{ $total }}</strong><center></td>
+            </tr>
         </tbody>
     </table>
-    <div class="cart-totals">
-        <div class="row">
-            <div class="col-xs-5 col-xs-offset-7">
-                <table class="table">
-                    <?php foreach ($totals as $total) { ?>
-                        <tr>
-                            <td><b><?php echo $total['title'] ?></b></td>
-                            <td><?php echo $total['text'] ?></td>
-                        </tr>
-                    <?php } ?>
-                </table>
-                <div class="form-group">
-                    @if(!$errors)
-                      <button type="button" name="generate_exchange" id="continue-order" class="btn btn-primary btn-block">Continue</button>
-                    @endif
-                </div>
-            </div>
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-sm-10">
+
+        </div>
+        <div class="col-sm-2">
+        <button type="button"  id="continue-order" class="btn active btn-success">Continue</button>
         </div>
     </div>
 </form>
-<?php } else { ?>
+@else
     <div class="text-danger text-center text-uppercase font-16"><b>Cart is Empty!</b></div>
-<?php } ?>
+@endif

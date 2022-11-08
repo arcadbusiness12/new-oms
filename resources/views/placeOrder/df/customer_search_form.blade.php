@@ -1,106 +1,105 @@
 <form method="post" name="customer_save" id="customer_save">
     {{csrf_field()}}
     <div class="row">
-        <input type="hidden" name="customer_id" value="<?php echo $customer['customer_id'] ?>" />
-        <input type="hidden" name="customer_group_id" value="<?php echo $customer['customer_group_id'] ?>" />
-        <div class="col-sm-4 p-b-15">
+        <input type="hidden" name="customer_id" value="{{ @$customer->id }}" />
+        <div class="col-sm-4 p-10">
             <label>Full Name <span class="text-danger">*</span></label>
             <div>
-                <input type="text" name="firstname" class="form-control" value="<?php echo $customer['firstname'] ?><?php if($customer['lastname']) { echo " " . $customer['lastname']; } ?>" required />
+                <input type="text" name="firstname" class="form-control" value="{{ @$customer->firstname }}" required />
             </div>
         </div>
-        <!-- <div class="col-sm-4 p-b-15">
+        <!-- <div class="col-sm-4 p-10">
             <label>Last Name <span class="text-danger">*</span></label>
             <div>
-                <input type="text" name="lastname" class="form-control" value="<?php echo $customer['lastname'] ?>" required />
+                <input type="text" name="lastname" class="form-control" value="{{ @$customer->lastname }}" required />
             </div>
         </div> -->
-        <div class="col-sm-4 p-b-15">
+        <div class="col-sm-4 p-10">
             <label>Email <span class="text-danger">*</span></label>
             <div>
-                <input type="text" name="email" class="form-control" value="<?php echo $customer['email'] ?>" required />
+                <input type="text" name="email" class="form-control" value="{{ @$customer->email }}" required />
             </div>
         </div>
-        <div class="col-sm-4 p-b-15 telephone-box">
+        <div class="col-sm-4 p-10">
             <label>Telephone <span class="text-danger">*</span></label>
-            <div class="inner-block">
-                <select name="telephone_code" class="form-control" required >
-                    <?php foreach ($login_countries as $key => $country) { ?>
-                    <option value="<?php echo $country['phonecode'] ?>" <?php if($country['phonecode'] == 971) { ?> selected="selected" <?php } ?> ><?php echo $country['phonecode'] . ' ' . $country['nicename'] ?></option>
-                    <?php } ?>
-                </select>
-                  @if($country['phonecode'] == 971)      
-                    <input type="text" name="telephone" class="form-control" value="<?php echo str_replace("971", "", strval($customer['telephone'])) ?>" required />
+            <div class="row">
+                <div class="col-sm-3 pr-0">
+                    <select name="telephone_code" class="form-control" required >
+                        @foreach ($countries as $key => $country)
+                            @if( $country->phonecode != "" )
+                                <option value="{{ $country->phonecode }}" {{  ($country->phonecode == 971) ?  'selected="selected"' : '' }} >{{ $country->phonecode . ' ' . $country->name }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-sm-9 pl-0">
+                  @if($country->phonecode == 971)
+                    <input type="text" name="telephone" class="form-control" value="abc" required />
                   @else
-                    <input type="text" name="telephone" class="form-control" value="<?php echo $customer['telephone'] ?>" required />
+                    <input type="text" name="telephone" class="form-control" value="xyz" required />
                   @endif
+                </div>
             </div>
         </div>
-        <!-- <div class="col-sm-4 p-b-15">
-            <label>Fax</label>
-            <div>
-                <input type="text" name="fax" class="form-control" value="<?php echo $customer['fax'] ?>" />
-            </div>
-        </div> -->
-        <div class="col-sm-4 p-b-15">
+        <div class="col-sm-4 p-10">
             <label>Country <span class="text-danger">*</span></label>
             <div>
                 <select name="country_id" class="form-control" required >
-                    <?php foreach ($countries as $key => $country) { ?>
-                    <option value="<?php echo $country['country_id'] ?>" <?php if($country['country_id'] == $customer['country_id'] || $country['country_id'] == 221) { ?> selected="selected" <?php } ?> ><?php echo $country['name'] ?></option>
-                    <?php } ?>
+                    @foreach ($countries as $key => $country)
+                        <option value="{{ $country->id }}" {{ ( $country->id == $default_country ) ? 'selected="selected"' : '' }} >{{ $country->name }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>
-        <div class="col-sm-4 p-b-15">
+        <div class="col-sm-4 p-10">
             <label>City <span class="text-danger">*</span></label>
-            <div>
-                <select name="zone_id" id="zone_id" class="form-control" data-area="<?php echo $customer['area'] ?>" data-zone-id="<?php echo $customer['zone_id'] ?>" required ></select>
-            </div>
+            <select name="city_id" id="city_id" class="form-control city_id" required >
+                <option>--Select--</option>
+                @forelse ( $cities as $key => $val )
+                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                @empty
+                @endforelse
+            </select>
         </div>
-        <!-- <div class="col-sm-4 p-b-15">
-            <label>City <span class="text-danger">*</span></label>
-            <div>
-                <input type="text" name="city" class="form-control" value="<?php echo $customer['city'] ?>" required />
-            </div>
-        </div> -->
-        <div class="col-sm-4 p-b-15 area-box">
+        <div class="col-sm-4 p-10 area-box">
             <label>Area <span class="text-danger">*</span></label>
             <div>
-                <select name="area" class="form-control" required ></select>
+                <select name="area" id="area" class="form-control" required readonly="readonly">
+                    <option>--Select--</option>
+                </select>
             </div>
         </div>
-        <div class="col-sm-4 p-b-15">
+        <div class="col-sm-4 p-10">
             <label>Address <span class="text-danger">*</span></label>
             <div>
-                <textarea name="address_1" class="form-control" required ><?php echo $customer['address_1'] ?></textarea>
+                <textarea name="address" class="form-control" required >{{ @$customer->address }}</textarea>
             </div>
         </div>
-        <div class="col-sm-4 p-b-15">
+        <div class="col-sm-4 p-10">
           <label>Street,Building <span class="text-danger">*</span></label>
           <div>
-              <input type="text" name="address_street_building" id="address_street_building" placeholder="street#, building name" value="{{ $customer['address_street_building'] }}"   class="form-control" required>
+              <input type="text" name="address_street_building" id="address_street_building" placeholder="street#, building name" value="{{ @$customer->address->street_building }}" class="form-control" required>
           </div>
       </div>
-      <div class="col-sm-4 p-b-15">
+      <div class="col-sm-4 p-10">
           <label>Villa, Flat <span class="text-danger">*</span></label>
           <div>
-              <input type="text" name="address_villa_flate" id="address_villa_flate" placeholder="Villa, flat" value="{{ $customer['address_villa_flate'] }}" class="form-control" required>
+              <input type="text" name="address_villa_flate" id="address_villa_flate" placeholder="Villa, flat" value="{{ @$customer->address->villa_flat }}" class="form-control" required>
           </div>
       </div>
-      
+
     </div>
     <div class="row">
-        <div class="col-sm-2 p-b-15 text-left">
+        <div class="col-sm-2 p-10 text-left">
           <label>Alternate number </label>
           <div>
-              <input type="text" name="alternate_number" id="alternate_number" placeholder="Alternate Number" value="{{ $customer['alternate_phone'] }}" class="form-control">
+              <input type="text" name="alternate_number" id="alternate_number" placeholder="Alternate Number" value="{{ @$customer->alternate_phone }}" class="form-control">
           </div>
        </div>
         <div class="col-sm-9 text-left">
           <label>Google Map Link</label>
           <div>
-            <input type="text" name="gmap_link" id="gmap_link" placeholder="Google Map Link" value="{{ @$customer['gmap_link'] }}" class="form-control">
+            <input type="text" name="gmap_link" id="gmap_link" placeholder="Google Map Link" value="{{ @$customer->gmap_link }}" class="form-control">
           </div>
         </div>
         <div class="col-sm-1 text-right">
@@ -145,3 +144,9 @@
     </div>
     <?php } ?>
 </form>
+<script>
+    $(document).ready(function() {
+        $('#area').select2();
+        $('.city_id').select2();
+    });
+</script>

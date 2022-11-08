@@ -13,8 +13,13 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/jquery.main',
                 'resources/js/theme.js',
+<<<<<<< HEAD
                 'resources/js/cropper.min.js',
                 'resources/js/jsuites.layout.js',
+=======
+                'resources/js/select2.full.min.js',
+
+>>>>>>> c817aebe8608e99e2232eca3cbfda8256cbf42b6
             ],
             refresh: true,
         }),

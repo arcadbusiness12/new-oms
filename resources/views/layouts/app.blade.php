@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote.min.css"/>
     <script type="text/javascript">
         var APP_URL = {!! json_encode(url('/')) !!}
-        
+
       </script>
     @stack('style')
 </head>

@@ -12,9 +12,10 @@
         margin-top:5px !important;
     }
     .place_order .card{
-        margin-top: 5px;
+        margin-top: 15px;
     }
 </style>
+<input type="hidden" id="txtbox_store_id" value="2">
     <div class="container-fluid relative animatedParent animateOnce my-3">
         <div class="row row-eq-height my-3 mt-3">
             <div class="col-md-12 col-sm-12 place_order text-black">
@@ -30,10 +31,10 @@
                                 <div class="row">
                                     <label class="col-2 control-label" for="input-product" style="margin: 0;text-align: right;padding-top: 7px;">Choose Product</label>
                                     <div class="col-10 col-grid">
-                                        <div class="col-4 col-grid">
+                                        {{--  <div class="col-4 col-grid">
                                             <input type="text" name="product_title" id="product_title" list="product_names" class="form-control" autocomplete="off" value="" placeholder="Product Title">
                                             <datalist id="product_names"></datalist>
-                                        </div>
+                                        </div>  --}}
                                         <div class="col-4 col-grid">
                                             <input type="text" name="product_model" id="product_model" list="product_models" class="form-control" autocomplete="off" value="" placeholder="Product Model">
                                             <datalist id="product_models"></datalist>
@@ -47,9 +48,13 @@
                                     </div>
                                 </div>
                             </form>
-                            <form name="product_cart" id="product_search">
+                            <form name="product_cart" id="frm_add_to_cart">
                                 {{csrf_field()}}
-                                <table class="table product_search_table"></table>
+                                <div class="row">
+                                    <div class="col-12 product_search_table p-40">
+
+                                    </div>
+                                </div>
                             </form>
                         </div>
                       </div> {{--panel panel-default end --}}
@@ -61,9 +66,14 @@
                             <div class="cart-loader"></div>
                             <div class="clearfix"></div>
                         </div>
-                        <div class="panel-body hidden collapse" id="step-2">
-                            <div class="text-danger text-center text-uppercase font-16"><b>Cart is Empty!</b></div>
+                        <div class="panel-body collapse" id="step-2">
+                            <div class="alert alert-danger d-none" id="alert_error_cart">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <span></span>
                             </div>
+                            <div id="step-2-cart" class="p-40">
+                            </div>
+                        </div>
                       </div>{{--panel panel-default end --}}
                     </div>{{--card end--}}
                     <div class="card">
@@ -73,21 +83,21 @@
                         </div>
                         <div class="panel-body collapse" id="step-3">
                             <div id="alert-response"></div>
-                            <div>
+                            <div class="p-40">
                                 <form name="filter_customers" id="filter_customers" method="get">
                                 {{csrf_field()}}
                                     <input type="hidden" name="type" />
                                     <div class="col-sm-3 col-grid">
-                                        <input type="text" name="name" placeholder="Name" class="form-control" />
+                                        <input type="text" name="name" id="customer_name" placeholder="Name" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid col-grid">
-                                        <input type="text" name="number" placeholder="Mobile Number" class="form-control" />
+                                        <input type="text" name="number" id="customer_mobile" placeholder="Mobile Number" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid">
-                                        <input type="text" name="email" placeholder="Email Address" class="form-control" />
+                                        <input type="text" name="email" id="customer_email" placeholder="Email Address" class="form-control" />
                                     </div>
                                     <div class="col-sm-3 col-grid">
-                                        <button type="button" name="search" class="btn btn-primary search_customer">
+                                        <button type="submit" name="search" class="btn btn-primary search_customer">
                                             <i class="fa fa-filter"></i>
                                             Search
                                         </button>
@@ -98,7 +108,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="customer_search_table p-t-50">
+                            <div class="customer_search_table p-40">
 
                             </div>
                         </div>
@@ -137,20 +147,14 @@ var payment_methods = '';
 var shipping_methods = '';
 var shipping_method = '';
 var payment_method = '';
-var api_id = "<?php echo $api['api_id'] ?>";
-var username = "<?php echo $api['username'] ?>";
-var api_key = "<?php echo $api['key'] ?>";
-var store_id = "<?php echo $api['store_id'] ?>";
-var currency = "<?php echo $api['currency'] ?>";
 var customer = {};
-var ajax_url = "<?php echo env('DF_APP_OPENCART_URL') ?>";
-var order_success_redirect = "<?php echo $api['order_success_redirect'] ?>";
-$(function() {
-    $('select').selectpicker('destroy');
-    $('select').select2();
-});
 </script>
-<link rel="stylesheet" href="{{URL::asset('assets/plugins/select2/select2.min.css') }}">
-<script src="{{URL::asset('assets/plugins/select2/select2.full.min.js') }}"></script>
-<script type="text/javascript" src="{{URL::asset('assets/js/df_place_order.js') }}?_=<?php echo time() ?>"></script>
+{{--  <link rel="stylesheet" href="{{URL::asset('assets/plugins/select2/select2.min.css') }}">
+<script src="{{URL::asset('assets/plugins/select2/select2.full.min.js') }}"></script>  --}}
+<script type="text/javascript" src="{{URL::asset('assets/js/place_order.js') }}?_=<?php echo time() ?>"></script>
+
+{{--  $(function() {
+    $('select').selectpicker('destroy');
+});  --}}
+
 @endpush
