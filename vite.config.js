@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/style.css',
                 'resources/css/sweetalert.css',
                 'resources/css/cropper.min.css',
+                'resources/css/select2.min.css',
                 'resources/js/app.js',
                 'resources/js/jquery.main',
                 'resources/js/theme.js',
