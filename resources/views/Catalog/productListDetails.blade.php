@@ -928,6 +928,7 @@ function UploadToServer(formData) {
 function uploadFilteredImage(base64data, $modal, img, id) {
 //    var filters = document.getElementById('sample_image').style.filter;
    var product = $('#product_id').val();
+   $('.simple-upload').html('<span class="spinner-border spinner-border-sm"></span>Loading..');
    $.ajax({
      url:'{{route("upload.cropped.image")}}',
      method:'POST',
@@ -936,6 +937,7 @@ function uploadFilteredImage(base64data, $modal, img, id) {
      success:function(respo)
         {
             if(respo.status) {
+                $('.simple-upload').html('Upload');
                 $('#modal').modal('hide');
                     $('input[type=range]').val(0);
                     Caman("#canvas", img, function() {
