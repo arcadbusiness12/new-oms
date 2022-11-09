@@ -633,7 +633,7 @@
 {{-- <script src="https://jsuites.net/v4/jsuites.js"></script>
 <script src="https://jsuites.net/v4/jsuites.layout.js"></script> --}}
   <link rel="stylesheet" href="{{URL::asset('assets/css/cropper.min.css')}}">
-  <link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css">
+  {{-- <link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css"> --}}
   <script type="text/javascript" src="{{URL::asset('assets/js/caman.min.js') }}"></script>
   <script type="text/javascript" src="{{URL::asset('assets/js/cropper.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js" defer></script>
@@ -936,6 +936,7 @@ function uploadFilteredImage(base64data, $modal, img, id) {
      success:function(respo)
         {
             if(respo.status) {
+                $('#modal').modal('hide');
                     $('input[type=range]').val(0);
                     Caman("#canvas", img, function() {
                         this.revert(false);
