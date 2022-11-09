@@ -7,4 +7,4 @@ import './cropper.min';
 import './jsuites.layout';
 import '../css/theme.css';
 import '../css/style.css';
-import '../css/cropper.min.css'
+// import '../css/cropper.min.css'
