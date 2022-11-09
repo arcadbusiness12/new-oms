@@ -628,8 +628,8 @@
 </div>	 
   <!-- product location modal end -->
 @endsection
- 
-@push('scripts')
+  
+@push('scripts') 
 {{-- <script src="https://jsuites.net/v4/jsuites.js"></script>
 <script src="https://jsuites.net/v4/jsuites.layout.js"></script> --}}
   <link rel="stylesheet" href="{{URL::asset('assets/css/cropper.min.css')}}">
