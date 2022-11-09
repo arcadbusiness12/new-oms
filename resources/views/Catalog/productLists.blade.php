@@ -384,7 +384,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> 
+        <button type="button" class="btn btn-secondary" id="#close-modal" data-dismiss="modal">Close</button> 
         <a type="button" class="btn btn-primary" id="store-continue">Continue</a>
       </div>
     </div>
@@ -395,7 +395,10 @@
 
 @push('scripts')
 <script>
-    function addMainCategory(cate, group) {
+  $('#close-modal, .close').on('click', function() {
+        $('#modal').modal('hide');
+    });
+function addMainCategory(cate, group) {
   if(cate && group) {
     $.ajax({
     url: "{{route('add.main.category.to.group', ['cate' => '"+cate+"', 'group' => '"+group+"',])}}",

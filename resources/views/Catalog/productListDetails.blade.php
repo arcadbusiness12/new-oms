@@ -657,6 +657,7 @@
          canvas.removeAttribute("data-caman-id");
          $('#croped_image').attr('src', '');
          $('#crop-filter').prop('checked', false);
+        $('#modal').modal('hide');
     });
     $('.icon-apply-filter').on('click', function() {
         var image = $(this).data('src');
