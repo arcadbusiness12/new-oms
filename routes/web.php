@@ -193,6 +193,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::get('/add/purchase/product/manually', 'addPurchaseProductManualy')->name('add.purchase.product.manually');
         Route::post('/get/manually/all/options', 'getManuallyAllOptions')->name('get.manually.all.options');
         Route::post('/get/purchase/product/sku', 'getPurchaseProductSku')->name('get.purchase.product.sku');
+        Route::post('/search/group/code', 'searchGroupCode')->name('search.group.code');
         Route::post('/add/product', 'addProduct')->name('add.product');
     });
 });

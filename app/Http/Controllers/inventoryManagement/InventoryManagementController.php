@@ -123,16 +123,23 @@ use Carbon\Carbon;
         }
 
         $category= GroupCategoryModel::find($request->category);
-        $group = new ProductGroupModel();
-        $group->group_sku = $request->newSku;
-        $group->name = $sku;
-        $group->category_name = $category->name;
-        $group->category_id = $request->category;
-        $group->sub_category_id = $request->subCategory;
-        $group->save();
+        $group_exist = ProductGroupModel::where('name', $request->newSku)->first();
+        if(!$group_exist) {
+          $group = new ProductGroupModel();
+          $group->group_sku = $request->newSku;
+          $group->name = $request->newSku;
+          $group->category_name = $category->name;
+          $group->category_id = $request->category;
+          $group->sub_category_id = $request->subCategory;
+          if($group->save()) {
+              $group_id = $group->id;
+          }
+      }else {
+          $group_id = $group_exist->id;
+      }
 
         $product = new OmsInventoryProductModel();
-        $product->group_id = $group->id;
+        $product->group_id = $group_id;
         $product->sku = $sku;
         $product->image = $image;
         $product->option_name = $request->options;

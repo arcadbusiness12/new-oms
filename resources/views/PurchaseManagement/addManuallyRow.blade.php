@@ -9,7 +9,8 @@
                 <div class="col-xs-10 col-sm-10">
                     <div class="form-group">
                         <div class="row">
-                            <div class="col-xs-4 col-sm-4">
+                            <div class="col-xs-4 col-sm-3">
+                                <label>Category</label>
                                 <select name="purchase[product][<?= $unique ?>][category]" id="category" class="form-control select-category main-cate<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $cate)
@@ -20,7 +21,8 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-xs-4 col-sm-4">
+                            <div class="col-xs-4 col-sm-3">
+                                <label>Sub Category</label>
                                 <select name="purchase[product][<?= $unique ?>][subCategory]" id="sub-category" class="form-control sub-category subCate-row<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Sub-category</option>
                                     {{-- @foreach($subcategories as $cate)
@@ -28,11 +30,29 @@
                                     @endforeach --}}
                                 </select>
                             </div>
-                        <div class="col-xs-4 col-sm-4">
+                            <div class="col-xs-4 col-sm-3">
+                                <label>Sku Code</label>
+                                <div class="input-group mb-3">
+                                <input type="text" id="newgroup-code<?= $unique ?>" class="form-control"style="float: left;
+                                border-right: none;position: relative;
+                                max-width: 32%;" readonly/>
+                                <input type="text" name="purchase[product][<?= $unique ?>][group_code]" id="search-code<?= $unique ?>" list="code_lists" class="form-control search-group-code" data-uniq="<?= $unique ?>" placeholder="Enter code" style="max-width: 65%;
+                                border-left: none;
+                                left: -6px;
+                                position: relative;
+                                border-radius: unset;
+                            }"/>
+                            <datalist id="code_lists"></datalist>
+                            </div>
+                            </div>
+
+                        <div class="col-xs-4 col-sm-3">
+                            <label>Sku</label>
                             <input type="hidden" class="new-code<?= $unique ?>" >
                             <input type="hidden" name="purchase[product][<?= $unique ?>][newSku]" class="new-sku<?= $unique ?>" >
                             <input type="hidden" class="newCode<?= $unique ?>" >
-                            <input type="text" name="purchase[product][<?= $unique ?>][name]"id="sku<?= $unique ?>" class="form-control" placeholder="Enter Product Name" required/>
+                            <input type="hidden" class="final-selected-code<?= $unique ?>" >
+                            <input type="text" name="purchase[product][<?= $unique ?>][name]" id="sku<?= $unique ?>" class="form-control" readonly placeholder="Enter Product Name" required/>
                         </div>
                         
                     </div>

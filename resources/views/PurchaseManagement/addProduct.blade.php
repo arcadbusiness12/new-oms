@@ -62,7 +62,11 @@
                             {{ session()->get('success') }}
                             </div>
                           @endif
-                          
+                          @if(session()->has('message'))
+                          <div role="alert" class="alert alert-danger">
+                          {{ session()->get('message') }}
+                          </div>
+                        @endif 
                           <form action="<?php echo route('add.purchase.order') ?>" method="post" id="form-add-order" enctype="multipart/form-data">
                             {{csrf_field()}}
                                 <?php if(is_array($products) && !empty($products)) {?>
@@ -388,7 +392,8 @@
                 $('#sku'+row).val(nCode);
                 $('.new-code'+row).val(nCode);
                 $('.new-sku'+row).val(respo.newSku);
-
+                $('#newgroup-code'+row).val(code);
+                $('.final-selected-code'+row).val(respo.newSku);
                 var html = '';
                 var op = '<option value="">Select Sub-category</option>';
                 respo.subCategories.forEach(element => {
@@ -403,7 +408,10 @@
         var code = $(this).find(':selected').data("code");
         var row = $(this).data("row");
         code = code ? code : '';
-        var nCode = $('.new-code'+row).val() +''+ code +''+ $('.newCode'+row).val();
+        // var nCode = $('.new-code'+row).val() +''+ code +'-'+ $('.newCode'+row).val();
+         $('#newgroup-code'+row).val($('.new-code'+row).val() +''+ code +'-');
+        var nCode = $('.new-code'+row).val() +''+ code +'-';
+        $('#search-code'+row).focus();
         $('#sku'+row).val(nCode);
         $('.manually_option_color'+row).prop('selectedIndex',0);
     });
@@ -414,11 +422,66 @@
             cateCode = cateCode ? cateCode : '';
         var subCatedCode = $('.subCate-row'+row).find(':selected').data('code');
             subCatedCode =  subCatedCode ? subCatedCode : '';
-        var nCode = $('.newCode'+row).val();
-        var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
+        // var nCode = $('.newCode'+row).val();
+        var nCode = $('.final-selected-code'+row).val();
+        var code = cateCode +''+ subCatedCode +'-'+ nCode +'-'+ iCode;
         $('#sku'+row).val(code);
-    })
+    });
+
+    $(document).delegate('.search-group-code', 'keyup', function() {
+        console.log($(this).val());
+        console.log($(this).data('uniq'));
+        var uniq = $(this).data('uniq');
+        var newgroupCode = $('#newgroup-code'+uniq).val();
+        if($(this).val() != "") {
+            var sreachCode = newgroupCode+$(this).val();
+            $.ajax({
+                method: "POST",
+                url: "{{route('search.group.code')}}",
+                data: {code: sreachCode},
+                headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+                dataType: "html",
+                success: function(resp) {
+                    html = '';
+                    console.log(resp);
+                    var groups = JSON.parse(resp);
+                    console.log(groups);
+                    if (groups.status) {
+                        console.log(groups.codes);
+                        html += '<option value="' + $('.newCode'+uniq).val() + '">(Suggestion new Code '+$('.newCode'+uniq).val()+')</option>';
+                        $.each(groups.codes, function(k, v) {
+                            console.log(v);
+                            html += '<option value="' + v.code + '">('+v.group_code+')</option>';
+                        });
+                        
+                        $('#code_lists').html(html);
+                    }
+                }
+            })
+        }
+        
+    });
     
+    $(document).delegate('.search-group-code', 'change', function() {
+        console.log($(this).val());
+        console.log($(this).data('uniq'));
+        var uniq = $(this).data('uniq');
+        // $('.newCode'+uniq).val($(this).val());
+        var cateCode = $('.new-code'+uniq).val();
+            cateCode = cateCode ? cateCode : '';
+        var subCatedCode = $('.subCate-row'+uniq).find(':selected').data('code');
+            subCatedCode =  subCatedCode ? subCatedCode : '';
+        var nCode = $('.newCode'+uniq).val();
+        var color = $('.manually_option_color'+uniq).find(":selected").data('id');
+            color = color ? color : '';
+            console.log(color);
+        var code = cateCode +''+ subCatedCode +'-'+ $(this).val() +'-' + color;
+        $('.new-sku'+uniq).val(cateCode +''+ subCatedCode +'-'+ $(this).val());
+        $('.final-selected-code'+uniq).val($(this).val());
+        console.log(code)
+        $('#sku'+uniq).val(code);
+    })
+
     $(document).delegate(".add_selected_options", "click", function() {
         $this = $(this);
         $this_text = $(this).text();
@@ -482,6 +545,7 @@
             }
         });
     });
+
     
     $('#filter_products').on('submit', function(e) {
         e.preventDefault();
@@ -508,7 +572,9 @@
                 $(".product_list").prepend('<div class="alert alert-danger">Product does not attached with the inventory!</div>');
             }
         });
-    })
+    });
+    
+    
 </script>
 @endpush
 

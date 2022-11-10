@@ -11,6 +11,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryStockModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
 use App\Models\Oms\OmsSettingsModel;
+use App\Models\Oms\ProductGroupModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -127,6 +128,22 @@ class PurchaseManagementAjaxController extends Controller
         return response()->json(array('skus' => $skus));
   }
 
+  public function searchGroupCode(Request $request) {
+    $codes = array();
+    $groupCode = array();
+        if($request->code){
+            $code = $request->code;
+            $group_codes = ProductGroupModel::select('name')->where('name','LIKE',"{$code}%")->groupBy('name')->get();
+            if($group_codes->count()){
+                foreach ($group_codes as $group_code) {
+                    $codeAr = explode('-', $group_code->name);
+                    $codes[] = array('code' => $codeAr[1], 'group_code' => $group_code->name);
+                }
+            }
+        }
+        return response()->json(['status' => true, 'codes' => $codes]);
+  }
+  
   public function addProduct(Request $request) {
     $whereCluase = [];
     if($request->product_sku) {

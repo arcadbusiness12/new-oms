@@ -424,6 +424,7 @@ class PurchaseManagementController extends Controller
     }
 
     public function addOrder(Request $request) {
+        // dd($request->all());
         if(count($request->all()) > 0){
             $option_id = OmsSettingsModel::get('product_option','color');
             $same_option = false;
@@ -443,8 +444,9 @@ class PurchaseManagementController extends Controller
 
 	                            }
 	                        }else{
-	                        	return response()->json(array('error' => 'Options must be selected!'));
-	                        	die;
+	                        	// return response()->json(array('error' => 'Options must be selected!'));
+	                        	// die;
+                                return redirect()->route('place.purchase.order')->with('message', 'Options must be selected!');
 	                        }
 	                    }
 	                }else{
@@ -460,19 +462,22 @@ class PurchaseManagementController extends Controller
 	                                }
 	                            }
 	                        }else{
-	                        	return response()->json(array('error' => 'Options must be selected!'));
-	                        	die;
+	                        	// return response()->json(array('error' => 'Options must be selected!'));
+	                        	// die;
+                                return redirect()->route('place.purchase.order')->with('message', 'Options must be selected!');
 	                        }
 	                    }
 	                }
 	            }
             }else{
-            	return response()->json(array('error' => 'Product and option must be selected!'));
-            	die;
+            	// return response()->json(array('error' => 'Product and option must be selected!'));
+            	// die;
+                return redirect()->route('place.purchase.order')->with('message', 'Product and option must be selected!');
             }
             if($same_option){
-                return response()->json(array('error' => 'Same option in multiple time not allowed!'));
-                die;
+                // return response()->json(array('error' => 'Same option in multiple time not allowed!'));
+                // die;
+                return redirect()->route('place.purchase.order')->with('message', 'Same option in multiple time not allowed!');
             }
             if($request->purchase){
 	            foreach ($request->purchase as $product_id => $op_code_arr) {
@@ -482,8 +487,9 @@ class PurchaseManagementController extends Controller
 				            if(isset($product_option_arr['add_to_inventory']) && $product_option_arr['add_to_inventory'] == 'on'){
 				            	$skuExists = OmsInventoryProductModel::where('sku', $product_option_arr['name'])->exists();
 				            	if($skuExists){
-				            		return response()->json(array('error' => 'Product SKU with name <b>'.$product_option_arr['name'].'</b> already exists!'));
-				            		die;
+				            		// return response()->json(array('error' => 'Product SKU with name <b>'.$product_option_arr['name'].'</b> already exists!'));
+				            		// die;
+                                    return redirect()->route('place.purchase.order')->with('message', 'Product SKU with name <b>'.$product_option_arr['name'].'</b> already exists!');
 				            	}
 				            }
 				          }
@@ -651,10 +657,7 @@ class PurchaseManagementController extends Controller
                     }
                 }
             }
-
-            Session::flash('message', 'Purchase order added successfully.');
-            Session::flash('alert-class', 'alert-success');
-            return redirect()->route('inventory.alarm')->with('message', 'Purchase order added successfully.');
+            return redirect()->route('place.purchase.order')->with('success', 'Purchase order added successfully.');
         }else{
             Session::flash('message', 'Something went wrong, please try again!');
             Session::flash('alert-class', 'alert-warning');

@@ -31,7 +31,8 @@
                                                 <div class="col-xs-10 col-sm-10">
                                                     <div class="form-group">
                                                         <div class="row">
-                                                            <div class="col-xs-4 col-sm-4">
+                                                            <div class="col-xs-4 col-sm-3">
+                                                                <label>Category</label>
                                                                 <select name="category" id="category" class="form-control select-category" >
                                                                     <option value="">Select Category</option>
                                                                     @foreach($categories as $cate)
@@ -42,7 +43,8 @@
                                                                     @endforeach
                                                                 </select>
                                                             </div>
-                                                             <div class="col-xs-4 col-sm-4">
+                                                             <div class="col-xs-4 col-sm-3">
+                                                                <label>Sub Category</label>
                                                                 <select name="subCategory" id="sub-category" class="form-control sub-category">
                                                                     <option value="">Select Sub-category</option>
                                                                     {{-- @foreach($subcategories as $cate)
@@ -50,10 +52,28 @@
                                                                     @endforeach --}}
                                                                 </select>
                                                             </div>
-                                                        <div class="col-xs-4 col-sm-4">
+                                                            <div class="col-xs-4 col-sm-3">
+                                                                <label>Sku Code</label>
+                                                                <div class="input-group mb-3">
+                                                                <input type="text" id="newgroup-code" class="form-control"style="float: left;
+                                                                border-right: none;position: relative;
+                                                                max-width: 32%;" readonly/>
+                                                                <input type="text" name="group_code" id="search-code" list="code_lists" class="form-control search-group-code" data-uniq="<?= $unique ?>" placeholder="Enter code" style="max-width: 65%;
+                                                                border-left: none;
+                                                                left: -6px;
+                                                                position: relative;
+                                                                border-radius: unset;
+                                                            }"/>
+                                                            <datalist id="code_lists"></datalist>
+                                                            </div>
+                                                            </div>
+
+                                                        <div class="col-xs-4 col-sm-3">
+                                                            <label>Sku</label>
                                                             <input type="hidden" class="new-code" >
                                                             <input type="hidden" name="newSku" class="new-sku" >
                                                             <input type="hidden" class="newCode" >
+                                                            <input type="hidden" class="final-selected-code" >
                                                             <input type="text" name="sku" id="sku" class="form-control" placeholder="Enter Product SKU" required readonly/>
                                                         </div>
                                                         
@@ -62,7 +82,7 @@
                                                 <div class="form-group">
                                                 <div class="row mt-4">
                                                     <div class="col-lg-4">
-                                                    {{-- <label for="">Colors</label> --}}
+                                                    <label for="">Colors</label>
                                                     <select name="options" id="option_color" class="form-control" autocomplete="off" required>
                                                     <option value="">Select Color</option>
                                                     @foreach($option_value as $option)
@@ -71,8 +91,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-lg-4">
+                                                    <label for="">Select Size</label>
                                                 <div class="input-group mb-3">
-                                                    {{-- <label for="">Select Size</label> --}}
                                                     <select name="title" id="taken_id" class="form-control option_name" onchange="getMessage()" required>
                                                         <option value="">Select Size</option>
                                                         <option value="0">-None-</option>
@@ -129,6 +149,8 @@
                 $('#sku').val(nCode);
                 $('.new-code').val(nCode);
                 $('.new-sku').val(respo.newSku);
+                $('#newgroup-code').val(code);
+                $('.final-selected-code').val(respo.newSku);
 
                 var html = '';
                 var op = '<option value="">Select Sub-category</option>';
@@ -141,23 +163,98 @@
         });
     });
 
-    $(document).delegate('#sub-category', 'change', function() {
+    // $(document).delegate('#sub-category', 'change', function() {
+    //     var code = $(this).find(':selected').data("code");
+    //     code = code ? code : '';
+    //     var nCode = $('.new-code').val() +''+ code +''+ $('.newCode').val();
+    //     $('#sku').val(nCode);
+    //     // $('.new-code').val(nCode);
+    //     $('#option_color').prop('selectedIndex',0);
+    // });
+
+    $(document).delegate('.sub-category', 'change', function() {
         var code = $(this).find(':selected').data("code");
         code = code ? code : '';
-        var nCode = $('.new-code').val() +''+ code +''+ $('.newCode').val();
+        // var nCode = $('.new-code'+row).val() +''+ code +'-'+ $('.newCode'+row).val();
+         $('#newgroup-code').val($('.new-code').val() +''+ code +'-');
+        var nCode = $('.new-code').val() +''+ code +'-';
+        $('#search-code').focus();
         $('#sku').val(nCode);
-        // $('.new-code').val(nCode);
-        $('#option_color').prop('selectedIndex',0);
+        $('.manually_option_color').prop('selectedIndex',0);
     });
 
+    // $(document).delegate('#option_color', 'change', function() {
+    //     var iCode = $(this).find(':selected').data('id');
+    //     var cateCode = $('.new-code').val();
+    //         cateCode = cateCode ? cateCode : '';
+    //     var subCatedCode = $('#sub-category').find(':selected').data('code');
+    //         subCatedCode =  subCatedCode ? subCatedCode : '';
+    //     var nCode = $('.newCode').val();
+    //     var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
+    //     $('#sku').val(code);
+    // })
     $(document).delegate('#option_color', 'change', function() {
         var iCode = $(this).find(':selected').data('id');
         var cateCode = $('.new-code').val();
             cateCode = cateCode ? cateCode : '';
         var subCatedCode = $('#sub-category').find(':selected').data('code');
             subCatedCode =  subCatedCode ? subCatedCode : '';
+        // var nCode = $('.newCode'+row).val();
+        var nCode = $('.final-selected-code').val();
+        var code = cateCode +''+ subCatedCode +'-'+ nCode +'-'+ iCode;
+        $('#sku').val(code);
+    });
+
+    $(document).delegate('.search-group-code', 'keyup', function() {
+        console.log($(this).val());
+        console.log($(this).data('uniq'));
+        var uniq = $(this).data('uniq');
+        var newgroupCode = $('#newgroup-code').val();
+        if($(this).val() != "") {
+            var sreachCode = newgroupCode+$(this).val();
+            $.ajax({
+                method: "POST",
+                url: "{{route('search.group.code')}}",
+                data: {code: sreachCode},
+                headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+                dataType: "html",
+                success: function(resp) {
+                    html = '';
+                    console.log(resp);
+                    var groups = JSON.parse(resp);
+                    console.log(groups);
+                    if (groups.status) {
+                        console.log(groups.codes);
+                        html += '<option value="' + $('.newCode').val() + '">(Suggestion new Code '+$('.newCode').val()+')</option>';
+                        $.each(groups.codes, function(k, v) {
+                            console.log(v);
+                            html += '<option value="' + v.code + '">('+v.group_code+')</option>';
+                        });
+                        
+                        $('#code_lists').html(html);
+                    }
+                }
+            })
+        }
+        
+    });
+    
+    $(document).delegate('.search-group-code', 'change', function() {
+        console.log($(this).val());
+        var uniq = $(this).data('uniq');
+        // $('.newCode'+uniq).val($(this).val());
+        var cateCode = $('.new-code').val();
+            cateCode = cateCode ? cateCode : '';
+        var subCatedCode = $('#sub-category').find(':selected').data('code');
+            subCatedCode =  subCatedCode ? subCatedCode : '';
         var nCode = $('.newCode').val();
-        var code = cateCode +''+ subCatedCode +''+ nCode +''+ iCode;
+        var color = $('.manually_option_color').find(":selected").data('id');
+            color = color ? color : '';
+            console.log(color);
+        var code = cateCode +''+ subCatedCode +'-'+ $(this).val() +'-' + color;
+        $('.new-sku').val(cateCode +''+ subCatedCode +'-'+ $(this).val());
+        $('.final-selected-code').val($(this).val());
+        console.log(code)
         $('#sku').val(code);
     })
 
