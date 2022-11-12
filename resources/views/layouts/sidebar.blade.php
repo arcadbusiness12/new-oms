@@ -314,7 +314,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
+                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li><a href="panel-page-users.html"><i class="icon icon-vcard"></i>Supplier</a>
@@ -327,6 +327,15 @@
                                 </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-user"></i>Shipping Provider </a>
                                 </li>
+                                <li class="@if(strpos(Request::url(), 'roles') !== false) active @endif"><a href="#"><i class="icon icon-perm_data_setting"></i>Role And Permissions<i
+                                    class=" icon-angle-left  pull-right"></i></a>
+                                <ul class="treeview-menu">
+                                    <li><a href="{{route('get.roles')}}">Roles</a>
+                                    </li>
+                                    <li><a href="panel-page-users.html">Permissions</a>
+                                    </li>
+                                </ul>
+                            </li>
                                 <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-perm_data_setting"></i>Promotion Setting<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">

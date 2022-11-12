@@ -10,6 +10,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductSpecialModel;
 use App\Models\Oms\InventoryManagement\OmsSeoUrlModel;
 use App\Models\Oms\InventoryManagement\ProductWeightClassModel;
+use App\Models\Oms\OmsStockStatus;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
 use App\Models\Oms\SocialModel;
@@ -57,8 +58,9 @@ class ProductListingController extends Controller
             $s->where('store_id', $store);
         }])->where('product_id', $product)->first();
         $store = storeModel::find($store);
-        $weightClasses = ProductWeightClassModel::all();
-        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses', 'store'));
+        $weightClasses = ProductWeightClassModel::orderBy('title')->get();
+        $stock_statuses = OmsStockStatus::where('language_id', 1)->get();
+        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses', 'store', 'stock_statuses'));
     }
 
     public function ProductListing(Request $request) {
@@ -126,11 +128,17 @@ class ProductListingController extends Controller
     public function saveListingDescription(Request $request) {
         $description = ($request->description_id) ? OmsInventoryProductDescriptionModel::find($request->description_id) : new OmsInventoryProductDescriptionModel();
         $description->name = $request->product_name;
+        $description->name_ar = $request->product_name_ar;
         $description->product_description = $request->description;
+        $description->product_description_ar = $request->description_ar;
         $description->meta_title = $request->meta_title;
+        $description->meta_title_ar = $request->meta_title_ar;
         $description->meta_keywords = $request->meta_keyword;
+        $description->meta_keywords_ar = $request->meta_keyword_ar;
         $description->meta_description = $request->meta_description;
+        $description->meta_description_ar = $request->meta_description_ar;
         $description->product_tags = $request->product_tags;
+        $description->product_tags_ar = $request->product_tags_ar;
         $description->price = $request->product_price;
         $description->store_id = $request->store;
         $description->product_id = $request->product_id;
@@ -315,7 +323,11 @@ class ProductListingController extends Controller
 
     public function saveListingDataForm(Request $request) {
         $product = OmsInventoryProductModel::find($request->product_id);
+        $product->model = $request->product_model;
+        $product->stock_status_id = $request->stock_status;
         $product->minimum_quantity = $request->minimum_quantity;
+        $product->date_available = $request->date_available;
+        $product->location = $request->location;
         $product->weight = $request->weight;
         $product->weight_class_id = $request->weight_class;
         $product->sort_order = $request->sort_order;

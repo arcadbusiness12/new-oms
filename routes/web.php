@@ -14,6 +14,7 @@ use App\Http\Controllers\PlaceOrder\PlaceOrderController;
 use App\Http\Controllers\productgroup\ProductGroupController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
+use App\Http\Controllers\rolepermision\RolePermissionController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
@@ -116,8 +117,19 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
         route::post('/save/sub/category', 'saveSubCategory')->name('save.sub.category');
         Route::post('/destroy/group/sub/cate/setting', 'destroySubCategory')->name('destroy.sub.category');
     });
+    
 
 });
+
+Route::prefix('rolepermision')->middleware('auth')->group(function () {
+    Route::controller(RolePermissionController::class)->group(function() {
+        Route::get('/roles', 'getRoles')->name('get.roles');
+        Route::post('/add/role', 'addEditRole')->name('add.edit.role');
+    });
+    
+
+});
+
 Route::prefix('inventoryManagement')->middleware('auth')->group(function() {
     Route::controller(InventoryManagementController::class)->group(function() {
         route::get('/add/inventory', 'addInventory')->name('add.inventory');

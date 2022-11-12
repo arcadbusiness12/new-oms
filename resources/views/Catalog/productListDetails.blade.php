@@ -128,6 +128,13 @@
                                                                     <span class="invalid-feedback name-error" role="alert">
                                                                     </span>
                                                                 </div>
+                                                                <label class="col-2 control-lable text-black pt-2"><strong>Product Name (Arabic) </strong></label>
+                                                                <div class="col-10 pt-2">
+                                                                    <input type="text" name="product_name_ar" value="{{@$productList->productDescriptions[0]->name_ar}}" id="{{@$store->name}}-form-name-arabic" dir="rtl" class="form-control product-title-ar">
+                                                                    
+                                                                    <span class="invalid-feedback ar-name-error" role="alert">
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Description </strong></label>
@@ -136,9 +143,23 @@
                                                                 </div>
                                                             </div>
                                                             <div class="row pt-4">
+                                                                <label class="col-2 control-lable text-black"><strong> Product Description (Arabic) </strong></label>
+                                                                <div class="col-10">
+                                                                    <textarea rows="25" cols="118" name="description_ar" dir="rtl" st class="summernote_ar text-black">{!! @$productList->productDescriptions[0]->product_description_ar !!}</textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Meta Tag Title <span class="text-danger">*</span></strong></label>
                                                                 <div class="col-10">
                                                                     <input type="text" name="meta_title" value="{{@$productList->productDescriptions[0]->meta_title}}" id="{{@$store->name}}-form-meta-title" class="form-control">
+                                                                    <span class="invalid-feedback meta-title-error" role="alert">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row pt-4">
+                                                                <label class="col-2 control-lable text-black"><strong> Meta Tag Title (Arabic) <span class="text-danger">*</span></strong></label>
+                                                                <div class="col-10">
+                                                                    <input type="text" name="meta_title_ar" dir="rtl" value="{{@$productList->productDescriptions[0]->meta_title_ar}}" id="{{@$store->name}}-form-meta-title" class="form-control">
                                                                     <span class="invalid-feedback meta-title-error" role="alert">
                                                                     </span>
                                                                 </div>
@@ -150,20 +171,38 @@
                                                                     <textarea rows="8" cols="118" name="meta_description" class="text-black">{{ @$productList->productDescriptions[0]->meta_description }}</textarea>
                                                                 </div>
                                                             </div>
-
+                                                            <div class="row pt-4">
+                                                                <label class="col-2 control-lable text-black"><strong> Meta Tag Description (Arabic)</strong></label>
+                                                                <div class="col-10">
+                                                                    <textarea rows="8" cols="118" name="meta_description_ar" dir="rtl" class="text-black">{{ @$productList->productDescriptions[0]->meta_description_ar }}</textarea>
+                                                                </div>
+                                                            </div>
+                                                            
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Meta Tag Keywords </strong></label>
                                                                 <div class="col-10">
                                                                     <textarea rows="5" name="meta_keyword" cols="118">{{@$productList->productDescriptions[0]->meta_keywords}}</textarea>
                                                                 </div>
                                                             </div>
-
+                                                            <div class="row pt-4">
+                                                                <label class="col-2 control-lable text-black"><strong> Meta Tag Keywords (Arabic) </strong></label>
+                                                                <div class="col-10">
+                                                                    <textarea rows="5" name="meta_keyword_ar" dir="rtl" cols="118">{{@$productList->productDescriptions[0]->meta_keywords_ar}}</textarea>
+                                                                </div>
+                                                            </div>
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Tags </strong></label>
                                                                 <div class="col-10">
                                                                     <input type="text" name="product_tags" value="{{@$productList->productDescriptions[0]->product_tags}}" class="form-control">
                                                                 </div>
                                                             </div>
+                                                            <div class="row pt-4">
+                                                                <label class="col-2 control-lable text-black"><strong> Product Tags (Arabic) </strong></label>
+                                                                <div class="col-10">
+                                                                    <input type="text" name="product_tags_ar" dir="rtl" value="{{@$productList->productDescriptions[0]->product_tags_ar}}" class="form-control">
+                                                                </div>
+                                                            </div>
+
                                                             <div class="row pt-4">
                                                                 <label class="col-2 control-lable text-black"><strong> Product Price <span class="text-danger">*</span></strong></label>
                                                                 <div class="col-10">
@@ -172,6 +211,7 @@
                                                                     </span>
                                                                 </div>
                                                             </div>
+                                                            
 
                                                             <div class="row pt-4">
                                                                 <div class="col-12">
@@ -193,12 +233,30 @@
                                     <div class="form-content p-4">
                                         <form id="{{@$store->name}}-data-form" action="" method="POST">
                                             {{ csrf_field() }}
-                                            <div class="row">
-                                                <input type="hidden" name="product_id" value="{{$productList->product_id}}">
+
+                                            <div class="row ">                                                
                                                 <label class="col-2 control-lable text-black"><strong> Product SKU </strong><span class="text-danger"><b>*</b></span></label>
                                                 <div class="col-10">
                                                     <input type="text" name="product_sku" value="{{$productList->sku}}" id="{{@$store->name}}-data-form-sku" readonly class="form-control">
                                                     <span class="invalid-feedback sku-error" role="alert">
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row pt-4">
+                                                <input type="hidden" name="product_id" value="{{$productList->product_id}}">
+                                                <label class="col-2 control-lable text-black"><strong> Product Model </strong><span class="text-danger"><b>*</b></span></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="product_model" value="{{$productList->model}}" required id="{{@$store->name}}-data-form-sku" class="form-control">
+                                                    <span class="invalid-feedback sku-error" role="alert">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Available Quantity </strong></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="available_quantity" value="{{$productList->available_quantity}}" id="form-available-quantity" readonly class="form-control">
+                                                    <span class="invalid-feedback meta-title-error" role="alert">
                                                     </span>
                                                 </div>
                                             </div>
@@ -210,6 +268,27 @@
                                                     </span>
                                                 </div>
                                             </div>
+
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Stock Status </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Date Available </strong></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="date_available" value="{{$productList->date_available}}" id="date_available" autocomplete="off" class="date-time-picker form-control"
+                                                        data-options='{"timepicker":false, "format":"Y-m-d"}'>
+                                                </div>
+                                            </div>
+                                            
 
                                             <div class="row pt-4">
                                                 <label class="col-2 control-lable text-black"><strong> Weight </strong></label>
@@ -230,7 +309,12 @@
                                                     </select>
                                                 </div>
                                             </div>
-
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Location </strong></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="location" value="{{$productList->location}}" class="form-control">
+                                                </div>
+                                            </div>
                                             <div class="row pt-4">
                                                 <label class="col-2 control-lable text-black"><strong> Sort Order </strong></label>
                                                 <div class="col-10">
@@ -1185,6 +1269,22 @@ function base64Decode(data) {
           $('.summernote').summernote({
             height: 250,
           });
+          $('.summernote_ar').summernote({
+            height: 250,
+            toolbar: [
+                      ['style', ['style']],
+                      ['style', ['bold', 'italic', 'underline', 'clear']],
+                      ['fontname', ['fontname']],
+                      ['color', ['color']],
+                      ['para', ['ul', 'ol', 'paragraph']],
+                      ['insert', ['ltr']],
+                      ['insert', ['table']],
+                      ['insert', ['link', 'picture', 'video', 'hr']],
+                      ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+          });
+          console.log($('input[name="description_arabic"]').parent());
+          $('input[name="description_arabic"]').parent().attr('dir','rtl');
         });
 
 $('.save-description').on('click', function () {
