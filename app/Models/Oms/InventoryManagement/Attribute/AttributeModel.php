@@ -18,8 +18,8 @@ class AttributeModel extends Model
     public function presets() {
         return $this->hasMany(AttributePresetModel::class, 'attribute_id');
     }
+    public function attributeCategories() {
+        return $this->hasMany(AttributeCategoryModel::class, 'attribute_id');
+    }
 
-    public function productGroups() {
-        return $this->belongsToMany(ProductGroupModel::class, 'oms_inventory_product_group_attributes', 'attribute_id', 'group_id');
-    } 
 }

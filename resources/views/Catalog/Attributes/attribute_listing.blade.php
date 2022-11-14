@@ -73,8 +73,10 @@
                               <tr
                               style="background-color: #3f51b5;color:white"
                               >
-                                <th scope="col"><center>Attribute Name</center></th>
+                                <th scope="col"><center>Name</center></th>
+                                <th scope="col"><center>Arabic Name</center></th>
                                 <th ><center>Category</center></th>
+                                <th ><center>Presets</center></th>
                                 <th scope="col"><center>Status</center></th>
                                 <th scope="col"><center>Action</center></th>
 
@@ -85,23 +87,31 @@
 
                                 <tr>
 
+                                    <td class="text-center">{{$list->name}}</td>
+                                    <td class="text-center">{{$list->name_ar}}</td>
                                     <td class="text-center">
-                                        {{$list->name}}
+                                        @forelse ($list->attributeCategories as $value )
+                                          {{ $value->category->name }},
+                                        @empty
+                                        @endforelse
                                     </td>
                                     <td class="text-center">
-                                        {{$list->category->name}}
+                                        @forelse ($list->presets as $value )
+                                          {{ $value->name }},
+                                        @empty
+                                        @endforelse
                                     </td>
                                     <td class="text-center">
                                         @if($list->status == 1)
                                         <span class="badge badge-success r-5">Active</span>
-                                        @else 
+                                        @else
                                         <span class="badge badge-danger r-5">In-Active</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                     <a href="{{route('edit.attribute',$list->id)}}"  class=""><i class="icon-edit"></i></a>
                                     <a href="{{route('destroy.option',$list->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class=""><i class="icon-close2 text-danger-o text-danger"></i></a>
-                                
+
                             </td>
                                 </tr>
                                 @endforeach

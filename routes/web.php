@@ -117,7 +117,7 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
         route::post('/save/sub/category', 'saveSubCategory')->name('save.sub.category');
         Route::post('/destroy/group/sub/cate/setting', 'destroySubCategory')->name('destroy.sub.category');
     });
-    
+
 
 });
 
@@ -126,7 +126,7 @@ Route::prefix('rolepermision')->middleware('auth')->group(function () {
         Route::get('/roles', 'getRoles')->name('get.roles');
         Route::post('/add/role', 'addEditRole')->name('add.edit.role');
     });
-    
+
 
 });
 
@@ -248,6 +248,7 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::get('/fetch/preset/values/{attribute}', 'fetchPresetValues')->name('fetch.preset.values');
         Route::post('/save/assigned/attributes', 'saveAssignAttribute')->name('save.assign.attributes');
         Route::any('/destory/attribute', 'destoryAttribute')->name('attribute.destory');
+        Route::any('/get/preset/category', 'getPresetCategory')->name('get.preset.category');
         //attribute group routes
         Route::any('/attribute/groups', 'attributeGroups')->name('attribute.groups');
         Route::any('/attribute/groups/add', 'attributeGroupsAdd')->name('attribute.groups.add');
