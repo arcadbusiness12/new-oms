@@ -366,7 +366,12 @@ class ProductListingController extends Controller
 
     public function removeSpecialPrice(Request $request) {
         if($request->id) {
-            $sPrice = OmsInventoryProductSpecialModel::find($request->id);
+            if($request->price_tab == 'Special') {
+                $sPrice = OmsInventoryProductSpecialModel::find($request->id);
+            }
+            if($request->price_tab == 'Discount') {
+                $sPrice = OmsProductDiscountModel::find($request->id);
+            }
             if($sPrice->delete()) {
                 return response()->json([
                     'status' => true

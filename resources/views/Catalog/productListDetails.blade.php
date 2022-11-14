@@ -393,7 +393,7 @@
                                                          <tbody class="table-body-discount">
                                                              @if(count($productList->productDiscounts) > 0)
                                                              @foreach($productList->productDiscounts as $discount)
-                                                            <tr id="row-{{$discount->id}}">
+                                                            <tr id="row-Discount{{$discount->id}}">
                                                                 <td>
                                                                     <input type="number" name="sort_order[]" value="{{$discount->sort_order}}" id="form-minimum-quantity" class="form-control" autocomplete="off">
                                                                 </td>
@@ -415,7 +415,7 @@
                                                                     data-options='{"timepicker":false, "format":"Y-m-d"}'>
                                                                 </td>
                                                                 <td>
-                                                                    <a href="javascript:;" class="remove-row" onclick="reomveOldRow({{$discount->id}})"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a>
+                                                                    <a href="javascript:;" class="remove-row" onclick="reomveOldRow({{$discount->id}}, 'Discount')"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a>
                                                                 </td>
                                                             </tr>
                                                             @endforeach
@@ -498,7 +498,7 @@
                                                          <tbody class="table-body">
                                                              @if(count($productList->productSpecials) > 0)
                                                              @foreach($productList->productSpecials as $specialPrice)
-                                                            <tr id="row-{{$specialPrice->id}}">
+                                                            <tr id="row-Special{{$specialPrice->id}}">
                                                                 <td>
                                                                     <input type="number" name="sort_order[]" value="{{$specialPrice->sort_order}}" id="form-minimum-quantity" class="form-control" autocomplete="off">
                                                                 </td>
@@ -514,7 +514,7 @@
                                                                     data-options='{"timepicker":false, "format":"Y-m-d"}'>
                                                                 </td>
                                                                 <td>
-                                                                    <a href="javascript:;" class="remove-row" onclick="reomveOldRow({{$specialPrice->id}})"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a>
+                                                                    <a href="javascript:;" class="remove-row" onclick="reomveOldRow({{$specialPrice->id}}, 'Special')"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a>
                                                                 </td>
                                                             </tr>
                                                             @endforeach
@@ -1745,21 +1745,21 @@ $(document).ready(function() {
     
 });
 
-function reomveOldRow(id) {
+function reomveOldRow(id, tab) {
     if(id) {
-        if(confirm('Are you sure want to reomve?')) {
+        if(confirm('Are you sure want to remove?')) {
             $.ajax({
                 url: "{{route('remove.speacial.price')}}",
                 type: "POST",
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                data: {id:id},
+                data: {id:id, price_tab: tab},
                 catche: false,
                 success: function(resp) {
                     if(resp.status) {
-                            $('#row-'+id).remove();
+                            $('#row-'+tab+id).remove();
                             $(".toast-action").data('title', 'Action Done!');
                             $(".toast-action").data('type', 'success');
-                            $(".toast-action").data('message', 'Speacial price removed successfully.');
+                            $(".toast-action").data('message', tab+' price removed successfully.');
                             $(".toast-action").trigger('click');
                             $('.price-error').html('');
                             $('.meta-title-error').html('');
