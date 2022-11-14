@@ -222,6 +222,8 @@ Route::prefix('Catalog')->middleware('auth')->group(function() {
         Route::post('/remove/gsllery/image', 'removeGalleryImage')->name('remove.gallery.image');
         Route::post('/generate/product/seo/url', 'generateSeoUrl')->name('generate.product.seo.url');
         Route::post('save/special/price', 'saveSpecialPrice')->name('save.special.price');
+        Route::post('save/discount/price', 'saveDiscountPrice')->name('save.discount.price');
+        Route::post('save/reward/points', 'saveRewardPoints')->name('save.reward.points');
         Route::post('remove/special/price', 'removeSpecialPrice')->name('remove.speacial.price');
         Route::post('/save/listing/data/form', 'saveListingDataForm')->name('save.listing.data.form');
     });

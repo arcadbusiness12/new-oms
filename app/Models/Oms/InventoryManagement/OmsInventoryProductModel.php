@@ -5,6 +5,8 @@
 namespace App\Models\Oms\InventoryManagement;
 
 use App\Models\Oms\InventoryManagement\OmsInventoryProductDescriptionModel;
+use App\Models\Oms\OmsProductDiscountModel;
+use App\Models\Oms\OmsProductRewardPointModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Reseller\PriceHistoryModel;
 use App\Models\Reseller\ResellerProductModel;
@@ -81,6 +83,12 @@ class OmsInventoryProductModel extends Model
   }
   public function productSpecials() {
     return $this->hasMany(OmsInventoryProductSpecialModel::class, 'product_id');
+  }
+  public function productDiscounts() {
+    return $this->hasMany(OmsProductDiscountModel::class, 'product_id');
+  }
+  public function productRewardPoint() {
+    return $this->hasOne(OmsProductRewardPointModel::class, 'product_id');
   }
   public function seoUrls() {
     return $this->hasMany(OmsSeoUrlModel::class, 'product_id');

@@ -11,6 +11,9 @@
 .modal-lg{
   			max-width: 1000px !important;
 		}
+/* .img-container img {
+      width: 100%;
+    } */
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
@@ -39,12 +42,20 @@
                                             {{-- <a class="nav-link" id="w5--tab3" data-toggle="tab" href="#w5-attribute" role="tab" aria-controls="attribute" aria-selected="false">Attribute</a> --}}
                                         </li>
                                         <li class="nav-item">
+                                            <a class="nav-link" id="w5--tab4" data-toggle="tab" href="#w5-discount" role="tab" aria-controls="discount" aria-selected="false">Discount</a>
+                                        </li>
+                                        <li class="nav-item">
                                             <a class="nav-link" id="w5--tab4" data-toggle="tab" href="#w5-specail-price" role="tab" aria-controls="specail-price" aria-selected="false">Special</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="w5--tab4" data-toggle="tab" href="#w5-reward" role="tab" aria-controls="reward" aria-selected="false">Reward Point</a>
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" id="w5--tab4" data-toggle="tab" href="#w5-seo-url" role="tab" aria-controls="seo-url" aria-selected="false">SEO</a>
                                         </li>
-                                        
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="w5--tab4" data-toggle="tab" href="#w5-facebook-feed" role="tab" aria-controls="facebook-feed" aria-selected="false">Facebook</a>
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="align-self-center">
@@ -349,6 +360,114 @@
                                     <a href="#" class="btn btn-primary">Attributes <Section></Section></a>
                                 </div>
 
+
+                                <div class="tab-pane fade text-center p-5" id="w5-discount" role="tabpanel" aria-labelledby="w5-discount">
+                                    <h4 class="card-title">Discount</h4>
+                                    <form id="discount-form" action="" method="POST">
+                                        {{ csrf_field() }}
+                                        <div class="row">
+                                            <input type="hidden" name="store" value="{{@$store->id}}">
+                                            <input type="hidden" name="product_id" value="{{$productList->product_id}}">
+                                            <div class="col-md-12 col-sm-12">
+                                                <div class="card no-b">
+                                                      <div class="table-responsive">
+                                                       <div id="status_changed_msg" style="display: none"></div>
+                                                        <table class="table" width="100%" style="border: 1px solid #3f51b5">
+                            
+                                                         <thead >
+                            
+                                                          <tr
+                                                          style="background-color: #3f51b5;color:white"
+                                                          >
+                                                            <th class="th"><center>Priority </center></th>
+                                                            <th class="th"><center>Price</center></th>
+                                                            <th scope="col" class="th"><center>From Quantity</center></th>
+                                                            <th scope="col" class="th"><center>To Quantity</center></th>
+                                                            <th scope="col" class="th"><center>Date Start</center></th>
+                                                            <th scope="col" class="th"><center>Date End</center></th>
+                                                            <th scope="col" class="th"><center>Action</center></th>
+                            
+                                                           </tr>
+                            
+                                                         </thead>
+                                                         <tbody class="table-body-discount">
+                                                             @if(count($productList->productDiscounts) > 0)
+                                                             @foreach($productList->productDiscounts as $discount)
+                                                            <tr id="row-{{$discount->id}}">
+                                                                <td>
+                                                                    <input type="number" name="sort_order[]" value="{{$discount->sort_order}}" id="form-minimum-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="price[]" value="{{$discount->price}}" id="form-minimum-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="from_quantity[]" value="{{$discount->from_quantity}}" id="from-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="to_quantity[]" value="{{$discount->to_quantity}}" id="to-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="start_date[]" value="{{$discount->date_start}}" id="start_date" autocomplete="off" class="date-time-picker form-control"
+                                                                    data-options='{"timepicker":false, "format":"Y-m-d"}'>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="end_date[]" value="{{$discount->date_end}}" id="form-minimum-quantity" autocomplete="off" class="date-time-picker form-control"
+                                                                    data-options='{"timepicker":false, "format":"Y-m-d"}'>
+                                                                </td>
+                                                                <td>
+                                                                    <a href="javascript:;" class="remove-row" onclick="reomveOldRow({{$discount->id}})"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a>
+                                                                </td>
+                                                            </tr>
+                                                            @endforeach
+                                                            @else 
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="number" name="sort_order[]" value="" id="form-minimum-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="price[]" value="" id="form-minimum-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="from_quantity[]" value="" id="from-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="to_quantity[]" value="" id="to-quantity" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="start_date[]" value="" id="start_date" autocomplete="off" class="date-time-picker form-control"
+                                                                    data-options='{"timepicker":false, "format":"Y-m-d"}'>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" name="end_date[]" value="" id="form-minimum-quantity" autocomplete="off" class="date-time-picker form-control"
+                                                                    data-options='{"timepicker":false, "format":"Y-m-d"}'>
+                                                                </td>
+                                                            </tr>
+                                                            @endif
+                                                         </tbody>
+                            
+                                                </table>
+                            
+                                                </div>
+                            
+                                        </div>
+                            
+                            
+                                                </div>
+                                            </div>
+                                        <div class="row pt-4">
+                                            <div class="col-12">
+                                                <button type="submit" id="discount" value="discount" class="btn btn-primary float-right">
+                                                    Save
+                                                </button>
+                                                
+                                                <button type="button" id="add-more-discount" class="btn btn-success float-right">
+                                                    <i class="icon icon-plus"> </i> More
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
                                 <div class="tab-pane fade text-center p-5" id="w5-specail-price" role="tabpanel" aria-labelledby="w5-specail-price">
                                     <h4 class="card-title">Specail Price</h4>
                                     <form id="special-price-form" action="" method="POST">
@@ -442,6 +561,59 @@
                                     </form>
                                 </div>
 
+                                <div class="tab-pane fade text-center p-5" id="w5-reward" role="tabpanel" aria-labelledby="w5-reward">
+                                    <h4 class="card-title">Reward Points</h4>
+                                    <form id="reward-points-form" action="" method="POST">
+                                        {{ csrf_field() }}
+                                        <div class="row">
+                                            <input type="hidden" name="product_id" value="{{$productList->product_id}}">
+                                            <div class="col-md-12 col-sm-12">
+                                                <div class="card no-b">
+                                                      <div class="table-responsive">
+                                                       <div id="status_changed_msg" style="display: none"></div>
+                                                        <table class="table" width="100%" style="border: 1px solid #3f51b5">
+                            
+                                                         <thead >
+                            
+                                                          <tr
+                                                          style="background-color: #3f51b5;color:white"
+                                                          >
+                                                            <th class="th" colspan="2"><center>Points </center></th>
+                            
+                                                           </tr>
+                            
+                                                         </thead>
+                                                         <tbody class="table-body">
+                                                            <tr>
+                                                                <td>
+                                                                    <strong>Points</strong>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="number" name="points" value="{{@$productList->productRewardPoint->points}}" id="form-points" class="form-control" autocomplete="off">
+                                                                </td>
+                                                                
+                                                            </tr>
+                                                         </tbody>
+                            
+                                                </table>
+                            
+                                                </div>
+                            
+                                        </div>
+                            
+                            
+                                                </div>
+                                            </div>
+                                        <div class="row pt-4">
+                                            <div class="col-12">
+                                                <button type="submit" id="reward-points" value="reward-points" class="btn btn-primary float-right">
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
                                 <div class="tab-pane fade text-center p-5" id="w5-seo-url" role="tabpanel" aria-labelledby="w5-seo-url">
                                     <h4 class="card-title">SEO Url</h4>
                                     @if(count($productList->seoUrls) > 0)
@@ -452,6 +624,102 @@
                                         <input type="text" name="seo_url" id="seo_url" value="" placeholder="Seo Url" class="form-control" readonly>
                                     @endif
                                 </div>
+
+                                <div class="tab-pane fade text-center p-5" id="w5-facebook-feed" role="tabpanel" aria-labelledby="w5-facebook-feed">
+                                    <div class="form-content p-4">
+                                        <form id="{{@$store->name}}-data-form" action="" method="POST">
+                                            {{ csrf_field() }}
+                                            
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Google Product Category </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Condition </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Age Group </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Gender </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Material </strong></label>
+                                                <div class="col-10">
+                                                    
+                                                    <select name="stock_status" class="form-control custom-select">
+                                                        @foreach($stock_statuses as $status)
+                                                        <option value="{{$status->id}}" @selected($status->id == $productList->stock_status_id)>{{$status->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Color </strong></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="weight" value="{{$productList->weight}}" id="form-weight" class="form-control">
+                                                    <span class="invalid-feedback meta-title-error" role="alert">
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row pt-4">
+                                                <label class="col-2 control-lable text-black"><strong> Pattern </strong></label>
+                                                <div class="col-10">
+                                                    <input type="text" name="weight" value="{{$productList->weight}}" id="form-weight" class="form-control">
+                                                    <span class="invalid-feedback meta-title-error" role="alert">
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row pt-4">
+                                                <div class="col-12">
+                                                    <button type="button" id="add_manually" value="{{@$store->name}}-data-form" class="btn btn-primary float-right save-data" data-action="">
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                
                             </div>
     
                         </div>
@@ -637,18 +905,18 @@
                           </div>
                       </div> --}}
                       <div class="row">
-                        <div class="col-md-6  btn-group-sm" style="float: left;
+                        <div class="col-md-8  btn-group-sm" style="float: left;
                         background-color: gainsboro;">
                               <h5 for="bright" style="margin-top: 4px;
-                              margin-bottom: 6px;font-weight: 800;">Crop Image</h5>
+                              margin-bottom: 6px;font-weight: 800;">Crop Image (Square)</h5>
                         </div>
                             
-                        <div class="col-md-6 btn-group-sm" style="    float: left;
+                        <div class="col-md-4 btn-group-sm" style="    float: left;
                         text-align: right;
                         background-color: gainsboro;
                         /* top: 1px; */
                         padding: 1.5px;">
-                              <input type="checkbox" class="crop-filter" id="crop-filter" style="margin-top: 5px;">
+                              <input type="checkbox" class="crop-filter crop-square" value="square" id="crop-filter" style="margin-top: 5px;">
                         </div>
 
                         <div class="col-md-12" style="    padding-top: 15px;
@@ -658,6 +926,24 @@
                         <img src="" id="orignal-image" style="display: none;" />
                         <input type="hidden" name="image_id" id="image_id">
                       </div>
+
+                      <div class="row pt-4">
+                        <div class="col-md-8  btn-group-sm" style="float: left;
+                        background-color: gainsboro;">
+                              <h5 for="bright" style="margin-top: 4px;
+                              margin-bottom: 6px;font-weight: 800;">Crop Image(Horizantal)</h5>
+                        </div>
+                            
+                        <div class="col-md-4 btn-group-sm" style="    float: left;
+                        text-align: right;
+                        background-color: gainsboro;
+                        /* top: 1px; */
+                        padding: 1.5px;">
+                              <input type="checkbox" class="crop-filter crop-horizantal" id="crop-filter" value="horizantal" style="margin-top: 5px;">
+                        </div>
+
+                      </div>
+
                       <div class="row mt-5">
                         <div class="col-md-6">
                           <button id="download-btn" class="btn btn-primary">Download Image</button>
@@ -726,7 +1012,6 @@
     $('.close-second-btn').on('click', function() {
         $('#cropImage').modal('toggle');
         $(document).find('#cropImage').on('hidden.bs.modal', function () {
-            console.log('hiding child modal');
             $('body').addClass('modal-open');
         });
         $('#crop-filter').prop("checked", false);
@@ -784,7 +1069,6 @@
         const revertBtn = document.getElementById("revert-btn");
 
         document.addEventListener("click", e => {
-            console.log("Added");
             if (e.target.classList.contains("filter-btn")) {
               if (e.target.classList.contains("vintage-add")) {
                 Caman("#canvas", img, function() {
@@ -934,7 +1218,7 @@
             // Set props
             link.download = filename;
             link.href = canvas.toDataURL("image/jpeg", 0.8);
-            console.log(canvas.toDataURL("image/jpeg", 0.8));
+            // console.log(canvas.toDataURL("image/jpeg", 0.8));
             // New mouse event
             e = new MouseEvent("click");
             // Dispatch event
@@ -958,7 +1242,6 @@ function bytesToSize(bytes) {
 	// 	function applyFilter() {
 	// 		var computedFilters = '';
 	// 		filterControls.forEach(function(item, index) {
-    //             console.log(item.getAttribute('data-filter'));
     //             // if(item.value > 0) {
     //                 computedFilters += item.getAttribute('data-filter') + '(' + item.value + item.getAttribute('data-scale') + ') ';
     //             // }
@@ -993,10 +1276,8 @@ function UploadToServer(formData) {
         enctype: 'multipart/form-data',
         success:function(respo)
             {
-                console.log(respo)
                 if(respo.status) {
                    respo.images.forEach(function(v, k) {
-                       console.log(v);
                        document.getElementById("new-gallery-imgs").innerHTML += '<div class="col-4 col-grid mt-2"><img src="'+v.url+'" class="img-thumbnail featured-img" id="feature-image"> <a href="javascript:;"> <i class="icon icon-filter_b_and_w icon-apply-filter" style="font-size: 22px;background-color: white; color:green; position: absolute;  top: 10px;float: right;font-weight: 900;left: 55px;" data-src="'+v.url+'" data-id="'+v.id+'" id="data-src-'+v.id+'"></i></a><a href="javascript:;" class="remove-gallery-image" data-id="'+v.id+'"> <i class="icon icon-trash" style="font-size: 22px; color:red; position: absolute;top: 10px;float: right;font-weight: 900;background-color: white;left: 30px; "></i></a></div>';
                    })
                    location.reload();
@@ -1130,12 +1411,28 @@ $('.crop-filter').on('change', function() {
     $('#croped_image').attr('src', can.toDataURL());
     // var croppedImage = startCropping($('#croped_image').attr('src', can.toDataURL()))
     // $('#cropImage').modal('show');
+    var aspectRatio = 0;
+    if($(this).val() == 'square' && $(this).prop("checked")) {
+         aspectRatio = 12 / 12;
+            $('.crop-horizantal').attr('disabled', true);
+            $('.crop-square').attr('disabled', false);
+    }else {
+         aspectRatio = 9 / 12;
+         if($(this).prop("checked")) {
+            $('.crop-horizantal').attr('disabled', false);
+            $('.crop-square').attr('disabled', true);
+         }else {
+            $('.crop-horizantal').attr('disabled', false);
+            $('.crop-square').attr('disabled', false);
+         }
+         
+    }
     $('#orignal-image').attr('src', can.toDataURL());
     var image = document.getElementById('croped_image');
     if($(this).prop("checked")) {
         cropper = new Cropper(image, {
-            aspectRatio: 12 / 12,
-            viewMode: 3,
+            aspectRatio: aspectRatio,
+            viewMode: 2,
             // preview: '.preview',
             dragMode: 'move',
             data:null,
@@ -1150,6 +1447,7 @@ $('.crop-filter').on('change', function() {
         // $('.crop-upload').css('display', 'inline-block');
         // $('.simple-upload').css('display', 'none');
     }else {
+        $('#croped_image').attr('src', '');
         $('.crop-upload').attr('disabled', true);
         // $('.crop-upload').css('display', 'none');
         // $('.simple-upload').css('display', 'inline-block');
@@ -1173,7 +1471,6 @@ $('#crop, #crop1').click(function() {
 
                 var image = new Image();
                 image.src = base64data;
-                console.log(dimensions.width);
                 // ctx.clearRect(0, 0, canvas.width, canvas.height); 
                 image.onload = function() { ctx.drawImage(sprite, 0, 0); };
                 canvas.width = dimensions.width;
@@ -1191,7 +1488,8 @@ $('#crop, #crop1').click(function() {
             cropper.destroy();
             cropper = null;
             $('#croped_image').attr('src', base64data);
-            $('#crop-filter').prop("checked", false);
+            $('.crop-filter').prop("checked", false);
+            $('.crop-filter').attr("disabled", false);
             // uploadFile(base64data,$modal);
         }
     });
@@ -1283,7 +1581,6 @@ function base64Decode(data) {
                       ['view', ['fullscreen', 'codeview', 'help']]
                 ]
           });
-          console.log($('input[name="description_arabic"]').parent());
           $('input[name="description_arabic"]').parent().attr('dir','rtl');
         });
 
@@ -1318,7 +1615,6 @@ $('.save-description').on('click', function () {
             catche: false,
             success: function(resp) {
                 if(resp.status) {
-                    console.log(resp);
                         $(".toast-action").data('title', 'Action Done!');
                         $(".toast-action").data('type', 'success');
                         $(".toast-action").data('message', resp.mesge);
@@ -1338,7 +1634,6 @@ $('.save-description').on('click', function () {
 });
 $('.save-data').on('click', function () {
     var btnForm = $(this).val();
-    console.log($(this).form().serialize());
     if(!$('#'+btnForm+'-sku').val()) {
         $('.sku-error').html('<strong>Product sku is required</strong>');
         $('html, body').animate({
@@ -1354,7 +1649,6 @@ $('.save-data').on('click', function () {
             catche: false,
             success: function(resp) {
                 if(resp.status) {
-                    console.log(resp);
                         $(".toast-action").data('title', 'Action Done!');
                         $(".toast-action").data('type', 'success');
                         $(".toast-action").data('message', 'Data saved successfully.');
@@ -1430,8 +1724,28 @@ function reomveRow(row) {
     $('#row-'+row).remove();
 }
 
+$(document).ready(function() {
+    var button = $('#add-more-discount');
+    var wrapper = $('.table-body-discount');
+    var x = 0;
+    
+    $(button).on('click', function() {
+        var row = '<tr id="row-'+x+'"><td><input type="text" name="sort_order[]" value="" id="priority'+x+'" class="form-control" autocomplete="off"></td>'+'\n'+
+                    '<td><input type="text" name="price[]" value="" id="special-price'+x+'" class="form-control" autocomplete="off"></td>'+'\n'+
+                    ' <td><input type="text" name="from_quantity[]" value="" id="from-quantity" class="form-control" autocomplete="off"></td>'+'\n'+
+                    '<td><input type="text" name="to_quantity[]" value="" id="to-quantity" class="form-control" autocomplete="off"></td>'+'\n'+
+                    ' <td><input type="text" name="start_date[]" value="" id="start_date'+x+'" class="date-time-picker'+x+' form-control" autocomplete="off"></td>'+'\n'+
+                    '<td><input type="text" name="end_date[]" value="" id="start_date'+x+'" class="date-time-picker'+x+' form-control" autocomplete="off"></td>'+'\n'+
+                    '<td><a href="javascript:;" class="remove-row" onclick="reomveRow('+x+')"><i class="icon-close2 text-danger-o text-danger" style="font-size:25px"></i></a></td></tr>';
+      $(wrapper).append(row);
+      $('.date-time-picker'+x).datetimepicker({format: "Y-m-d",'timepicker':false});
+    });
+    x++;
+    
+    
+});
+
 function reomveOldRow(id) {
-    console.log(id);
     if(id) {
         if(confirm('Are you sure want to reomve?')) {
             $.ajax({
@@ -1441,7 +1755,6 @@ function reomveOldRow(id) {
                 data: {id:id},
                 catche: false,
                 success: function(resp) {
-                    console.log(resp);
                     if(resp.status) {
                             $('#row-'+id).remove();
                             $(".toast-action").data('title', 'Action Done!');
@@ -1466,7 +1779,6 @@ function reomveOldRow(id) {
 
 $('#special-price-form').submit(function(e) {
     e.preventDefault();
-    console.log($(this).serialize());
     $.ajax({
         url: "{{route('save.special.price')}}",
         type: 'POST',
@@ -1488,6 +1800,55 @@ $('#special-price-form').submit(function(e) {
                 
         } 
     });
-})
+});
+
+$('#discount-form').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: "{{route('save.discount.price')}}",
+        type: 'POST',
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data: $(this).serialize(),
+        catche: false,
+        success: function(resp) {
+            if(resp.status) {
+                $(".toast-action").data('title', 'Action Done!');
+                $(".toast-action").data('type', 'success');
+                $(".toast-action").data('message', resp.message);
+                $(".toast-action").trigger('click');
+            }else {
+               $(".toast-action").data('title', 'Went Wrong!');
+               $(".toast-action").data('type', 'error');
+               $(".toast-action").data('message', resp.message);
+               $(".toast-action").trigger('click');
+             }
+                
+        } 
+    });
+});
+$('#reward-points-form').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: "{{route('save.reward.points')}}",
+        type: 'POST',
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data: $(this).serialize(),
+        catche: false,
+        success: function(resp) {
+            if(resp.status) {
+                $(".toast-action").data('title', 'Action Done!');
+                $(".toast-action").data('type', 'success');
+                $(".toast-action").data('message', resp.message);
+                $(".toast-action").trigger('click');
+            }else {
+               $(".toast-action").data('title', 'Went Wrong!');
+               $(".toast-action").data('type', 'error');
+               $(".toast-action").data('message', resp.message);
+               $(".toast-action").trigger('click');
+             }
+                
+        } 
+    });
+});
 </script>
 @endpush

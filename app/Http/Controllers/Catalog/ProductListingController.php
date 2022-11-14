@@ -10,6 +10,8 @@ use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductSpecialModel;
 use App\Models\Oms\InventoryManagement\OmsSeoUrlModel;
 use App\Models\Oms\InventoryManagement\ProductWeightClassModel;
+use App\Models\Oms\OmsProductDiscountModel;
+use App\Models\Oms\OmsProductRewardPointModel;
 use App\Models\Oms\OmsStockStatus;
 use App\Models\Oms\ProductGroupModel;
 use App\Models\Oms\PromotionTypeModel;
@@ -56,7 +58,9 @@ class ProductListingController extends Controller
             $q->where('store_id', $store);
         }, 'seoUrls' => function($s) use($store) {
             $s->where('store_id', $store);
-        }])->where('product_id', $product)->first();
+        },'productDiscounts' => function($pd) use($store) {
+            $pd->where('store_id', $store);
+        },'productRewardPoint'])->where('product_id', $product)->first();
         $store = storeModel::find($store);
         $weightClasses = ProductWeightClassModel::orderBy('title')->get();
         $stock_statuses = OmsStockStatus::where('language_id', 1)->get();
@@ -299,6 +303,64 @@ class ProductListingController extends Controller
             ]);
         }
         
+
+    }
+
+    public function saveDiscountPrice(Request $request) {
+        $this->validate($request, [
+            'store' => 'required|numeric',
+            'product_id' => 'required',
+            'from_quantity.*' => 'required',
+            'price.*' => 'required'
+        ]);
+        $sort_order = $request->sort_order;
+        $price = $request->price;
+        $from_quantity = $request->from_quantity;
+        $to_quantity = $request->to_quantity;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        if(count($sort_order)) {
+            OmsProductDiscountModel::where('store_id', $request->store)->where('product_id', $request->product_id)->delete();
+            for($i = 0; $i < count($sort_order); $i++) {
+                $discountPrice = new OmsProductDiscountModel();
+                $discountPrice->store_id = $request->store;
+                $discountPrice->product_id = $request->product_id;
+                $discountPrice->price = $price[$i];
+                $discountPrice->from_quantity = $from_quantity[$i];
+                $discountPrice->to_quantity = $to_quantity[$i];
+                $discountPrice->date_start = $start_date[$i];
+                $discountPrice->date_end = $end_date[$i];
+                $discountPrice->sort_order = $sort_order[$i];
+                $discountPrice->save();
+            }
+            return response()->json([
+                'status' => true,
+                'message' => 'Discount price saved successfully.'
+            ]);
+        }else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Opps! Somothing went wrong, Try again.'
+            ]);
+        }
+        
+
+    }
+
+    public function saveRewardPoints(Request $request) {
+       $this->validate($request, [
+           'points' => 'required'
+       ]);
+
+        OmsProductRewardPointModel::updateOrCreate(
+           ['product_id' => $request->product_id],
+           ['points' => $request->points]
+       );
+
+       return response()->json([
+           'status' => true,
+           'message' => 'Reward points added sucessfully.'
+       ]);
 
     }
 
