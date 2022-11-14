@@ -583,7 +583,7 @@
                                                            </tr>
                             
                                                          </thead>
-                                                         <tbody class="table-body">
+                                                         <tbody class="table-body-reward">
                                                             <tr>
                                                                 <td>
                                                                     <strong>Points</strong>
