@@ -144,7 +144,7 @@ class AttributeController extends Controller
       $attribute_categories = $request->category;
       $preset_categories    = $request->preset_category;
       $attribute_id = $request->attribute_id;
-      echo $ids = AttributePresetModel::where('attribute_id',$attribute_id)->delete(); die;
+      $prestsId     = $request->prestsId;
       $attribute = AttributeModel::find($attribute_id);
       $attribute->name    = $request->name;
       $attribute->name_ar = $request->name_ar;
@@ -161,7 +161,10 @@ class AttributeController extends Controller
       }
       //preset insertion start
       if( $prests ){
-        $ids = AttributePresetModel::where('attribute_id',$attribute_id)->delete();
+        AttributePresetModel::where('attribute_id',$attribute_id)->delete();
+        if( is_array($prestsId) && count($prestsId) > 0 ){
+            AttributePresetCategoryModel::whereIn('attribute_preset_id',$prestsId)->delete();
+        }
         foreach($prests as $key => $prest) {
             $prst = new AttributePresetModel();
             $prst->name         = $prest;

@@ -94,6 +94,7 @@
                                             @foreach($attribute->presets as $preset_key => $preset)
                                             <div class="inserted-row-{{$preset->id}} mt-4">
                                                 <div class="row">
+                                                    <input type="hidden" name="prestsId[]" value="{{ $preset->id }}" />
                                                     <div class="col-lg-4"> <input type="text" name="prests[]" class="form-control m-input" value="{{$preset->name}}" placeholder="Enter Prest Value" autocomplete="off"></div>
                                                     <div class="col-lg-4"> <input type="text" name="prests_ar[]" class="form-control m-input" value="{{$preset->name_ar}}" placeholder="Enter Arabic Preset Value" autocomplete="off"></div>
                                                     <div class="col-lg-3">
@@ -143,7 +144,6 @@
         $(document).ready(function() {
             $('#category').select2();
             $('.preset_category').select2();
-            alert(preset_row_counter);
         });
         var preset_row_counter = {{ $preset_key+1 }};
         $("#add-prest-row").click(function () {
