@@ -110,7 +110,7 @@
                                                                 @endphp
                                                                 @empty
                                                                 @endforelse
-                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assign_presetCat->name }}</option>
+                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assined_cat->name }}</option>
                                                             @empty
                                                             @endforelse
                                                         </select>

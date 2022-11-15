@@ -110,7 +110,7 @@
                                     </td>
                                     <td class="text-center">
                                     <a href="{{route('edit.attribute',$list->id)}}"  class=""><i class="icon-edit"></i></a>
-                                    <a href="{{route('destroy.option',$list->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class=""><i class="icon-close2 text-danger-o text-danger"></i></a>
+                                    {{--  <a href="{{route('destroy.option',$list->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class=""><i class="icon-close2 text-danger-o text-danger"></i></a>  --}}
 
                             </td>
                                 </tr>
