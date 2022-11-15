@@ -194,10 +194,11 @@ class AttributeController extends Controller
     }
     public function assignAttributeForm($group, $cate) {
       $group = ProductGroupModel::with('attributes')->find($group);
-
-      $attributes = AttributeModel::with('presets')->where('category_id', $cate)->get();
-      // dd($group->attributes);
-
+      // dd($cate);
+      $attributes = AttributeModel::with(['presets'])->whereHas('attributeCategories', function($q) use($cate) {
+        $q->where('category_id', $cate);
+      })->get();
+      // dd($group->toArray());
       return view(self::VIEW_DIR. '.AssignAttributes', compact('attributes','group'));
     }
     public function saveAssignAttribute(Request $request) {
@@ -243,13 +244,16 @@ class AttributeController extends Controller
       }
     }
 
-    public function fetchPresetValues($attribute) {
-      $presets = AttributePresetModel::where('attribute_id', $attribute)->get();
+    public function fetchPresetValues($attribute, $cate) {
+      $presets = AttributePresetModel::whereHas('categories', function($q) use($cate) {
+        $q->where('category_id', $cate);
+      })->where('attribute_id', $attribute)->get();
       return response()->json([
         'status' => true,
         'presets' => $presets
       ]);
     }
+    
     public function attributeTemplates(){
       $data = AttributeTemplateModel::all();
       return view(self::VIEW_DIR.'attribute_template_listing',compact('data'));
