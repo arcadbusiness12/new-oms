@@ -61,7 +61,7 @@ class AttributeController extends Controller
       if($request->name) {
         $whereCluase[] = array('name', $request->name);
       }
-      $attributes = AttributeModel::with(['attributeCategories.category','presets'])->where($whereCluase)->get();
+      $attributes = AttributeModel::with(['attributeCategories','presets'])->where($whereCluase)->get();
         //   dd($attributes->toArray());
       return view(self::VIEW_DIR.'attribute_listing',compact('attributes'));
     }
@@ -186,7 +186,7 @@ class AttributeController extends Controller
     public function editAttribute(AttributeModel $attribute) {
         // dd($attribute->toArray());
       $categories = GroupCategoryModel::all();
-      $attribute = AttributeModel::with(['attributeCategories.category','presets.presetCategories.category'])->where('id',$attribute->id)->first();
+      $attribute = AttributeModel::with(['attributeCategories','presets.presetCategories.category'])->where('id',$attribute->id)->first();
     //   dd($attribute->toArray());
       return view(self::VIEW_DIR. '.editAttribute', compact('attribute','categories'));
     }
