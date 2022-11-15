@@ -173,7 +173,6 @@ class AttributeController extends Controller
             if( $prst->save() ){
               $last_inserted_preset_id = $prst->id;
               if( is_array($preset_categories[$key]) && count($preset_categories[$key]) > 0 ){
-                AttributePresetCategoryModel::where("",$attribute_id)->delete();
                 foreach( $preset_categories[$key] as $key_pc => $val_pc ){
                     $new_prese_cat = new AttributePresetCategoryModel();
                     $new_prese_cat->attribute_preset_id = $last_inserted_preset_id;
