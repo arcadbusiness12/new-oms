@@ -21,7 +21,7 @@ class GroupCategoryModel extends Model
     }
 
     public function attributes() {
-        return $this->hasMany(AttributeModel::class, 'attribute_categories', 'category_id','attribute_id');
+        return $this->belongsToMany(AttributeModel::class, 'attribute_categories', 'category_id','attribute_id');
     }
 
     public function presets() {

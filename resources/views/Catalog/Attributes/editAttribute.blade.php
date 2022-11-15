@@ -53,7 +53,7 @@
                                                         @forelse ($attribute->attributeCategories as $assined_cat )
                                                             @php
                                                                 $selected = 0;
-                                                                if( $cate->id == $assined_cat->category_id ){
+                                                                if( $cate->id == $assined_cat->id ){
                                                                     $selected = 1;
                                                                     break;
                                                                 }
@@ -100,17 +100,17 @@
                                                     <div class="col-lg-3">
                                                         <select name="preset_category[{{ $preset_key }}][]" class="preset_category preset_category_all" multiple>
                                                             @forelse ($attribute->attributeCategories as $assined_cat )
-                                                                @forelse ($preset->presetCategories as $assign_presetCat )
+                                                                @forelse ($preset->categories as $assign_presetCat )
                                                                 @php
                                                                     $selected = 0;
-                                                                    if( $assined_cat->category_id == $assign_presetCat->category_id ){
+                                                                    if( $assined_cat->id == $assign_presetCat->id ){
                                                                         $selected = 1;
                                                                         break;
                                                                     }
                                                                 @endphp
                                                                 @empty
                                                                 @endforelse
-                                                                <option value="{{ $assined_cat->category_id }}" @selected( $selected == 1)>{{ $assined_cat->category->name }}</option>
+                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assign_presetCat->name }}</option>
                                                             @empty
                                                             @endforelse
                                                         </select>

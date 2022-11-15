@@ -91,7 +91,7 @@
                                     <td class="text-center">{{$list->name_ar}}</td>
                                     <td class="text-center">
                                         @forelse ($list->attributeCategories as $value )
-                                          {{ $value->category->name }},
+                                          {{ $value->name }},
                                         @empty
                                         @endforelse
                                     </td>
