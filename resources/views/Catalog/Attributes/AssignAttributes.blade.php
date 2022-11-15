@@ -45,7 +45,7 @@
                                         <input type="hidden" name="old_id[]" value="{{$attribte->pivot->id}}">
                                         <div class="col-lg-6" style="border-right:5px solid beige;">
                                             <label class="text-black"><strong> Attributes </strong></label>
-                                            <select name="attributes[]" class="custom-select form-control" onchange="fetchPresets(this.value, {{$attribte->id}})">
+                                            <select name="attributes[]" class="custom-select form-control" onchange="fetchPresets(this.value, {{$attribte->id}}, {{$group->category_id}})">
                                                 <option value="">Select Attribute</option>
                                                 @foreach($attributes as $attribute)
                                                 <option value="{{$attribute->id}}" @selected($attribute->id == $attribte->id)>{{$attribute->name}}</option>
@@ -114,7 +114,7 @@
             html += '<div class="form-group p-4" style="border-bottom: 2px solid beige;">';
             html += '<div class="row"><input type="hidden" name="old_id[]" value="">';
             html += '<div class="col-lg-6" style="border-right:5px solid beige;"> <label class="text-black"><strong> Attributes </strong></label>';
-            html += '<select name="attributes[]" class="custom-select form-control" onchange="fetchPresets(this.value, '+x+')">';
+            html += '<select name="attributes[]" class="custom-select form-control" onchange="fetchPresets(this.value, '+x+', {{$group->category_id}})">';
             html +=  '<option value="">Select Attribute</option>';
             html +=   '@foreach($attributes as $attribute)';
             html +=    '<option value="{{$attribute->id}}">{{$attribute->name}}</option>';
@@ -146,10 +146,12 @@
             $(this).parent().parent().parent().remove();
         });
 
-        function fetchPresets(value, index) {
-            console.log(value);
-            var url = "{{route('fetch.preset.values', ":id")}}";
-            url = url.replace(":id", value);
+        function fetchPresets(value, index, category) {
+            console.log(category);
+            let url = "{{ route('fetch.preset.values', [":attribute",":cate"]) }}";
+            url = url.replace(":attribute", value);
+            url = url.replace(":cate", category);
+            console.log(url);
             if(value) {
                 $.ajax({
                     url: url,

@@ -434,6 +434,7 @@ function addSubCategory(cate, group) {
     console.log(url);
     url = url.replace(":cate", cate);
     url = url.replace(":product", group);
+    console.log(url);
     $.ajax({
     url: url,
     type: "GET",

@@ -138,7 +138,7 @@
         function loadPresetCategory(counter = ''){
             $.ajax({
                 method: "POST",
-                url: APP_URL+"/productgroup/get/preset/category",
+                url: "{{route('get.preset.category')}}",
                 data: { category_ids: $('#category').val() },
                 headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
             }).done(function(resp) {

@@ -247,7 +247,7 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::any('/destory/preset', 'destoryPreset')->name('destory.preset');
         Route::post('/update/attribute', 'updateAttribute')->name('update.attribute');
         Route::get('/assign/attributes/form/{group}/{cate}', 'assignAttributeForm')->name('assign.attributes.form');
-        Route::get('/fetch/preset/values/{attribute}', 'fetchPresetValues')->name('fetch.preset.values');
+        Route::get('/fetch/preset/values/{attribute}/{cate}', 'fetchPresetValues')->name('fetch.preset.values');
         Route::post('/save/assigned/attributes', 'saveAssignAttribute')->name('save.assign.attributes');
         Route::any('/destory/attribute', 'destoryAttribute')->name('attribute.destory');
         Route::any('/get/preset/category', 'getPresetCategory')->name('get.preset.category');
