@@ -19,7 +19,7 @@ class AttributeModel extends Model
         return $this->hasMany(AttributePresetModel::class, 'attribute_id');
     }
     public function attributeCategories() {
-        return $this->hasMany(AttributeCategoryModel::class, 'attribute_id');
+        return $this->belongsToMany(GroupCategoryModel::class, 'attribute_categories' ,'attribute_id', 'category_id');
     }
 
 }
