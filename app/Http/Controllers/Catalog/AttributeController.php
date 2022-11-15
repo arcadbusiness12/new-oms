@@ -250,10 +250,10 @@ class AttributeController extends Controller
         'presets' => $presets
       ]);
     }
-    public function attributeTemplates(){
-      $data = AttributeTemplateModel::all();
-      return view(self::VIEW_DIR.'attribute_template_listing',compact('data'));
-    }
+    // public function attributeTemplates(){
+    //   $data = AttributeTemplateModel::all();
+    //   return view(self::VIEW_DIR.'attribute_template_listing',compact('data'));
+    // }
     public function getPresetCategory(Request $request){
         // dd($request->all());
         $category_ids = $request->category_ids;
