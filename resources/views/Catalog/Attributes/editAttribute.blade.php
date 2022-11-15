@@ -87,6 +87,8 @@
                                                    @enderror
                                                </div>
                                         </div>
+                                        <br>
+                                        <h4>Preset Values</h4>
                                         <div class="row" id="newRow">
                                             @php
                                              $preset_key = -1;
@@ -110,7 +112,7 @@
                                                                 @endphp
                                                                 @empty
                                                                 @endforelse
-                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assign_presetCat->name }}</option>
+                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assined_cat->name }}</option>
                                                             @empty
                                                             @endforelse
                                                         </select>
