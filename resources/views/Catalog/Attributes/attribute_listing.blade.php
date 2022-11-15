@@ -23,7 +23,7 @@
                                      <div class="form-group">
 
                                             <div class="col-lg-8">
-                                                <div class="row" style="width: 210%!important;">
+                                                <div class="row">
                                                     <div class="inserted-row mt-4">
                                                         <div class="col-lg-4">
                                                             <input type="text" name="name" class="form-control m-input" placeholder="Search By Name" autocomplete="off">
@@ -53,7 +53,7 @@
                                 </div>
 
                                    </form>
-                    </div>
+                        </div>
                 </div>
                 </div>
             </div>
@@ -137,30 +137,6 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-
- <!-- product location modal start -->
- <div class="modal fade porduct_location_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content" >
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalCenterTitle">Add & Edit options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="porduct_location_content">
-          <div class="text-center" id="loader">
-
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- product location modal end -->
 @endsection
 
 @push('scripts')
