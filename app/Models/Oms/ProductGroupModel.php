@@ -26,7 +26,7 @@ class ProductGroupModel extends Model
       return $this->belongsTo(GroupCategoryModel::class, 'category_id');
   }
   public function attributes() {
-        return $this->belongsToMany(AttributeModel::class, 'oms_inventory_product_group_attributes', 'group_id', 'attribute_id')->withPivot('id','group_id','attribute_id','attribute_preset_id','text');
+        return $this->belongsToMany(AttributeModel::class, 'oms_inventory_product_group_attributes', 'group_id', 'attribute_id')->withPivot('id','group_id','attribute_id','attribute_preset_id','text','text_ar');
   }
   public function sizeChartValue() {
     return $this->hasMany(OmsProductSizeChartValueModel::class, 'group_id');

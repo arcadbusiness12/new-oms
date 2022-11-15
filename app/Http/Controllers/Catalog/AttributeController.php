@@ -8,6 +8,7 @@ use App\Models\Oms\InventoryManagement\Attribute\AttributeCategoryModel;
 use App\Models\Oms\InventoryManagement\Attribute\AttributeModel;
 use App\Models\Oms\InventoryManagement\Attribute\AttributePresetCategoryModel;
 use App\Models\Oms\InventoryManagement\Attribute\AttributePresetModel;
+use App\Models\Oms\InventoryManagement\Attribute\ProductGroupAttribute;
 use App\Models\Oms\ProductGroupModel;
 use Illuminate\Http\Request;
 
@@ -195,7 +196,11 @@ class AttributeController extends Controller
     public function assignAttributeForm($group, $cate) {
       $group = ProductGroupModel::with('attributes')->find($group);
       // dd($cate);
-      $attributes = AttributeModel::with(['presets'])->whereHas('attributeCategories', function($q) use($cate) {
+      $attributes = AttributeModel::with(['presets' => function($q1) use($cate) {
+        $q1->whereHas('categories', function($q2) use($cate) {
+          $q2->where('category_id', $cate);
+        });
+      }])->whereHas('attributeCategories', function($q) use($cate) {
         $q->where('category_id', $cate);
       })->get();
       // dd($group->toArray());
@@ -211,6 +216,7 @@ class AttributeController extends Controller
       $attributes = $request['attributes'];
       $presets = $request['presets'];
       $preset_text = $request['preset_text'];
+      $preset_text_ar = $request['preset_text_ar'];
       $old_id = $request['old_id'];
       foreach($attributes as $k => $attribute) {
         ProductGroupAttribute::updateOrCreate(
@@ -222,6 +228,7 @@ class AttributeController extends Controller
             'attribute_id' => $attribute,
             'attribute_preset_id' => $presets[$k],
             'text' => $preset_text[$k],
+            'text_ar' => $preset_text_ar[$k],
             'created_at' => date('Y-m-d')
           ]
           );

@@ -57,7 +57,7 @@
                                                 <option value="">Select Preset</option>
                                                 @foreach($attributes as $attribute)
                                                  @foreach($attribute->presets as $preset)
-                                                    <option value="{{$preset->id}}" @selected($preset->id == $attribte->pivot->attribute_preset_id)>{{$preset->name}}</option>
+                                                    <option value="{{$preset->id}}" @selected($preset->id == $attribte->pivot->attribute_preset_id) data-arname="{{$preset->name_ar}}">{{$preset->name}}</option>
                                                 @endforeach
                                                 @endforeach
                                             </select>
@@ -70,7 +70,12 @@
                                         <div class="col-lg-5" style="border-right:5px solid beige;">
                                          <label class="text-black"><strong> Text </strong></label>
                                             {{-- <input type="text" name="name" class="form-control m-input" value="{{ $attribte->pivot->text }}" placeholder="Enter Name" autocomplete="off"> --}}
-                                            <textarea class="form-control" name="preset_text[]" rows="4" id="preset-text-{{$attribte->id}}{{$k}}">{{ $attribte->pivot->text }}</textarea>
+                                            <textarea class="form-control" name="preset_text[]" rows="2" id="preset-text-{{$attribte->id}}{{$k}}">{{ $attribte->pivot->text }}</textarea>
+                                            
+                                            <label class="text-black"><strong> Text Arabic</strong></label>
+                                            {{-- <input type="text" name="name" class="form-control m-input" value="{{ $attribte->pivot->text }}" placeholder="Enter Name" autocomplete="off"> --}}
+                                            <textarea class="form-control" name="preset_text_ar[]" rows="2" id="preset-text_ar-{{$attribte->id}}{{$k}}">{{ $attribte->pivot->text_ar }}</textarea>
+
                                             @error('name')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -127,7 +132,9 @@
             html += '</div>';
             html += '<div class="col-lg-5" style="border-right:5px solid beige;">';
             html += ' <label class="text-black"><strong> Text </strong></label>';
-            html += '<textarea class="form-control" name="preset_text[]" rows="4" id="preset-text-'+x+'"></textarea>';
+            html += '<textarea class="form-control" name="preset_text[]" rows="2" id="preset-text-'+x+'"></textarea>';
+            html += ' <label class="text-black"><strong> Text Arabic </strong></label>';
+            html += '<textarea class="form-control" name="preset_text_ar[]" rows="2" id="preset-text_ar-'+x+'"></textarea>';
             html += '</div>';
             html += '<div class="col-md-1"><button id="removeRow" type="button" class="btn btn-danger "><i class="icon-close"></i></button></div>';
             // html += '<div class="input-group-append">';
@@ -162,7 +169,7 @@
                         html += '<option value="">Select Preset</option>';
                         resp.presets.forEach(function(v,k) {
                             console.log(v);
-                            html += '<option value="'+v.id+'">'+v.name+'</option>';
+                            html += '<option value="'+v.id+'" data-arname="'+v.name_ar+'">'+v.name+'</option>';
                         });
                         $('#preset-value-'+index).html(html);  
                     }
@@ -174,16 +181,19 @@
             console.log("Yesssssssss");
             let rowIndex = $(this).data('index');
             var text = $(this).find('option:selected').text();
+            var textAr = $(this).find('option:selected').data('arname');
             console.log('preset-text-'+rowIndex);
             $('#preset-text-'+rowIndex).text(text);
+            $('#preset-text_ar-'+rowIndex).text(textAr);
         });
 
         function selectPreset(value, row) {
             console.log(value);
             var text = $('#preset-value-'+row+ ' option:selected').text();
-            // var text = $(this).find('option:selected').text();
+            var textAr = $('#preset-value-'+row+ ' option:selected').data('arname');
             console.log('preset-text-'+row);
             $('#preset-text-'+row).text(text);
+            $('#preset-text_ar-'+row).text(textAr);
         }
 
         $('.btn-remove-old-preset').on('click', function() {
