@@ -94,12 +94,20 @@
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
 @endsection
-
+<style>
+    body{
+        overflow-x:hidden !important;
+    }
+</style>
 @push('scripts')
     <script>
         $(document).ready(function() {
-            $('#category').select2();
-            $('.preset_category').select2();
+            $('#category').select2({
+                width: "default"
+            });
+            $('.preset_category').select2({
+                width: "default"
+            });
 
         }); //end document.ready
         var preset_row_counter = 0;
