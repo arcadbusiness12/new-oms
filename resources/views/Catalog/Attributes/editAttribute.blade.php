@@ -53,7 +53,7 @@
                                                         @forelse ($attribute->attributeCategories as $assined_cat )
                                                             @php
                                                                 $selected = 0;
-                                                                if( $cate->id == $assined_cat->category_id ){
+                                                                if( $cate->id == $assined_cat->id ){
                                                                     $selected = 1;
                                                                     break;
                                                                 }
@@ -94,22 +94,23 @@
                                             @foreach($attribute->presets as $preset_key => $preset)
                                             <div class="inserted-row-{{$preset->id}} mt-4">
                                                 <div class="row">
+                                                    <input type="hidden" name="prestsId[]" value="{{ $preset->id }}" />
                                                     <div class="col-lg-4"> <input type="text" name="prests[]" class="form-control m-input" value="{{$preset->name}}" placeholder="Enter Prest Value" autocomplete="off"></div>
                                                     <div class="col-lg-4"> <input type="text" name="prests_ar[]" class="form-control m-input" value="{{$preset->name_ar}}" placeholder="Enter Arabic Preset Value" autocomplete="off"></div>
                                                     <div class="col-lg-3">
                                                         <select name="preset_category[{{ $preset_key }}][]" class="preset_category preset_category_all" multiple>
                                                             @forelse ($attribute->attributeCategories as $assined_cat )
-                                                                @forelse ($preset->presetCategories as $assign_presetCat )
+                                                                @forelse ($preset->categories as $assign_presetCat )
                                                                 @php
                                                                     $selected = 0;
-                                                                    if( $assined_cat->category_id == $assign_presetCat->category_id ){
+                                                                    if( $assined_cat->id == $assign_presetCat->id ){
                                                                         $selected = 1;
                                                                         break;
                                                                     }
                                                                 @endphp
                                                                 @empty
                                                                 @endforelse
-                                                                <option value="{{ $assined_cat->category_id }}" @selected( $selected == 1)>{{ $assined_cat->category->name }}</option>
+                                                                <option value="{{ $assined_cat->id }}" @selected( $selected == 1)>{{ $assign_presetCat->name }}</option>
                                                             @empty
                                                             @endforelse
                                                         </select>
@@ -143,7 +144,6 @@
         $(document).ready(function() {
             $('#category').select2();
             $('.preset_category').select2();
-            alert(preset_row_counter);
         });
         var preset_row_counter = {{ $preset_key+1 }};
         $("#add-prest-row").click(function () {
