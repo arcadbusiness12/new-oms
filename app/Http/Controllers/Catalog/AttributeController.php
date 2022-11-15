@@ -133,35 +133,61 @@ class AttributeController extends Controller
     }
 
     public function updateAttribute(Request $request) {
+        // dd($request->all());
       $this->validate($request, [
         'category' => 'required',
         'name' => 'required',
         'status' => 'required'
       ]);
       $prests = $request->prests ? $request->prests : [];
-      $prestsOld = $request->prests_old ? $request->prests_old : [];
-      $attribute = AttributeModel::find($request->attribute_id);
-      $attribute->name = $request->name;
-      $attribute->category_id = $request->category;
+      $prests_ar            = $request->prests_ar;
+      $attribute_categories = $request->category;
+      $preset_categories    = $request->preset_category;
+      $attribute_id = $request->attribute_id;
+      echo $ids = AttributePresetModel::where('attribute_id',$attribute_id)->delete(); die;
+      $attribute = AttributeModel::find($attribute_id);
+      $attribute->name    = $request->name;
+      $attribute->name_ar = $request->name_ar;
       $attribute->status = $request->status;
       $attribute->update();
-      foreach($prests as $prest) {
-        $prst = new AttributePresetModel();
-        $prst->attribute_id = $attribute->id;
-        $prst->name = $prest;
-        $prst->save();
+      if($attribute_categories){
+        AttributeCategoryModel::where('attribute_id',$attribute_id)->delete();
+        foreach($attribute_categories as $k=>$cate_value){
+           $new_attribute_category = new AttributeCategoryModel();
+           $new_attribute_category->attribute_id = $attribute_id;
+           $new_attribute_category->category_id  = $cate_value;
+           $new_attribute_category->save();
+        }
       }
-      foreach($prestsOld as $id => $oprest) {
-        $oprst = AttributePresetModel::find($id);
-        $oprst->name = $oprest;
-        $oprst->save();
+      //preset insertion start
+      if( $prests ){
+        $ids = AttributePresetModel::where('attribute_id',$attribute_id)->delete();
+        foreach($prests as $key => $prest) {
+            $prst = new AttributePresetModel();
+            $prst->name         = $prest;
+            $prst->name_ar      = $prests_ar[$key];
+            $prst->attribute_id = $attribute_id;
+            if( $prst->save() ){
+              $last_inserted_preset_id = $prst->id;
+              if( is_array($preset_categories[$key]) && count($preset_categories[$key]) > 0 ){
+                AttributePresetCategoryModel::where("",$attribute_id)->delete();
+                foreach( $preset_categories[$key] as $key_pc => $val_pc ){
+                    $new_prese_cat = new AttributePresetCategoryModel();
+                    $new_prese_cat->attribute_preset_id = $last_inserted_preset_id;
+                    $new_prese_cat->category_id = $val_pc;
+                    $new_prese_cat->save();
+                }
+              }
+            }
+        }
       }
       return redirect()->back()->with('success', 'Attribute updated successfully.');
     }
     public function editAttribute(AttributeModel $attribute) {
         // dd($attribute->toArray());
       $categories = GroupCategoryModel::all();
-      $attribute = AttributeModel::with(['attributeCategories.category','presets'])->where('id',$attribute->id)->first();
+      $attribute = AttributeModel::with(['attributeCategories.category','presets.presetCategories.category'])->where('id',$attribute->id)->first();
+    //   dd($attribute->toArray());
       return view(self::VIEW_DIR. '.editAttribute', compact('attribute','categories'));
     }
     public function assignAttributeForm($group, $cate) {

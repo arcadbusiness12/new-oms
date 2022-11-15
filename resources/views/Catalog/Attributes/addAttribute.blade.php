@@ -78,7 +78,7 @@
                                             <div class="col-md-12">
 
                                                 <input type="submit" name="submit" value="S A V E" class="btn btn-success btn-lg float-right">
-                                                <button type="button" class="btn btn-primary float-right mr-2" id="add-prest-row" onclick="loadPresetCategory()"><i class="icon icon-plus-circle"></i>Add Prest</button>
+                                                <button type="button" class="btn btn-primary float-right mr-2" id="add-prest-row"><i class="icon icon-plus-circle"></i>Add Prest</button>
                                             </div>
                                         </div>
                                     </div>
@@ -115,6 +115,7 @@
             html += '</div>';
             $('#newRow').append(html);
             $('.preset_category'+preset_row_counter).select2();
+            loadPresetCategory(preset_row_counter);
             preset_row_counter++;
         });
 
@@ -124,7 +125,7 @@
             preset_row_counter--;
         });
         //
-        function loadPresetCategory(){
+        function loadPresetCategory(counter = ''){
             $.ajax({
                 method: "POST",
                 url: APP_URL+"/productgroup/get/preset/category",
@@ -137,7 +138,12 @@
                         html += "<option value="+element.id+">"+element.name+"</option>"
                     });
                 }
-                $('.preset_category_all').html(html);
+                //$('.preset_category_all').html(html);
+                if( counter > 0 ){
+                    $('.preset_category'+counter).html(html);
+                }else{
+                    $('.preset_category_all').html(html);
+                }
             });
         }
     </script>
