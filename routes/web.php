@@ -8,6 +8,8 @@ use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
+use App\Http\Controllers\omsSetting\PaymentMethodController;
+use App\Http\Controllers\omsSetting\ShippingMethodController;
 use App\Http\Controllers\Orders\OrdersAjaxController;
 use App\Http\Controllers\Orders\OrdersController;
 use App\Http\Controllers\PlaceOrder\PlaceOrderController;
@@ -118,7 +120,15 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
         Route::post('/destroy/group/sub/cate/setting', 'destroySubCategory')->name('destroy.sub.category');
     });
 
-
+    Route::controller(PaymentMethodController::class)->group(function() {
+        Route::get('/payment/method', 'paymentMethods')->name('payment.method');
+        Route::post('/add/payment/method', 'addPaymentMethods')->name('add.payment.method');
+    });
+    Route::controller(ShippingMethodController::class)->group(function() {
+        Route::get('/shipping/method', 'shippingMethods')->name('shipping.method');
+        Route::post('/add/shipping/method', 'addShippingMethods')->name('add.shipping.method');
+        Route::get('/get/countries', 'getCountries')->name('get.countries');
+    });
 });
 
 Route::prefix('rolepermision')->middleware('auth')->group(function () {
