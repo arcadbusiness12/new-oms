@@ -128,6 +128,7 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
         Route::get('/shipping/method', 'shippingMethods')->name('shipping.method');
         Route::post('/add/shipping/method', 'addShippingMethods')->name('add.shipping.method');
         Route::get('/get/countries', 'getCountries')->name('get.countries');
+        Route::post('/free/shipping/setting/form', 'AddFreeShippingSetting')->name('free.shipping.setting.form');
     });
 });
 

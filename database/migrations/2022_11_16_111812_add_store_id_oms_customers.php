@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('customers', function (Blueprint $table) {
             $table->integer('store_id')->unsigned()->index()->after('id');
-            $table->foreign('store_id')->references('id')->on('oms_store');
+            // $table->foreign('store_id')->references('id')->on('oms_store');
         });
     }
 

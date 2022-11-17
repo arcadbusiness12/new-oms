@@ -37,6 +37,11 @@
                         {{ session()->get('success') }}
                     </div>
                 @endif
+                @if(session()->has('error'))
+                    <div class="alert alert-danger">
+                        {{ session()->get('error') }}
+                    </div>
+                @endif
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
@@ -47,7 +52,7 @@
                             <div class="col-md-6 col-sm-6 col-grid text-right">
                                 <span class="font-weight-bold">Free Shipping On <span style="color: white;
                                     background-color: darkgreen;
-                                    padding: 2px;">100 <a href="javascript:;" class="" onclick=""><i class="icon icon-edit" style="color: white;"></i></a></span> </span>
+                                    padding: 2px;">{{isset($freeShippingAmount) ? $freeShippingAmount->value : '--'}} <a href="javascript:;" class="" onclick="freeShippingAmount('{{@$freeShippingAmount->setting_id}}', '{{@$freeShippingAmount->value}}')"><i class="icon icon-edit" style="color: white;"></i></a></span> </span>
                                     
                             </div>
                           </div>
@@ -189,37 +194,18 @@
           <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form action="{{route('add.shipping.method')}}" method="POST">
+          <form action="{{route('free.shipping.setting.form')}}" method="POST">
             {{ csrf_field() }}
-              <div class="form-group">
-                  <label class="text-black">Name<span class="text-danger">*</span></label>
-                  <input type="text" name="name" id="name" class="form-control">
-                  <input type="hidden" name="shipping_method_id" id="shipping_method_id" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="text-black">Country<span class="text-danger">*</span></label>
-                <select class="form-control custom-select" name="country" id="select-country">
-                    @foreach($countries as $country)
-                    <option value="{{$country->id}}">{{$country->name}}</option>
-                    @endforeach
-                </select>
-            </div>
             <div class="form-group">
                 {{-- <div class="col-1 col-grid"> --}}
-                    <label class="text-black">Amount</label>
-                    <input type="number" name="amount" id="amount" class="form-control">
+                  <input type="hidden" name="freeShipping_id" id="free-shipping-id" class="form-control">
+                    <label class="text-black">Free Shipping On</label>
+                    <input type="number" name="free_shipping_amount" id="free_shipping_amount" class="form-control">
                 {{-- </div> --}}
-                {{-- <div class="col-6 col-grid">
-                    <label class="text-black">Status</label>
-                    <select class="form-control custom-select" name="status" id="select-status">
-                        <option value="1">Active</option>
-                        <option value="0">In-Active</option>
-                    </select>
-                </div> --}}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary close-btn" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Add Method</button>
+                <button type="submit" class="btn btn-primary">Add</button>
               </div>
           </form>
         </div>
@@ -239,6 +225,8 @@
     });
 
     function editMothod(object) {
+        
+        console.log(object);
         if(object) {
             $('#name').val(object.name);
             $('#amount').val(object.amount);
@@ -261,9 +249,18 @@
         }
     }
     
+    function freeShippingAmount(id = null, value = null) {
+        // console.log(object);
+        if(id) {
+            $('#free-shipping-id').val(id);
+            $('#free_shipping_amount').val(value);
+        }
+        $('#freeShippingModal').modal('show');
+    }
+    
     $('.btn-close, .close-btn').on('click', function() {
         $('#paymentMethodModal').find('form').trigger('reset');
         $('#shipping_method_id').val('');
-    })
+    });
 </script>
 @endpush

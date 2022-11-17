@@ -6,7 +6,7 @@ class OmsSettingsModel extends Model
 {
     protected $table = 'oms_setting';
     protected $primaryKey = "setting_id";
-
+    protected $fillable = ['code', 'key', 'value', 'serialize'];
     const FIELD_CODE = 'code';
     const FIELD_KEY = 'key';
     const FIELD_VALUE = 'value';
