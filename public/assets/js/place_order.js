@@ -156,10 +156,23 @@ $(document).on('submit', '#customer_save', function(e) {
     $.ajax({
         method: "POST",
         url: APP_URL + "/place/order/save/customer",
+        cache: false,
         data: request_data + '&store_id=' + store,
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
-        console.log(data);
-        // $(".customer_search_table").html(data);
+        shippingPayment();
     });
 });
+
+function shippingPayment() {
+    $.ajax({
+        method: "GET",
+        url: APP_URL + "/place/order/shipping/payment",
+        cache: false,
+        data: 'store_id=' + store,
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        console.log(data);
+        $('#step-5').html(data);
+    });
+}

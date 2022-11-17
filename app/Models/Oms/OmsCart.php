@@ -3,7 +3,7 @@
 namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Model;
-
+use DB;
 class OmsCart extends Model
 {
     // protected $table = 'oms_promotion_socials';
@@ -13,5 +13,20 @@ class OmsCart extends Model
 
         return $this->hasOne('App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel','product_option_id','product_option_id')
         ->join('oms_options_details', 'oms_options_details.id', '=', 'oms_inventory_product_option.option_value_id');
+    }
+    public static function getCartTotalProduct($store_id){
+        //return only product totals
+        $server_session_id = session()->getId();
+        return self::where("session_id",$server_session_id)->where("store_id",$store_id)->sum('product_quantity');
+    }
+    public static function getCartTotalAmount($store_id){
+        //return only product totals
+        $server_session_id = session()->getId();
+        $data = self::select(DB::raw('SUM(product_price * product_quantity) AS total'))->where('session_id',$server_session_id)->where('store_id',$store_id)->first();
+        $total = 0;
+        if($data){
+            $total = $data->total;
+        }
+        return $total;
     }
 }

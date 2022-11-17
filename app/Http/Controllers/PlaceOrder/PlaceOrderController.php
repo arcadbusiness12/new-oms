@@ -293,6 +293,22 @@ class PlaceOrderController extends Controller
     }
     return response()->json($json);
   }
+  public function paymentShipping(Request $request){
+    // dd($request->all());
+    $store   = $request->store_id;
+    $sub_dir = $store == 1 ? "ba" : "df";
+    $shipping_methods = [];
+    $payment_methods  = [];
+    $e_wallet_balance = 0;
+    $totals = [];
+    $totals['Sub-Total'] = OmsCart::getCartTotalAmount($store);
+    // echo "Total Amout is=".$cart_total; die;
+    // dd($totals);
+    return view(self::VIEW_DIR . $sub_dir . '.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals'));
+  }
+  private function formatTotal(){
+
+  }
     public function getAddress(){
       $customer = array();
       $customer_id = Input::get('customer_id');

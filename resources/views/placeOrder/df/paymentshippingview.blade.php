@@ -1,8 +1,8 @@
 <form name="payment-shipping-form" id="payment-shipping-form">
     {{csrf_field()}}
-    <div class="cart-totals">
+    <div class="cart-totals" style="padding: 37px;">
         <div class="row">
-            <div class="col-xs-7 payment_shipping_div">
+            <div class="col-7 payment_shipping_div">
                 <div class="error-messages"></div>
                 <div class="form-group">
                     <label class="control-label">Shipping Method</label>
@@ -26,8 +26,8 @@
                 </div>
                 @if( $e_wallet_balance > 0 )
                   <div class="form-group">
-                    <div class="col-sm-11" style="border:1px solid lightgray"><b>Customer has amount {{ $e_wallet_balance }} AED in his/her E-Wallet.</b><br>&nbsp;</div>
-                    <div class="col-sm-1">
+                    <div class="col-11" style="border:1px solid lightgray"><b>Customer has amount {{ $e_wallet_balance }} AED in his/her E-Wallet.</b><br>&nbsp;</div>
+                    <div class="col-1">
                       <span class="input-group-btn">
                         <button type="button" id="button-use-e-wallet" class="btn btn-primary">Apply</button>
                       </span>
@@ -53,7 +53,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="form-group">
+                {{--  <div class="form-group">
                     <label class="control-label">Coupon Code</label>
                     <div class="input-group">
                         <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code" />
@@ -61,18 +61,18 @@
                             <button type="button" id="button-coupon-code" class="btn btn-primary">Apply</button>
                         </span>
                     </div>
-                </div>
+                </div>  --}}
                 <div class="form-group">
                     <label class="control-label">Comment</label>
                     <textarea name="comment" class="form-control" placeholder="Write Comment Here..."></textarea>
                 </div>
             </div>
-            <div class="col-xs-5">
+            <div class="col-5">
                 <table class="table">
-                    <?php foreach ($totals as $total) { ?>
+                    <?php foreach ($totals as $key => $total) { ?>
                         <tr>
-                            <td><b><?php echo $total['title'] ?></b></td>
-                            <td><?php echo $total['text'] ?></td>
+                            <td><b>{{ $key }}</b></td>
+                            <td>{{ $total }}</td>
                         </tr>
                     <?php } ?>
                 </table>
