@@ -7,6 +7,7 @@ use App\Models\Oms\City;
 use App\Models\Oms\CityArea;
 use App\Models\Oms\Country;
 use App\Models\Oms\Customer;
+use App\Models\Oms\CustomerAddress;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\OmsUserGroupInterface;
@@ -183,7 +184,7 @@ class PlaceOrderController extends Controller
      $name    = $request->name;
      $mobile  = $request->mobile;
      $email   = $request->email;
-     $customer  = Customer::with(['addresses'])
+     $customer  = Customer::with(['defaultAddress'])
         ->when($mobile,function($query) use ($mobile){
             return $query->where('mobile','LIKE',"%".$mobile."%");
         })
@@ -194,73 +195,104 @@ class PlaceOrderController extends Controller
      $default_country = 221;
      $countries = Country::where('status',1)->get();
      $cities    = City::where('status',1)->where("country_id",$default_country)->get();
+     $city_id   = 0;
+     if($customer){
+        $city_id = $customer->defaultAddress->city_id;
+     }
+     $areas = CityArea::when($city_id > 0,function($q) use ($city_id){
+        $q->where('city_id',$city_id);
+     })->get();
+
      $orders = [];
-     //  dd($countries->toArray());
-     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('customer','countries','cities','default_country','customer','orders'));
+     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('customer','countries','cities','areas','default_country','customer','orders'));
   }
   public function loadAreas(Request $request){
     $city_id = $request->city_id;
     $data = CityArea::where("city_id",$city_id)->get();
     return response()->json($data);
   }
-  public function save_customer(Request $request){
+  public function saveCustomer(Request $request){
+    // dd($request->all());
     $json = array();
-    $customer_id = $request->get('customer_id');
-
-    if($customer_id){
-        // Ignore space and first zero
-        $telephone = str_replace(" ", "", $request->get('telephone'));
-        $telephone = (int)$telephone;
-
-        if(!preg_match("/^[0-9]*$/", $telephone)){
-            $json['error'] = "Enter valid mobile number!";
-        }else if($request->get('telephone_code') == 971 && strlen($telephone) != 9){
-            $json['error'] = "Enter valid 9 digit number!";
-        }else if($request->get('telephone_code') != 971 && strlen($telephone) != 10){
-            $json['error'] = "Enter valid 10 digit number!";
-        }else{
-            $telephone = $request->get('telephone_code') . $telephone;
-
-            $names = CustomersModel::getCustomerNames($request->get('firstname'));
-            $address_id = CustomersModel::select('address_id')->where('customer_id', $customer_id)->first();
-            if($address_id){
-                $customer = array(
-                    'firstname' => $names['firstname'],
-                    'lastname' => $names['lastname'],
-                    'telephone' => $telephone,
-                    'address_1' => $request->get('address_1'),
-                    'area' => $request->get('area'),
-                    'zone_id' => $request->get('zone_id'),
-                    'country_id' => $request->get('country_id'),
-                );
-
-                DB::table(env("DB_BAOPENCART_DATABASE").'.oc_address')->where('address_id', $address_id->address_id)->update($customer);
-            }
-            $json['success'] = true;
-            $json['telephone'] = $telephone;
+    $store_id       = $request->store_id;
+    if( $store_id < 1 ){
+        return response()->json(['status'=>false,'Invalid store.']);
+    }
+    $customer_id    = $request->customer_id;
+    $firstname      = $request->firstname;
+    $email          = $request->email;
+    $telephone_code = $request->telephone_code;
+    $telephone      = $request->telephone;
+    $country_id     = $request->country_id;
+    $city_id        = $request->city_id;
+    $area_id        = $request->area_id;
+    $gmap_link      = $request->gmap_link;
+    $alternate_number        = $request->alternate_number;
+    $address_street_building        = $request->address_street_building;
+    $address_villa_flate            = $request->address_villa_flate;
+    $address            = $request->address;
+    ///
+    $full_telephone = $telephone_code.$telephone;
+    if( $customer_id && $customer_id > 0 ){
+        //existing customer update
+        $data = Customer::where('id',$customer_id)->first();
+        $data->firstname = $firstname;
+        if( $data->save() ){
+          $add_data =   CustomerAddress::where('id',$data->customer_address_id)->first();
+          if( $add_data ){
+            $add_data->firstname = $firstname;
+            $add_data->address = $address;
+            $add_data->street_building = $address_street_building;
+            $add_data->villa_flat = $address_villa_flate;
+            $add_data->country_id = $country_id;
+            $add_data->city_id    = $city_id;
+            $add_data->area_id    = $area_id;
+            $add_data->save();
+          }
         }
-    }else{
-        // Ignore space and first zero
-        $telephone = str_replace(" ", "", $request->get('telephone'));
-        $telephone = (int)$telephone;
 
+    }else{
+         //customer record not exist create new
         if(!preg_match("/^[0-9]*$/", $telephone)){
             $json['error'] = "Enter valid mobile number!";
-        }else if($request->get('telephone_code') == 971 && strlen($telephone) != 9){
+        }else if($telephone_code == 971 && strlen($telephone) != 9){
             $json['error'] = "Enter valid 9 digit number!";
-        }else if($request->get('telephone_code') != 971 && strlen($telephone) != 10){
-            $json['error'] = "Enter valid 10 digit number!";
         }else{
-          //  $this->session->data['account'] = 'guest';
-            $telephone = $request->get('telephone_code') . $telephone;
+            $data = new Customer();
+            $data->store_id  =   $store_id;
+            $data->firstname =  $firstname;
+            $data->mobile    =  $full_telephone;
+            $data->email     =  $email;
+            $data->status    =  1;
 
-            $json['success'] = true;
-            $json['telephone'] = $telephone;
+            if( $data->save() ){
+                $customer_id = $data->id;
+                $cust_add = new CustomerAddress();
+                $cust_add->customer_id  = $customer_id;
+                $cust_add->firstname = $firstname;
+                $cust_add->address = $address;
+                $cust_add->street_building = $address_street_building;
+                $cust_add->villa_flat = $address_villa_flate;
+                $cust_add->country_id = $country_id;
+                $cust_add->city_id    = $city_id;
+                $cust_add->area_id    = $area_id;
+                if($cust_add->save()){
+                    $customer_address_lastid = $cust_add->id;
+                    Customer::where("id",$customer_id)->update(['customer_address_id'=> $customer_address_lastid]);
+                }
+            }
         }
     }
-
+    //update customer id in cart details
+    $server_session_id = session()->getId();
+    $update_customer_cart = OmsCart::where('session_id',$server_session_id)->update(['customer_id'=>$customer_id]);
+    if( $update_customer_cart ){
+        $json = ['status'=>true,"data"=>'',"msg"=>"Customer updated in cart successfully."];
+    }else{
+        $json = ['status'=>false,"data"=>'',"msg"=>"Error, customer not addedd to cart."];
+    }
     return response()->json($json);
-}
+  }
     public function getAddress(){
       $customer = array();
       $customer_id = Input::get('customer_id');

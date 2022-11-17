@@ -128,8 +128,9 @@ $(document).on('submit', '#filter_customers', function(e) {
         $(".customer_search_table").html(data);
     });
 });
-$(document).on('change', '#city_id', function() {
-    var city_id = $(this).val();
+
+function loadAreas() {
+    var city_id = $('#city_id').val();
     alert(city_id);
     $.ajax({
         method: "POST",
@@ -147,5 +148,18 @@ $(document).on('change', '#city_id', function() {
             }
             $('#area').html(area_html);
         }
+    });
+}
+$(document).on('submit', '#customer_save', function(e) {
+    e.preventDefault();
+    const request_data = $(this).serialize();
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/save/customer",
+        data: request_data + '&store_id=' + store,
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        console.log(data);
+        // $(".customer_search_table").html(data);
     });
 });
