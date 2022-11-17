@@ -52,9 +52,9 @@ Route::prefix('place/order')->middleware('auth')->group(function(){
         Route::post('/update/cart', 'updateCart')->name('place.order.update.cart');
         Route::post('/search/customer', 'searchCustomer')->name('place.order.search.customer');
         Route::post('/load/areas', 'loadAreas')->name('place.order.load.areas');
+        Route::post('/save/customer', 'saveCustomer')->name('place.order.save_customer');
         // Route::post('/ajax/getCustomerDetails', 'getCustomerDetails')->name('place.order.ajax.getCustomerDetails');
         // Route::post('/ajax/addUserOrder', 'addUserOrder')->name('place.order.ajax.addUserOrder');
-        // Route::post('/ajax/save_customer', 'save_customer')->name('place.order.ajax.save_customer');
         // Route::post('/ajax/get_customer', 'get_customer')->name('place.order.ajax.get_customer');
         // Route::post('/ajax/get_product_name', 'get_product_name')->name('place.order.ajax.get_product_name');
         // Route::post('/ajax/get_zone', 'get_zone')->name('place.order.ajax.get_zone');

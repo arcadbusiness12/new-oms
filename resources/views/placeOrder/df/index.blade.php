@@ -114,7 +114,7 @@
                         </div>
                       </div> {{--panel panel-default end --}}
                     </div>{{--card end--}}
-                    <div class="card">
+                    {{--<div class="card">
                       <div class="panel panel-default">
                         <div class="panel-heading" data-toggle="collapse" data-target="#step-4">
                             <div class="pull-left">4: Confirm Address</div>
@@ -122,8 +122,8 @@
                             <div class="clearfix"></div>
                         </div>
                         <div class="panel-collapse collapse panel-body hidden" id="step-4"></div>
-                      </div> {{--panel panel-default end --}}
-                    </div>{{--card end--}}
+                      </div>
+                    </div>card end--}}
                     <div class="card">
                       <div class="panel panel-default">
                         <div class="panel-heading" data-toggle="collapse" data-target="#step-5">

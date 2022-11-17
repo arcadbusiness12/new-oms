@@ -34,9 +34,9 @@
                 </div>
                 <div class="col-sm-9 pl-0">
                   @if($country->phonecode == 971)
-                    <input type="text" name="telephone" class="form-control" value="abc" required />
+                    <input type="text" name="telephone" class="form-control" value="{{ @$customer->mobile }}" required />
                   @else
-                    <input type="text" name="telephone" class="form-control" value="xyz" required />
+                    <input type="text" name="telephone" class="form-control" value="{{ @$customer->mobile }}" required />
                   @endif
                 </div>
             </div>
@@ -53,10 +53,10 @@
         </div>
         <div class="col-sm-4 p-10">
             <label>City <span class="text-danger">*</span></label>
-            <select name="city_id" id="city_id" class="form-control city_id" required >
+            <select name="city_id" id="city_id" class="form-control city_id" onchange="loadAreas()" required >
                 <option>--Select--</option>
                 @forelse ( $cities as $key => $val )
-                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                    <option value="{{ $val->id }}" @selected( $val->id == @$customer->defaultAddress->city_id )>{{ $val->name }}</option>
                 @empty
                 @endforelse
             </select>
@@ -64,27 +64,31 @@
         <div class="col-sm-4 p-10 area-box">
             <label>Area <span class="text-danger">*</span></label>
             <div>
-                <select name="area" id="area" class="form-control" required readonly="readonly">
+                <select name="area_id" id="area" class="form-control" required readonly="readonly">
                     <option>--Select--</option>
+                    @forelse($areas as $key => $area)
+                        <option value="{{ $area->id }}" @selected( $area->id == @$customer->defaultAddress->area_id )>{{ $area->name }}</option>
+                    @empty
+                    @endforelse
                 </select>
             </div>
         </div>
         <div class="col-sm-4 p-10">
             <label>Address <span class="text-danger">*</span></label>
             <div>
-                <textarea name="address" class="form-control" required >{{ @$customer->address }}</textarea>
+                <textarea name="address" class="form-control" required >{{ @$customer->defaultAddress->address }}</textarea>
             </div>
         </div>
         <div class="col-sm-4 p-10">
           <label>Street,Building <span class="text-danger">*</span></label>
           <div>
-              <input type="text" name="address_street_building" id="address_street_building" placeholder="street#, building name" value="{{ @$customer->address->street_building }}" class="form-control" required>
+              <input type="text" name="address_street_building" id="address_street_building" placeholder="street#, building name" value="{{ @$customer->defaultAddress->street_building }}" class="form-control" required>
           </div>
       </div>
       <div class="col-sm-4 p-10">
           <label>Villa, Flat <span class="text-danger">*</span></label>
           <div>
-              <input type="text" name="address_villa_flate" id="address_villa_flate" placeholder="Villa, flat" value="{{ @$customer->address->villa_flat }}" class="form-control" required>
+              <input type="text" name="address_villa_flate" id="address_villa_flate" placeholder="Villa, flat" value="{{ @$customer->defaultAddress->villa_flat }}" class="form-control" required>
           </div>
       </div>
 
@@ -93,13 +97,13 @@
         <div class="col-sm-2 p-10 text-left">
           <label>Alternate number </label>
           <div>
-              <input type="text" name="alternate_number" id="alternate_number" placeholder="Alternate Number" value="{{ @$customer->alternate_phone }}" class="form-control">
+              <input type="text" name="alternate_number" id="alternate_number" placeholder="Alternate Number" value="" class="form-control">
           </div>
        </div>
         <div class="col-sm-9 text-left">
           <label>Google Map Link</label>
           <div>
-            <input type="text" name="gmap_link" id="gmap_link" placeholder="Google Map Link" value="{{ @$customer->gmap_link }}" class="form-control">
+            <input type="text" name="gmap_link" id="gmap_link" placeholder="Google Map Link" value="" class="form-control">
           </div>
         </div>
         <div class="col-sm-1 text-right">
@@ -149,4 +153,5 @@
         $('#area').select2();
         $('.city_id').select2();
     });
+
 </script>
