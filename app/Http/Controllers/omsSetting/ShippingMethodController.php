@@ -4,10 +4,10 @@ namespace App\Http\Controllers\omsSetting;
 
 use App\Http\Controllers\Controller;
 use App\Models\Oms\CountryModel;
+use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\ShippingMethodModel;
 use App\Models\Oms\storeModel;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ShippingMethodController extends Controller
 {
@@ -23,17 +23,22 @@ class ShippingMethodController extends Controller
         // dd($methods);
         $stores = storeModel::where('status',1)->get();
         $countries = CountryModel::where('status',1)->get();
-        return view(self::VIEW_DIR. '.shippingMethods')->with(compact('methods', 'countries', 'stores'));
+        $freeShippingAmount = OmsSettingsModel::select(['setting_id','value'])->where('code', 'free_shipping_amount')->first();
+        // dd($freeShippingAmount);
+        return view(self::VIEW_DIR. '.shippingMethods')->with(compact('methods', 'countries', 'stores', 'freeShippingAmount'));
     }
 
     public function addShippingMethods(Request $request) {
-        // dd($request->all());
         $this->validate($request, [
             'store' => 'required',
-            'name' => 'required',Rule::unique('shipping_methods', 'store_id')->ignore($request->store),
+            'name' => 'required',
             'country' => 'required'
         ]);
-        
+        $exist = ShippingMethodModel::where('name', $request->name)->where('store_id', $request->store)->exists();
+        if($exist) {
+            $store = storeModel::find($request->store);
+            return redirect()->back()->with('error', 'The shipping method name "'. $request->name. '" already exist with same '. $store->name. ' store');
+        }
         ShippingMethodModel::updateOrCreate(
             ['id' => $request->shipping_method_id],
             [
@@ -52,5 +57,22 @@ class ShippingMethodController extends Controller
         return response()->json([
             'countries' => $countries 
         ]);
+    }
+
+    public function AddFreeShippingSetting(Request $request) {
+        $this->validate($request, [
+            'free_shipping_amount' => 'required'
+        ]);
+        OmsSettingsModel::updateOrCreate(
+            ['setting_id' => $request->freeShipping_id],
+            [
+                'code' => 'free_shipping_amount',
+                'key' => 'free_shipping_on',
+                'value' => $request->free_shipping_amount,
+                'serialize' => 0
+            ]
+            );
+            return redirect()->back()->with('success', 'Free shipping amount set.');
+            
     }
 }
