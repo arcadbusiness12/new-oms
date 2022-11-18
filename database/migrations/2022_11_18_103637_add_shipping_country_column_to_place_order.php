@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('customers', function (Blueprint $table) {
-            $table->integer('store_id')->unsigned()->index()->after('id');
-            // $table->foreign('store_id')->references('id')->on('oms_store');
+        Schema::table('oms_place_order', function (Blueprint $table) {
+            $table->string('shipping_country',100)->nullable()->after('shipping_city_area');
+            $table->string('payment_method_name',100)->nullable()->after('payment_method_id');
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('customers', function (Blueprint $table) {
+        Schema::table('oms_place_order', function (Blueprint $table) {
             //
         });
     }

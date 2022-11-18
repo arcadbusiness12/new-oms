@@ -2,6 +2,8 @@
 
 namespace App\Models\Oms;
 
+use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 class OmsCart extends Model
@@ -13,6 +15,12 @@ class OmsCart extends Model
 
         return $this->hasOne('App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel','product_option_id','product_option_id')
         ->join('oms_options_details', 'oms_options_details.id', '=', 'oms_inventory_product_option.option_value_id');
+    }
+    public function product(){
+        return $this->belongsTo(OmsInventoryProductModel::class, 'product_id');
+    }
+    public function productOption(){
+        return $this->belongsTo(OmsInventoryProductOptionModel::class, 'product_option_id');
     }
     public static function getCartTotalProduct($store_id){
         //return only product totals

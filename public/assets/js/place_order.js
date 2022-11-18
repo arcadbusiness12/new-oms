@@ -112,6 +112,10 @@ $(document).on('click', '.btn-cart-update', function() {
         getCart();
     });
 });
+$(document).on('click', '#continue-order', function() {
+    // alert("continue order");
+    $('#heading-step-3').click();
+});
 $(document).on('submit', '#filter_customers', function(e) {
     e.preventDefault();
     var name = $('#customer_name').val();
@@ -131,7 +135,7 @@ $(document).on('submit', '#filter_customers', function(e) {
 
 function loadAreas() {
     var city_id = $('#city_id').val();
-    alert(city_id);
+    // alert(city_id);
     $.ajax({
         method: "POST",
         url: APP_URL + "/place/order/load/areas",
@@ -161,6 +165,7 @@ $(document).on('submit', '#customer_save', function(e) {
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         shippingPayment();
+        $('#heading-step-5').click();
     });
 });
 
@@ -176,3 +181,47 @@ function shippingPayment() {
         $('#step-5').html(data);
     });
 }
+$(document).on('click', '#button-shipping-method', function() {
+    var shipping_method = $('#sb_shipping_method').val();
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/set/shipping/method",
+        cache: false,
+        data: { shipping_method: shipping_method, store_id: store },
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        shippingPayment();
+    });
+});
+$(document).on('click', '#button-payment-method', function() {
+    var payment_method = $('#sb_payment_method').val();
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/set/payment/method",
+        cache: false,
+        data: { payment_method: payment_method, store_id: store },
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        shippingPayment();
+    });
+});
+$(document).on('click', '#confirm-order', function() {
+    $('.confirm_error').addClass('d-none');
+    var comment = $('#comment').val();
+    var gmap_link = $('#gmap_link').val();
+    var alternate_number = $('#alternate_number').val();
+    $.ajax({
+        method: "POST",
+        url: APP_URL + "/place/order/confirm",
+        cache: false,
+        data: { store_id: store, alternate_number: alternate_number, google_map_link: gmap_link, comment: comment },
+        headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
+    }).done(function(data) {
+        // alert(data);
+        if (data.status) {
+
+        } else {
+            $('.confirm_error').removeClass('d-none').html(data.msg);
+        }
+    });
+});

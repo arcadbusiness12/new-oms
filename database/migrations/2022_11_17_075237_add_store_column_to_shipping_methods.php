@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('customers', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table) {
             $table->integer('store_id')->unsigned()->index()->after('id');
-            // $table->foreign('store_id')->references('id')->on('oms_store');
         });
     }
 
@@ -26,7 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('customers', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table) {
             //
         });
     }

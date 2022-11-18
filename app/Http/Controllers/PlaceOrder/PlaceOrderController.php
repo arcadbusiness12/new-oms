@@ -17,7 +17,13 @@ use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\DutyAssignedUserModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
+use App\Models\Oms\OmsBaOrderCounterModel;
 use App\Models\Oms\OmsCart;
+use App\Models\Oms\OmsDfOrderCounterModel;
+use App\Models\Oms\OmsOrderProductModel;
+use App\Models\Oms\OmsOrderTotalModel;
+use App\Models\Oms\PaymentMethodModel;
+use App\Models\Oms\ShippingMethodModel;
 use App\Providers\Reson8SmsServiceProvider;
 use Carbon\Carbon;
 use DB;
@@ -297,235 +303,182 @@ class PlaceOrderController extends Controller
     // dd($request->all());
     $store   = $request->store_id;
     $sub_dir = $store == 1 ? "ba" : "df";
-    $shipping_methods = [];
-    $payment_methods  = [];
+    $shipping_methods = ShippingMethodModel::where("store_id",$store)->get();
+    $payment_methods  = PaymentMethodModel::where('status',1)->get();
     $e_wallet_balance = 0;
+    $shipping_method     = session('shipping_method');
+    $payment_method      = session('payment_method');
+    $totals = $this->formatTotal($store);
+    // dd($totals);
+    return view(self::VIEW_DIR . $sub_dir . '.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals','shipping_method','payment_method'));
+  }
+  private function formatTotal($store){
     $totals = [];
     $totals['Sub-Total'] = OmsCart::getCartTotalAmount($store);
-    // echo "Total Amout is=".$cart_total; die;
-    // dd($totals);
-    return view(self::VIEW_DIR . $sub_dir . '.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals'));
-  }
-  private function formatTotal(){
-
-  }
-    public function getAddress(){
-      $customer = array();
-      $customer_id = Input::get('customer_id');
-
-      $customer_data = Input::get('customer');
-
-      if($customer_id){
-          $address_id = CustomersModel::select('address_id')->where('customer_id', $customer_id)->first();
-          if($address_id){
-              $address_data = DB::table(env("DB_BAOPENCART_DATABASE").'.oc_address')->select('*')->where('address_id', $address_id->address_id)->first();
-              $customer = array(
-                  'shipping_address' => $address_data ? $address_data['address_id'] : $address_data->address_id,
-                  'shipping_firstname' => $address_data ? $address_data['firstname'] : $address_data->firstname,
-                  'shipping_lastname' => $address_data ? $address_data['lastname'] : $address_data->lastname,
-                  'shipping_company' => $address_data->company,
-                  'shipping_address_1' => $address_data ? $address_data['address_1'] : $address_data->address_1,
-                  'shipping_address_2' => $address_data->address_2,
-                  'shipping_city' => $address_data ? $address_data['city'] : $address_data->city,
-                  'shipping_area' => $address_data ? $address_data['area'] : $address_data->area,
-                  'shipping_postcode' => $address_data->postcode,
-                  'shipping_zone_id' => $address_data ? $address_data['zone_id'] : $address_data->zone_id,
-                  'shipping_country_id' => $address_data ? $address_data['country_id'] : $address_data->country_id,
-              );
-          }
-          $countries = CountryModel::select('country_id','name')->get()->toArray();
-
-          $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
-          $contents = (string)$html;
-          $contents = $html->render();
-
-          return response()->json(array('success' => true, 'html' => $contents));
-      }else{
-          $names = CustomersModel::getCustomerNames($customer_data['firstname']);
-          $customer = array(
-              'shipping_address' => "",
-              'shipping_firstname' => $names['firstname'],
-              'shipping_lastname' => $names['lastname'],
-              'shipping_company' => "",
-              'shipping_address_1' => $customer_data['address_1'],
-              'shipping_address_2' => $customer_data['address_2'],
-              'shipping_city' => "",
-              'shipping_area' => $customer_data['area'],
-              'shipping_postcode' => "",
-              'shipping_zone_id' => $customer_data['zone_id'],
-              'shipping_country_id' => $customer_data['country_id'],
-          );
-          $countries = CountryModel::select('country_id','name')->get()->toArray();
-
-          $html = view(self::VIEW_DIR . '.address', ['customer' => $customer, 'countries' => $countries]);
-          $contents = (string)$html;
-          $contents = $html->render();
-
-          return response()->json(array('success' => true, 'html' => $contents));
-      }
-  }
-    public function get_product_image($product_id = ''){
-        $product_image = ProductsModel::select('image')->where('product_id', $product_id)->first();
-        return env('OPEN_CART_IMAGE_URL') . $product_image->image;
+    $shipping_method     = session('shipping_method');
+    $payment_method      = session('payment_method');
+    if($shipping_method ){
+        $totals[$shipping_method['name']] = $shipping_method['amount'];
     }
-    public function update_return_product(){
-        if(Input::all() > 0 && Input::get('submit') == 'update_return_product'){
-            foreach (Input::get('order') as $order) {
-                ExchangeOrderReturnProduct::where(ExchangeOrderReturnProduct::FIELD_ORDER_ID, Input::get('order_id'))->where(ExchangeOrderReturnProduct::FIELD_ORDER_PRODUCT_ID, $order['product_id'])->update(array(ExchangeOrderReturnProduct::FIELD_ORDER_QUANTITY => $order['quantity']));
-            }
-        }
-        return redirect('/exchange_orders/add/'. Input::get('order_id'));
+    if( $payment_method && $payment_method['fee'] > 0 ){
+        $totals[$payment_method['fee_label']] = $payment_method['fee'];
     }
-
-    public function reports(){
-        $orders = array();
-        $whereClause = [];
-
-        if (Input::get('user_id')){
-            array_push($whereClause, ['oms_place_order.user_id', Input::get('user_id')]);
-        }
-        if (Input::get('order_id')){
-            array_push($whereClause, ['oc_order.order_id', Input::get('order_id')]);
-        }
-        if (Input::get('order_status_id')){
-            array_push($whereClause, ['oc_order.order_status_id', Input::get('order_status_id')]);
-        }
-        if (Input::get('min_amount')){
-            array_push($whereClause, ['oc_order.total', '>=', Input::get('min_amount')]);
-        }
-        if (Input::get('max_amount')){
-            array_push($whereClause, ['oc_order.total', '<=', Input::get('max_amount')]);
-        }
-        if (Input::get('date_from')){
-            $date_from = Carbon::createFromFormat("Y-m-d", Input::get('date_from'))->toDateString();
-            array_push($whereClause, [DB::raw("DATE_FORMAT(oc_order.date_added,'%Y-%m-%d')"), '>=', "$date_from"]);
-        }
-        if (Input::get('date_to')){
-            $date_to = Carbon::createFromFormat("Y-m-d", Input::get('date_to'))->toDateString();
-            array_push($whereClause, [DB::raw("DATE_FORMAT(oc_order.date_added,'%Y-%m-%d')"), '<=', "$date_to"]);
-        }
-        if( Input::get('generate_csv') != ""  ){
-            $per_page = 40000;
-        }else{
-            $per_page = self::PER_PAGE;
-        }
-      if(session('role') == 'ADMIN' || session('user_group_id')==4 || session('user_group_id')==8){
-        	$orders_data = DB::table(DB::raw($this->DB_BAOPENCART_DATABASE . '.oc_order AS oc_order'))
-          ->join(DB::raw($this->DB_BAOMS_DATABASE. '.oms_place_order AS oms_place_order'),'oms_place_order.order_id','=','oc_order.order_id')
-          ->where($whereClause)
-          ->where('oms_place_order.store', $this->store)
-          ->where('oc_order.order_status_id','!=',7)
-          ->orderBy('oc_order.order_id', 'DESC')
-          ->paginate($per_page)->appends(Input::all());
-      }else{
-       $orders_data = DB::table(DB::raw($this->DB_BAOPENCART_DATABASE. '.oc_order AS oc_order'))
-       ->join(DB::raw($this->DB_BAOMS_DATABASE. '.oms_place_order AS oms_place_order'),'oms_place_order.order_id','=','oc_order.order_id')
-       ->where('oms_place_order.user_id', session('user_id'))
-       ->where($whereClause)
-       ->where('oms_place_order.store', $this->store)
-       ->where('oc_order.order_status_id','!=',7)
-       ->orderBy('oms_place_order.place_order_id', 'DESC')
-       ->paginate($per_page)->appends(Input::all());
-     }
-
-   foreach ($orders_data as $key => $value) {
-    $user = OmsUserModel::select('username','firstname','lastname')->where('user_id', $value->user_id)->first();
-    $status = OrderStatusModel::select('name')->where('order_status_id', $value->order_status_id)->first();
-    $shipping_company_data = OmsOrdersModel::with('airway_bills')->where('order_id',$value->order_id)->where('last_shipped_with_provider','>',0)->first();
-    // echo $shipping_company_data->airway_bills[0]->airway_bill_number;
-    // echo "<br>";
-    // echo $shipping_company_data->airway_bills[0]->shipping_provider->name;
-    // echo "<br>";
-    // dd($shipping_company_data->toArray());
-    if( !empty($shipping_company_data) ){
-        $airwaybill_no = $shipping_company_data->airway_bills[0]->airway_bill_number;
-        $shipping_company = $shipping_company_data->airway_bills[0]->shipping_provider->name;
+    return $totals;
+  }
+  public function setPaymentMethod(Request $request){
+    session()->forget('payment_method');
+    $store_id = $request->store_id;
+    $request_payment_method = $request->payment_method;
+    $data = PaymentMethodModel::select('id','name','fee','fee_label')->where("id",$request_payment_method)->first();
+    if( $data ){
+        session()->put('payment_method', $data->toArray());
     }else{
-        $shipping_company = "";
-        $airwaybill_no  = "";
+        echo "no data found, in table.";
     }
+  }
+  public function getPaymetMethod(){
 
-    $orders[] = array(
-        'order_id'  =>  $value->order_id,
-        'user'      =>  $user ? $user->username : '',
-        'amount'    =>  $value->total,
-        'shipping_company' => $shipping_company,
-        'airwaybill_no' => $airwaybill_no,
-        'status'    =>  $status ? $status->name : '',
-        'date'      =>  $value->date_added,
-    );
+  }
+  public function setShippingMethod(Request $request){
+    session()->forget('shipping_method');
+    $store_id = $request->store_id;
+    $shipping_method = $request->shipping_method;
+    $data = ShippingMethodModel::select('id','name','amount')->where("store_id",$store_id)->where('id',$shipping_method)->first();
+    if( $data ){
+        session()->put('shipping_method', $data->toArray());
+    }else{
+        echo "no data found, in table.";
     }
-    if( Input::get('generate_csv') != "" && !empty($orders) ){
-        $this->csvReport($orders);
+  }
+  public function getShippingMethod(Request $request){
+
+  }
+  public function confirmOrder(Request $request){
+    $store_id = $request->store_id;
+    $comment  = $request->comment;
+    $google_map_link     = $request->google_map_link;
+    $alternate_number    = $request->alternate_number;
+    $shipping_method     = session('shipping_method');
+    $payment_method      = session('payment_method');
+    $server_session_id   = session()->getId();
+    $cart_data = OmsCart::with(['product','productOption.option','productOption.optionVal'])->where("session_id",$server_session_id)->where('store_id',$store_id)->get();
+    if( $store_id < 1 ){
+        return response()->json(['status'=>false,"data"=>'','msg'=>"No store selected, or invalid store ID."]);
     }
-$staff_members = OmsUserModel::select('user_id','username')->whereIn(OmsUserModel::FIELD_USER_GROUP_ID,[11,12])->where('status',1)->get();
-$ordersStatus = OrderStatusModel::all();
-
-return view(self::VIEW_DIR . ".reports", ["orders" => $orders, "orderStatus" => $ordersStatus, "staffs" => $staff_members, "role" => session('role'), "pagination" => $orders_data->render(), "old_input" => Input::all(), "orders_data" => $orders_data]);
-}
-public function csvReport($list){
-    $file_name = "saleReport".date('d-M-Y');
-    header( 'Content-Type: text/csv' );
-    header( 'Content-Disposition: attachment; filename="'.$file_name.'.csv"');
-    $fp = fopen('php://output', 'w');
-    // $list = array (
-    //     array('aaa', 'bbb', 'ccc', 'dddd'),
-    //     array('123', '456', '789'),
-    //     array('"aaa"', '"bbb"')
-    // );
-
-    // $fp = fopen('file.csv', 'w');
-    fputcsv($fp, ['Order #','Sale Person','Amount','Courier Company','AirWay Bill #','OMS Status','Date']);
-    foreach ($list as $fields) {
-        fputcsv($fp, $fields);
+    if( $cart_data->count() == 0 ){
+      return response()->json(['status'=>false,"data"=>'','msg'=>"Your cart is empty"]);
     }
-
-    fclose($fp);
-    exit();
-}
-public function addUserOrder(Request $request){
-    $order_id = $request->get('order_id');
-    $user_id = Session::get('user_id');
-    //get target data to save
-    // $target_data = OmsUserModel::with(['paidAdPage','singleAssignedDuties'=>function($query){
-    //   $query->where("activity_id",2);
-    // }])->where("user_id",$user_id)->first();
-
-    $OmsPlaceOrderModel = new OmsPlaceOrderModel();
-    $OmsPlaceOrderModel->{OmsPlaceOrderModel::FIELD_ORDER_ID} = $order_id;
-    $OmsPlaceOrderModel->{OmsPlaceOrderModel::FIELD_USER_ID} = $user_id;
-    $OmsPlaceOrderModel->{OmsPlaceOrderModel::FIELD_STORE} = $this->store;
-    // if($target_data){
-    //   $OmsPlaceOrderModel->amount_target = $target_data->commission_on_delivered_amount;
-    //   if( $target_data->paidAdPage ){
-    //     $OmsPlaceOrderModel->page_setting_channel_id = $target_data->paidAdPage->id;
-    //   }
-    //   if( $target_data->singleAssignedDuties ){
-    //   $OmsPlaceOrderModel->order_target = $target_data->singleAssignedDuties->quantity;
-    //   }
-    // }
-    $order_save = $OmsPlaceOrderModel->save();
-    if($order_save){
-      OmsActivityLogModel::newLog($order_id,1,$this->store); //1 is for place order
+    if( $cart_data->count() > 0 ){
+        if( $cart_data[0]->customer_id < 1 ){
+            return response()->json(['status'=>false,"data"=>'','msg'=>"Customer details not set in cart"]);
+        }
+        $customer_data = Customer::with(['defaultAddress.country','defaultAddress.city','defaultAddress.area'])->where('id',$cart_data[0]->customer_id)->first();
     }
-    // $this->checkDuplicateOrder($order_id);
-    return response()->json(array('success' => true));
-}
-public function get_customer(){
-    $customers = array();
-    if(count(Input::all()) > 0){
-        $customer = Input::get('customer');
-
-        $customers = CustomersModel::select('customer_id','firstname','lastname','email','telephone')->where('firstname','LIKE',"%{$customer}%")->orWhere('lastname','LIKE',"%{$customer}%")->orWhere('email','LIKE',"%{$customer}%")->orWhere('telephone','LIKE',"%{$customer}%")->limit(10)->get();
-        if($customers->count()){
-            foreach ($customers as $customer) {
-                $customers[] = $customer->firstname . ' ' . $customer->lastname . ' - ' . $customer->email . ' - ' . $customer->telephone;
+    if( !$payment_method ){
+        return response()->json(['status'=>false,"data"=>'','msg'=>"Payment method missing"]);
+    }
+    if( !$shipping_method ){
+        return response()->json(['status'=>false,"data"=>'','msg'=>"Shipping method missing"]);
+    }
+    if( !$customer_data ){
+        return response()->json(['status'=>false,"data"=>'','msg'=>"Customer data no found."]);
+    }
+    // dd( $payment_method );
+    // dd($customer_data->toArray());
+    //first entry in store counter tabel
+    if( $store_id == 1 ){
+        $order_counter = OmsBaOrderCounterModel::create();
+        $order_id =  $order_counter->id;
+    }else if( $store_id == 2 ){
+        $order_counter = OmsDfOrderCounterModel::create();
+        $order_id =  $order_counter->id;
+    }
+    //entry in total table
+    $totals = $this->formatTotal($store_id);
+    $order_total_amount = 0;
+    if( is_array($totals) && count($totals) > 0 ){
+        foreach($totals as $title=>$total){
+            $insert_order_tot           = new OmsOrderTotalModel();
+            $insert_order_tot->order_id = $order_id;
+            $insert_order_tot->title    = $title;
+            $insert_order_tot->value    = $total;
+            $insert_order_tot->order_id = $order_id;
+            if( $insert_order_tot->save() ){
+                $order_total_amount += $total;
             }
         }
+
     }
-    return response()->json(array('customers' => $customers));
-}
-public function getProductSku(Request $request){
+
+    //entry in place order table
+    $place_order = new OmsPlaceOrderModel();
+    $place_order->order_id    = $order_id;
+    $place_order->user_id     = session('user_id');
+    $place_order->store       = $store_id;
+    $place_order->customer_id = $customer_data->id;
+    $place_order->firstname   = $customer_data->firstname;
+    $place_order->email       = $customer_data->email;
+    $place_order->mobile      = $customer_data->mobile;
+    $place_order->alternate_number      = $alternate_number;
+    //payment address
+    $place_order->payment_country_id     =  $customer_data->defaultAddress->country_id;
+    $place_order->payment_city_id        =  $customer_data->defaultAddress->city_id;
+    $place_order->payment_city_area_id   =  $customer_data->defaultAddress->area_id;
+    $place_order->payment_firstname      =  $customer_data->defaultAddress->firstname;
+    $place_order->payment_address_1      =  $customer_data->defaultAddress->address;
+    $place_order->payment_street_building=  $customer_data->defaultAddress->street_building;
+    $place_order->payment_villa_flat     =  $customer_data->defaultAddress->villa_flat;
+    $place_order->payment_city           =  $customer_data->defaultAddress->city->name;
+    $place_order->payment_city_area      =  $customer_data->defaultAddress->area->name;
+    $place_order->payment_country        =  $customer_data->defaultAddress->country->name;
+    // //shipping address
+    $place_order->shipping_country_id     = $customer_data->defaultAddress->country_id;
+    $place_order->shipping_city_id        = $customer_data->defaultAddress->city_id;
+    $place_order->shipping_city_area_id   = $customer_data->defaultAddress->area_id;
+    $place_order->shipping_firstname      = $customer_data->defaultAddress->firstname;
+    $place_order->shipping_address_1      = $customer_data->defaultAddress->address;
+    $place_order->shipping_street_building= $customer_data->defaultAddress->street_building;
+    $place_order->shipping_villa_flat     = $customer_data->defaultAddress->villa_flat;
+    $place_order->shipping_city           = $customer_data->defaultAddress->city->name;
+    $place_order->shipping_city_area      = $customer_data->defaultAddress->area->name;
+    $place_order->shipping_country        = $customer_data->defaultAddress->country->name;
+    //payment method
+    $place_order->payment_method_id       = $payment_method['id'];
+    $place_order->payment_method_name     = $payment_method['name'];
+    //general statuses
+    $place_order->total_amount     = $order_total_amount;
+    $place_order->comment          = $comment;
+    $place_order->google_map_link  = $google_map_link ;
+    $place_order->online_approved  = 1;
+    $place_order->reseller_approve = 1;
+    $place_order->save();
+    //insertion in oms_order_products table
+    if($cart_data){
+        foreach($cart_data as $key => $cart_item){
+            $insert_order_products = new OmsOrderProductModel();
+            $insert_order_products->order_id   = $order_id;
+            $insert_order_products->product_id = $cart_item->product_id;
+            $insert_order_products->store_id   = $cart_item->store_id;
+            $insert_order_products->sku        = $cart_item->product_sku;
+            $insert_order_products->quantity   = $cart_item->product_quantity;
+            $insert_order_products->price      = $cart_item->product_price;
+            $insert_order_products->total      = ($cart_item->product_quantity*$cart_item->product_price);
+            $insert_order_products->product_option_id = $cart_item->product_option_id;
+            $insert_order_products->option_name = $cart_item->productOption->option->option_name;
+            $insert_order_products->option_value = $cart_item->productOption->optionVal->value;
+            $insert_order_products->save();
+        }
+    }
+    $this->clearSessionAterOrder();
+    return response()->json(['status'=>true,"data"=>'','msg'=>"order placed successfully."]);
+  }
+  private function clearSessionAterOrder(){
+    $server_session_id   = session()->getId();
+    OmsCart::where('session_id',$server_session_id)->delete();
+    session()->forget('shipping_method');
+    session()->forget('payment_method');
+  }
+  public function getProductSku(Request $request){
     // dd($request->all());
     if(count($request->all()) > 0){
         $product_sku = $request->product_sku;
@@ -539,21 +492,5 @@ public function getProductSku(Request $request){
         }
     }
     return response()->json(array('skus' => $skus));
-}
-public function get_zone(){
-    $postData = Input::all();
-    $zones = array();
-    if(isset($postData['country_id'])){
-        $zones = ZoneModel::select('zone_id','name')->where(ZoneModel::FIELD_COUNTRY_ID,$postData['country_id'])->get()->toArray();
-    }
-    return response()->json(array('success' => true, 'zones' => $zones));
-}
-public function get_area(){
-    $postData = Input::all();
-    $areas = array();
-    if(isset($postData['zone_id'])){
-        $areas = AreaModel::select('area_id','name')->where(AreaModel::FIELD_ZONE_ID,$postData['zone_id'])->get()->toArray();
-    }
-    return response()->json(array('success' => true, 'areas' => $areas));
-}
+ }
 }

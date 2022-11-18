@@ -78,7 +78,7 @@
                     </div>{{--card end--}}
                     <div class="card">
                       <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" data-target="#step-3">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-3" id="heading-step-3">
                             3. Search Customer
                         </div>
                         <div class="panel-body collapse" id="step-3">
@@ -126,7 +126,7 @@
                     </div>card end--}}
                     <div class="card">
                       <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" data-target="#step-5">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-5" id="heading-step-5">
                             <div class="pull-left">5: Payment & Shipping</div>
                             <div class="cart-loader"></div>
                             <div class="clearfix"></div>

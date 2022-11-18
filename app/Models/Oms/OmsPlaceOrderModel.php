@@ -19,4 +19,7 @@ class OmsPlaceOrderModel extends Model
     const FIELD_ORDER_ID = "order_id";
     const FIELD_USER_ID = "user_id";
     const FIELD_STORE = 'store';
+    public function orderProducts(){
+        return $this->hasMany(OmsOrderProductModel::class,'order_id','order_id');
+    }
 }
