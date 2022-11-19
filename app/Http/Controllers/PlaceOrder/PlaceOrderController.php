@@ -459,6 +459,7 @@ class PlaceOrderController extends Controller
             $insert_order_products->order_id   = $order_id;
             $insert_order_products->product_id = $cart_item->product_id;
             $insert_order_products->store_id   = $cart_item->store_id;
+            $insert_order_products->name       = $cart_item->product_name;
             $insert_order_products->sku        = $cart_item->product_sku;
             $insert_order_products->quantity   = $cart_item->product_quantity;
             $insert_order_products->price      = $cart_item->product_price;
@@ -469,6 +470,7 @@ class PlaceOrderController extends Controller
             $insert_order_products->save();
         }
     }
+    OmsActivityLogModel::newLog($order_id,1,$store_id); // 1 for place order
     $this->clearSessionAterOrder();
     return response()->json(['status'=>true,"data"=>'','msg'=>"order placed successfully."]);
   }
@@ -477,6 +479,9 @@ class PlaceOrderController extends Controller
     OmsCart::where('session_id',$server_session_id)->delete();
     session()->forget('shipping_method');
     session()->forget('payment_method');
+  }
+  public function onHoldQuantity($order_id){
+
   }
   public function getProductSku(Request $request){
     // dd($request->all());

@@ -1,4 +1,4 @@
-@if( $order->oms_order_status != 5 )
+@if( $order->omsOrder?->oms_order_status != 5 )
 <div class="stepper sw-main sw-theme-circles"
    data-options='{
    "theme":"sw-theme-circles",
@@ -10,11 +10,11 @@
    }'>
    <ul class="nav step-anchor">
       <li style="display: none"><a href=""></a></li>
-      <li class="@if( $order->oms_order_status == '0' || $order->oms_order_status > 0 ) active @endif"><a href=""  class="circle"></a><center>Picklist</center></li>
-      <li class="@if( $order->oms_order_status > 0 ) active @endif"><a  class="circle"></a><center>Packed</center></li>
-      <li class="@if( $order->oms_order_status > 1 ) active @endif"><a  class="circle"></a><center>AWB</center></li>
-      <li class="@if( $order->oms_order_status > 2 ) active @endif" ><a  class="circle"></a><center>Shipped</center></li>
-      <li class="@if( $order->oms_order_status > 3 ) active @endif"><a  class="circle"></a><center>Deliver</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status == '0' || $order->oms_order_status > 0 ) active @endif"><a href=""  class="circle"></a><center>Picklist</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status > 0 ) active @endif"><a  class="circle"></a><center>Packed</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status > 1 ) active @endif"><a  class="circle"></a><center>AWB</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status > 2 ) active @endif" ><a  class="circle"></a><center>Shipped</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status > 3 ) active @endif"><a  class="circle"></a><center>Deliver</center></li>
       <li class="@if( $order->payment_status == 1 ) active @endif"><a  class="circle"></a><center>Paid</center></li>
    </ul>
 </div>

@@ -91,19 +91,19 @@
     }).done(function (data) {
       if( typeof data == 'object' ){
         $('#address_1').val( data.payment_address_1 );
-        $('#street_building').val( data.street_building );
-        $('#villa_flat').val( data.villa_flat );
+        $('#street_building').val( data.shipping_street_building );
+        $('#villa_flat').val( data.shipping_villa_flat );
         var html = '';
         data.areas.forEach(function(k,v) {
           html += '<option value="'+k+'">'+k+'</option>';
         });
         // var nhtml = select_s+html+select_e;
         $('#areas').html( html );
-        $('#area').val( data.payment_area );
-        $('#city').val( data.shipping_zone );
+        $('#area').val( data.shipping_city_area );
+        $('#city').val( data.shipping_city );
         $('#google_map').val( data.google_map_link );
         $('#name').val( data.firstname );
-        $('#frm_address input[name="telephone"]').val( data.telephone );
+        $('#frm_address input[name="telephone"]').val( data.mobile );
         $('#store').val( data.store );
       }
 

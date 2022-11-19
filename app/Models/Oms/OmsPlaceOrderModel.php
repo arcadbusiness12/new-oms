@@ -22,4 +22,7 @@ class OmsPlaceOrderModel extends Model
     public function orderProducts(){
         return $this->hasMany(OmsOrderProductModel::class,'order_id','order_id');
     }
+    public function omsOrder(){
+        return $this->hasOne(OmsOrdersModel::class,"order_id","order_id");
+    }
 }

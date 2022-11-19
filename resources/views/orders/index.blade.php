@@ -55,42 +55,41 @@
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
                                         <td class="column col-sm-1 td-valign"><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span></center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_added }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_modified }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->telephone }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->updated_at  }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->email }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total_amount }} </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
                                         <td>&nbsp;</td>
-                                        <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
-                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
+                                        <td colspan="2"><strong>Address:</strong>{{ $order->shipping_city_area }},{{ $order->shipping_address_1 }},{{ $order->shipping_street_building }},{{ $order->shipping_villa_flat }}</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city }}</td>
                                         <td colspan="4" >
                                              <div class="normal-order-progress">
                                                 @include('orders.order_progress_bar')
                                               </div>
                                         </td>
                                     </tr>
-                                    @if( $order->orderd_products )
+                                    @if( $order->orderProducts )
                                         <tr class="row_{{ $order->order_id }}">
                                             <td colspan="8">
                                                 <center>
                                                 <table width="100%" style="font-size:12px;">
-                                                    @foreach ( $order->orderd_products as $ordered_product )
+                                                    @foreach ( $order->orderProducts as $ordered_product )
                                                         <tr>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
-                                                            <td><img src="{{ $ordered_product?->product_details?->image }}" /></td>
+                                                            <td style="width: 5%; border:1px solid red"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
                                                             <td>{{ $ordered_product->name }}<br>
-                                                                @forelse ($ordered_product->order_options as $order_option )
-                                                                    <strong>{{ $order_option->name }} :</strong> {{ $order_option->value }}
-                                                                @empty
-                                                                @endforelse
-                                                            </td>
-                                                            <td>{{ $ordered_product->model }}</td>
+                                                                @if(  $ordered_product->product?->option_value > 0  )
+                                                                    <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,
+                                                                @endif
+                                                                <strong>Color : </strong>{{ $ordered_product->product?->option_name }}</td>
+                                                            <td>{{ $ordered_product->sku }}</td>
                                                             <td>{{ $ordered_product->quantity }}</td>
                                                             <td>{{ $ordered_product->price }}</td>
                                                             <td>{{ $ordered_product->total }}</td>
@@ -144,13 +143,11 @@
                                                                     {{csrf_field()}}
                                                                     <input type="hidden" name="order_id" value="{{$order->order_id}}" />
                                                                     <input type="hidden" name="oms_store" value="{{$order->store}}" />
-                                                                    @if(@$old_input['order_status_id']==1)
                                                                         @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
                                                                         <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
                                                                             class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
                                                                             Forward to Picking</button>
                                                                         @endif
-                                                                    @endif
                                                                 </form>
                                                             </a>
                                                         </div>
@@ -173,11 +170,12 @@
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
 @include('orders.edit_customer_popup')
-@include('orders.popup_forwordpicklist_courier');
-@include('orders.popup_courier_tracking');
-@include('orders.popup_order_details');
-@include('orders.popup_order_activity_log');
-@include('orders.ccvaneue_details');
+@include('orders.popup_forwordpicklist_courier')
+@include('orders.popup_courier_tracking')
+@include('orders.popup_order_details')
+@include('orders.popup_order_activity_log')
+@include('orders.ccvaneue_details')
+
 <style>
 .table td {
     border-top: none !important;
