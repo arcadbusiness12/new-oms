@@ -145,7 +145,7 @@
                                                                     <input type="hidden" name="oms_store" value="{{$order->store}}" />
                                                                         @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
                                                                         <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                            class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
+                                                                            class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->mobile}})">
                                                                             Forward to Picking</button>
                                                                         @endif
                                                                 </form>

@@ -739,59 +739,26 @@ class OrdersAjaxController extends Controller {
     }
     public function userOrderHistory(Request $request) {
         $old_input = RequestFacad::all();
-        $data = DB::table("oms_place_order AS opo")
-            ->leftjoin("oms_orders AS ord",function($join){
-                $join->on("ord.order_id","=","opo.order_id");
-                $join->on("ord.store","=","opo.store");
-            })
-            ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                $join->on("baord.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("1"));
-            })
-            ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                $join->on("dford.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("2"));
-            })
-            ->leftjoin("shipping_providers AS sp",function($join){
-                $join->on("sp.shipping_provider_id","=","ord.last_shipped_with_provider");
-            })
-            ->select(DB::raw("opo.order_id AS order_id,sp.name AS name,
-                  (CASE WHEN opo.store = 1 THEN baord.firstname WHEN opo.store = 2 THEN dford.firstname ELSE 0 END) AS firstname,
-                  (CASE WHEN opo.store = 1 THEN baord.lastname WHEN opo.store = 2 THEN dford.lastname ELSE 0 END) AS lastname,
-                  (CASE WHEN opo.store = 1 THEN baord.telephone WHEN opo.store = 2 THEN dford.telephone ELSE 0 END) AS telephone,
-                  (CASE WHEN opo.store = 1 THEN baord.order_status_id WHEN opo.store = 2 THEN dford.order_status_id ELSE 0 END) AS order_status_id,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_2 WHEN opo.store = 2 THEN dford.shipping_address_2 ELSE 0 END) AS shipping_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_area WHEN opo.store = 2 THEN dford.shipping_area ELSE 0 END) AS shipping_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_zone WHEN opo.store = 2 THEN dford.shipping_zone ELSE 0 END) AS shipping_zone,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_1 WHEN opo.store = 2 THEN dford.payment_address_1 ELSE 0 END) AS payment_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_2 WHEN opo.store = 2 THEN dford.payment_address_2 ELSE 0 END) AS payment_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_area WHEN opo.store = 2 THEN dford.payment_area ELSE 0 END) AS payment_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_city WHEN opo.store = 2 THEN dford.shipping_city ELSE 0 END) AS shipping_city,
-                  (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total
-                "))
+        // dd($old_input);
+        $data = OmsPlaceOrderModel::with(['omsOrder'])
             ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
-                return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.telephone LIKE "%'.$old_input["telephone"].'%" WHEN opo.store = 2 THEN dford.telephone LIKE "%'.$old_input["telephone"].'%" ELSE 0 END)');
+                return $query->where('mobile',$old_input['telephone']);
             })
-            ->orderBy('opo.order_id', 'DESC')->limit(6)->get();
-		// dd($data);
+            ->orderBy('order_id', 'DESC')->limit(6)->get();
 	    $orderss=[];
 	    if(!empty($data)){
 			foreach ($data as $order) {
 				// dd($order);
-				$order_status = OrderStatusModel::select('name as order_status')->where('order_status_id' ,$order->order_status_id)->first();
-                $city = ($order->shipping_city ? $order->shipping_city : $order->shipping_zone);
                 $ordernum_url = URL::to('/orders')."?order_id=$order->order_id";
 				$orderss[] = array(
 					'order_id'   => "<a href='$ordernum_url' target='_blank'>$order->order_id</a>",
 					'user'       => "-",
 					'name'       => $order->firstname . ' ' . $order->lastname,
-	                'address'    => $order->payment_area.", ".$order->payment_address_1.", ".$order->shipping_address_2.", ".$order->payment_area.", ".$city,
-					'status'     => $order_status ? $order_status->order_status : "",
-					'date_added' => $order->date_added,
+	                'address'    => $order->shipping_city_area.", ".$order->shipping_address_1.", ".$order->shipping_street_building.", ".$order->shipping_villa_flat.", ".$order->shipping_city,
+					'status'     => "",
+					'date_added' => date("d-m-Y G:i:s",strtotime($order->created_at)),
 					'courier'    => ($order->name != "") ? $order->name : "-",
-					'total'      => $order->total,
+					'total'      => number_format($order->total_amount,2),
 				);
 			}
 	    }else{
