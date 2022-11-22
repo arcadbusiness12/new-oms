@@ -703,6 +703,7 @@ class ComposerStaticInit832141bf3196b9d98a8c922257cdaea2
         'App\\Models\\Oms\\OmsOrderProductModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrderProductModel.php',
         'App\\Models\\Oms\\OmsOrderReshipHistoryModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrderReshipHistoryModel.php',
         'App\\Models\\Oms\\OmsOrderStatusInterface' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrderStatusInterface.php',
+        'App\\Models\\Oms\\OmsOrderStatusModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrderStatusModel.php',
         'App\\Models\\Oms\\OmsOrderTotalModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrderTotalModel.php',
         'App\\Models\\Oms\\OmsOrdersModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsOrdersModel.php',
         'App\\Models\\Oms\\OmsPlaceOrderModel' => __DIR__ . '/../..' . '/app/Models/Oms/OmsPlaceOrderModel.php',

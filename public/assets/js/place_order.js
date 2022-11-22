@@ -5,7 +5,8 @@ $(document).on('keyup', '#product_model', function() {
         method: "POST",
         url: APP_URL + "/place/order/get/product/sku",
         data: {
-            product_sku: _this.val()
+            product_sku: _this.val(),
+            store: store
         },
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {

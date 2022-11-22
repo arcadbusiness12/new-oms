@@ -24,6 +24,7 @@ use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
+use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\OmsOrderReshipHistoryModel;
 use App\Models\Oms\OmsPlaceOrderModel;
 use App\Models\Oms\ShippingProvidersModel;
@@ -95,127 +96,109 @@ class OrdersAjaxController extends Controller {
 				throw new \Exception("Please select an order to cancel");
 			} else {
 				// Change the OMS Order STATUS TO CANCEL
-				$omsOrder = OmsOrdersModel::where(OmsOrdersModel::FIELD_ORDER_ID, $orderId)->where('store',$store)->first();
-				// dd($omsOrder);
-                if( $store == 1 ){
-				    $openCartOrder = OrdersModel::findOrFail($orderId);
-                }if( $store == 2 ){
-				    $openCartOrder = DFOrdersModel::findOrFail($orderId);
+				$order_data = OmsPlaceOrderModel::with(['omsOrder'=>function($q) use($store){
+                    $q->where("store",$store);
+                }])->where('order_id', $orderId)->where('store',$store)->first();
+				if ( $order_data->omsOrder && $order_data->omsOrder->order_id > 0 ) {
+                    //just change to cancel status
+                    OmsOrdersModel::where("order_id",$orderId)->where('store',$store)->update(['oms_order_status'=>5]);  //5 for cancel order
+                }else{
+                    $omsOrder = new OmsOrdersModel();
+                    $omsOrder->{OmsOrdersModel::FIELD_ORDER_ID} = $orderId;
+                    $omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_CANCEL;
+                    $omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
+                    $omsOrder->store = $store;
+                    $omsOrder->save();
                 }
-				if ($omsOrder == null || ($omsOrder && in_array($omsOrder->oms_order_status, array(OmsOrderStatusInterface::OMS_ORDER_STATUS_IN_QUEUE_PICKING_LIST, OmsOrderStatusInterface::OMS_ORDER_STATUS_PACKED)) )) {
-					if($omsOrder !== null){
-						//UPDATE OMS ORDER STATUS
-						$omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_CANCEL;
-						$omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
-						$omsOrder->save();
-					}else{
-						$omsOrder = new OmsOrdersModel();
-						$omsOrder->{OmsOrdersModel::FIELD_ORDER_ID} = $orderId;
-						$omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_CANCEL;
-						$omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
-						$omsOrder->store = $store;
-						$omsOrder->save();
-					}
+                //check if order is in onhold
+                $check_on_hold = OmsInventoryOnholdQuantityModel::where("order_id",$orderId)->where('store',$store)->first();
+                if( $check_on_hold ){
+                   $this->availableInventoryQuantity($orderId,$store);
+                }
+                //oms activity log
+                OmsActivityLogModel::newLog($orderId,10,$store); //10 is for cancel order
+                return array('success' => true, 'data' => array(), 'error' => array('message' => ''));
 
-					//UPDATE OPENCART STATUS
-					$openCartOrder->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
-					$openCartOrder->{OrdersModel::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_CANCELED;
-					$openCartOrder->online_approved = 1; //incase if order is reject from online tab it should now show in all orders as cancel order.
-					$openCartOrder->save(); // update the order status
-
-					//UPDATE OPENCART ORDER HISTORY
-                    if( $store == 1 ){
-                        $orderHistory = new OrderHistory();
-                    }if( $store == 2 ){
-                        $orderHistory = new DFOrderHistory();
-                    }
-					$orderHistory->{OrderHistory::FIELD_COMMENT} = "Order canceled from OMS";
-					$orderHistory->{OrderHistory::FIELD_ORDER_ID} = $orderId;
-					$orderHistory->{OrderHistory::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_CANCELED;
-					$orderHistory->{OrderHistory::FIELD_DATE_ADDED} = \Carbon\Carbon::now();
-					$orderHistory->{OrderHistory::FIELD_NOTIFY} = OrderHistory::NOTIFY_CUSTOMER;
-					$orderHistory->save();
-                    //check if order is in onhold
-                    $check_on_hold = OmsInventoryOnholdQuantityModel::where("order_id",$orderId)->where('store',$store)->first();
-                    if( $check_on_hold ){
-                        if( $store == 1 ){
-                            $this->availableInventoryQuantity($orderId);
-                        }else if( $store == 2 ){
-                            $this->availableInventoryQuantityDF($orderId);
-                        }
-                        // self::addQuantity($orderId);
-                    }
-                    //oms activity log
-			        OmsActivityLogModel::newLog($orderId,10,$store); //10 is for cancel order
-					return array('success' => true, 'data' => array(), 'error' => array('message' => ''));
-				} else {
-					throw new \Exception("Order can't be canceled in this status");
-				}
 			}
 		} catch (\Exception $e) {
 			return array('success' => false, 'data' => array(), 'error' => array('message' => $e->getMessage()));
 		}
 	}
-    //add quantity for Business Arcae
-    public function availableInventoryQuantity($order_id){
-		$orderd_products = OrdersModel::with(['orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
-		if($orderd_products->orderd_products){
-			foreach ($orderd_products->orderd_products as $key => $product) {
-				$opencart_sku = ProductsModel::select('sku')->where('product_id', $product->product_id)->first();
-				$exists = OmsInventoryProductModel::select("*","option_name AS color","option_value AS size")->where('sku', $opencart_sku->sku)->first();
-				if($exists){
-					$product_id = $exists->product_id;
-
-					if(!empty($exists->size) && $exists->size > 0){
-						$total_quantity = 0;
-						foreach ($product->order_options as $key => $option) {
-							$option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-							->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-							->where('option_description.name', $option->name)
-							->where('ovd.name', $option->value)
-							->first();
-							$ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
-							if($option_data && $option_data->option_id != $ba_color_option_id){
-								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
-								$total_quantity = $total_quantity + $product->quantity;
-								$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
-                                $onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
-								if($packedExists){
-									$decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
-									OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
-								}else if($onholdExists){
-									$decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
-									OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
-								}
-							}
-						}
-					}else{
-						foreach ($product->order_options as $key => $option) {
-							$option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-							->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-							->where('option_description.name', $option->name)
-							->where('ovd.name', $option->value)
-							->first();
-							if($option_data){
-								$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
-								$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
-								$onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
-								if($packedExists){
-									$decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
-									OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
-								}else if( $onholdExists ){
-									$decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
-									OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
-								}
-							}
-						}
-					}
-                    //from helper
-                    updateSitesStock($opencart_sku->sku);
-				}
-			}
-		}
+    public function availableInventoryQuantity($order_id,$store_id){
+        $order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+        if( $order_products ){
+            $order_quantity = 0;
+            foreach( $order_products as $key => $order_product ){
+                $order_quantity = $order_product->quantity;
+                $check_exist = OmsInventoryOnholdQuantityModel::where("order_id",$order_product->order_id)->where('product_id',$order_product->product_id)
+                ->where('option_id',$order_product->productOption->option_id)->where('option_value_id',$order_product->productOption->option_value_id)->where('store',$order_product->store_id)->first();
+                if( $check_exist ){
+                    OmsInventoryProductOptionModel::where(["product_id"=>$order_product->product_id,"product_option_id"=>$order_product->product_option_id])
+                    ->update(['available_quantity'=>DB::raw("available_quantity + $order_quantity"),'onhold_quantity'=>DB::raw("onhold_quantity - $order_quantity")]);
+                }
+            }
+        }
 	}
+    //add quantity for Business Arcae
+    // public function availableInventoryQuantity($order_id){
+	// 	$orderd_products = OrdersModel::with(['orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
+	// 	if($orderd_products->orderd_products){
+	// 		foreach ($orderd_products->orderd_products as $key => $product) {
+	// 			$opencart_sku = ProductsModel::select('sku')->where('product_id', $product->product_id)->first();
+	// 			$exists = OmsInventoryProductModel::select("*","option_name AS color","option_value AS size")->where('sku', $opencart_sku->sku)->first();
+	// 			if($exists){
+	// 				$product_id = $exists->product_id;
+
+	// 				if(!empty($exists->size) && $exists->size > 0){
+	// 					$total_quantity = 0;
+	// 					foreach ($product->order_options as $key => $option) {
+	// 						$option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+	// 						->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+	// 						->where('option_description.name', $option->name)
+	// 						->where('ovd.name', $option->value)
+	// 						->first();
+	// 						$ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
+	// 						if($option_data && $option_data->option_id != $ba_color_option_id){
+	// 							$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
+	// 							$total_quantity = $total_quantity + $product->quantity;
+	// 							$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
+    //                             $onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
+	// 							if($packedExists){
+	// 								$decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
+	// 								OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+	// 							}else if($onholdExists){
+	// 								$decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
+	// 								OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+	// 							}
+	// 						}
+	// 					}
+	// 				}else{
+	// 					foreach ($product->order_options as $key => $option) {
+	// 						$option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+	// 						->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+	// 						->where('option_description.name', $option->name)
+	// 						->where('ovd.name', $option->value)
+	// 						->first();
+	// 						if($option_data){
+	// 							$oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
+	// 							$packedExists = OmsInventoryPackedQuantityModel::where('order_id', $order_id)->where('oms_product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
+	// 							$onholdExists = OmsInventoryOnholdQuantityModel::where('order_id', $order_id)->where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->exists();
+	// 							if($packedExists){
+	// 								$decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
+	// 								OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+	// 							}else if( $onholdExists ){
+	// 								$decrement_query = 'IF (onhold_quantity-' . $product->quantity . ' <= 0, 0, onhold_quantity-' . $product->quantity . ')';
+	// 								OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('onhold_quantity' => DB::raw($decrement_query), 'available_quantity' => DB::raw('available_quantity+' . $product->quantity) ));
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+    //                 //from helper
+    //                 updateSitesStock($opencart_sku->sku);
+	// 			}
+	// 		}
+	// 	}
+	// }
     //add quantity for Dressfair.
     public function availableInventoryQuantityDF($order_id){
 		$orderd_products = DFOrdersModel::with(['orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
@@ -771,7 +754,7 @@ class OrdersAjaxController extends Controller {
 		// dd(RequestFacad::all());
 		$courierId = RequestFacad::get('courier_id');
 		// $courierId = null;
-        $oms_store = RequestFacad::get('oms_store');
+        $store = RequestFacad::get('oms_store');
 		if($courierId) {
 			try
 			{
@@ -779,137 +762,54 @@ class OrdersAjaxController extends Controller {
 					throw new \Exception("Order Id is Empty");
 				}
 				$orderID = RequestFacad::get('order_id');
-				$omsOrderDetails = OmsOrdersModel::where("order_id", $orderID)->where("store",$oms_store)->get()->first();
+
+				$order_data = OmsPlaceOrderModel::with(['orderProducts','omsOrder'=>function($q) use($store){
+                    $q->where('store',$store);
+                }])->where("order_id", $orderID)->where("store",$store)->first();
 				// echo "d<pre>"; print_r($omsOrderDetails); die;
 
-				if ($omsOrderDetails) {
+				if ( $order_data->omsOrder && $order_data->omsOrder->order_id > 0 ) {
 					throw new \Exception("Order Already Processed");
 				}
 
 				// If qty not available then dont go ahead
 				$not_in_stock = false;
 				$product_data = array();
-
-                if( $oms_store == 1 ){
-				    $order_products = OrderedProductModel::where('order_product.order_id', $orderID)->get();
-                }elseif( $oms_store == 2 ){
-				    $order_products = DFOrderedProductModel::where('order_product.order_id', $orderID)->get();
-                }
 				// echo "<pre>"; print_r($order_products->toArray());
-				foreach ($order_products as $order_product) {
-					// $order_options = OrderOptionsModel::where('order_product_id', $order_product->order_product_id)->where('name','!=','Color')->get();
-                    if( $oms_store == 1 ){
-					    $order_options = OrderOptionsModel::where('order_product_id', $order_product->order_product_id)->get();
-                    }else if( $oms_store == 2 ){
-					    $order_options = DFOrderOptionsModel::where('order_product_id', $order_product->order_product_id)->get();
-                    }
-					// echo "<pre>"; print_r($order_options->toArray());
-					foreach ($order_options as $order_option) {
-                        if( $oms_store == 1 ){
-                            $optionData = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                            ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                            ->where('option_description.name', $order_option->name)
-                            ->where('ovd.name', $order_option->value)
-                            ->first();
-						    $opencartProduct = ProductsModel::select('sku')->where('product_id', $order_product->product_id)->first();
-                        }elseif( $oms_store == 2 ){
-                            $optionData = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                            ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                            ->where('option_description.name', $order_option->name)
-                            ->where('ovd.name', $order_option->value)
-                            ->first();
-						    $opencartProduct = DFProductsModel::select('sku')->where('product_id', $order_product->product_id)->first();
-                        }
+				// foreach ($order_data->orderProducts as $order_product) {
 
-						// echo "opencart<pre>"; print_r($opencartProduct->toArray());
-
-						$omsProduct = OmsInventoryProductModel::where('sku', $opencartProduct->sku)->first();
-
-						if( !empty($omsProduct) && $omsProduct->option_value > 0 && $order_option->name == "Color"){
-							continue;
-						}
-
-						if($omsProduct && $optionData){
-                        //                      dd($omsProduct->product_id,
-                        //                              $optionData->option_id,
-                        //                              $optionData->option_value_id,
-                        //                              $order_product->quantity
-                        //
-                        //                       );
-                            if( $oms_store == 1 ){
-                                $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($optionData->option_id,$optionData->option_value_id);
-                            }elseif( $oms_store == 2 ){
-                                $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromDf($optionData->option_id,$optionData->option_value_id);
-                            }
-                            // echo dd($oms_option_det->toArray());
-							$product_option_qty = OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)
-							->where('option_id', $oms_option_det->oms_options_id)
-							->where('option_value_id', $oms_option_det->oms_option_details_id)
-							->having('onhold_quantity', '>=', (int) $order_product->quantity)
-							->get();
-							// echo "<pre>"; print_r($product_option_qty->toArray()); die;
-						}else{
-                            if( $oms_store == 1 ){
-                                $product_option_qty = ProductOptionValueModel::where('product_option_value_id', (int) $order_option['product_option_value_id'])
-                                ->having('quantity', '>=', (int) $order_product->quantity)
-                                ->get();
-                            }elseif( $oms_store == 2 ){
-                                $product_option_qty = ProductOptionValueModel::where('product_option_value_id', (int) $order_option['product_option_value_id'])
-                                ->having('quantity', '>=', (int) $order_product->quantity)
-                                ->get();
-                            }
-						}
-						if (!$product_option_qty->count()) {
-							$not_in_stock = true;
-                            if( $oms_store == 1 ){
-							    $product_data[$order_product->product_id] = ProductsModel::select('product_id', 'image', 'model')->where('product_id', (int) $order_product->product_id)->first();
-                            }else if( $oms_store == 2 ){
-							    $product_data[$order_product->product_id] = DFProductsModel::select('product_id', 'image', 'model')->where('product_id', (int) $order_product->product_id)->first();
-                            }
-						}
-					}
-				}
-				if ($not_in_stock) {
-					$messageHtml = '';
-					if ($product_data) {
-						$messageHtml .= '<div class="text-danger">Order Qty Not in Stock!</div>';
-						$messageHtml .= '<div class="table-responsive">';
-						$messageHtml .= '<table class="table">';
-						$messageHtml .= '<thead>';
-						$messageHtml .= '<th class="text-center">Image</th>';
-						$messageHtml .= '<th class="text-center">Product Code</th>';
-						$messageHtml .= '</thead>';
-						foreach ($product_data as $key => $value) {
-							$image = $this->getProductImage($value['product_id'],$oms_store, 50, 50);
-							$messageHtml .= '<tr>';
-							$messageHtml .= '<td class="text-center"><img src="' . $image . '" width="50px"></td>';
-							$messageHtml .= '<td class="text-center">' . $value['model'] . '</td>';
-							$messageHtml .= '</tr>';
-						}
-						$messageHtml .= '</table>';
-						$messageHtml .= '</div>';
-					}
-					throw new \Exception($messageHtml);
-				}
+				// }
+				// if ($not_in_stock) {
+				// 	$messageHtml = '';
+				// 	if ($product_data) {
+				// 		$messageHtml .= '<div class="text-danger">Order Qty Not in Stock!</div>';
+				// 		$messageHtml .= '<div class="table-responsive">';
+				// 		$messageHtml .= '<table class="table">';
+				// 		$messageHtml .= '<thead>';
+				// 		$messageHtml .= '<th class="text-center">Image</th>';
+				// 		$messageHtml .= '<th class="text-center">Product Code</th>';
+				// 		$messageHtml .= '</thead>';
+				// 		foreach ($product_data as $key => $value) {
+				// 			$image = $this->getProductImage($value['product_id'],$oms_store, 50, 50);
+				// 			$messageHtml .= '<tr>';
+				// 			$messageHtml .= '<td class="text-center"><img src="' . $image . '" width="50px"></td>';
+				// 			$messageHtml .= '<td class="text-center">' . $value['model'] . '</td>';
+				// 			$messageHtml .= '</tr>';
+				// 		}
+				// 		$messageHtml .= '</table>';
+				// 		$messageHtml .= '</div>';
+				// 	}
+				// 	throw new \Exception($messageHtml);
+				// }
 					$omsOrder = new OmsOrdersModel();
-					$omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_IN_QUEUE_PICKING_LIST;
-					$omsOrder->{OmsOrdersModel::FIELD_ORDER_ID} = $orderID;
-					$omsOrder->{OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = 0;
+					$omsOrder->oms_order_status = 0;
+					$omsOrder->order_id         = $orderID;
+					$omsOrder->last_shipped_with_provider = 0;
 					$omsOrder->picklist_courier = $courierId;
-					$omsOrder->store = $oms_store;
+					$omsOrder->store = $store;
 					$omsOrder->save(); // Save the record and start processing of order.
-                    if( $oms_store == 1 ){
-					    $openCartOrder = OrdersModel::findOrFail($orderID);
-                    }else if( $oms_store == 2 ){
-					    $openCartOrder = DFOrdersModel::findOrFail($orderID);
-                    }
-					$openCartOrder->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
-					$openCartOrder->{OrdersModel::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_PROCESSING;
-					$openCartOrder->save(); // update the order status
 
-					// Process Quantity Updation
-					$this->deductQuantity($orderID,$oms_store);
-					OmsActivityLogModel::newLog($orderID,2,$oms_store); //2 is for pick list order
+					OmsActivityLogModel::newLog($orderID,2,$store); //2 is for pick list order
 				return;
 			} catch (\Exception $ex) {
 				return $ex->getMessage();

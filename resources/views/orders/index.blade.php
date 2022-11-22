@@ -106,7 +106,7 @@
                                                         <div class="col-1">
                                                             <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
                                                         </div>
-                                                        @if ( $order->oms_order_status < 2 )
+                                                        @if ( $order->omsOrder?->oms_order_status < 2 )
                                                              @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
                                                                 <div class="col-1">
                                                                     <a  href="javascript:void(0)" class="waves-effect waves-blue active" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
@@ -138,18 +138,20 @@
                                                         <div class="col-sm-7">
                                                         </div>
                                                         <div class="col-sm-2">
-                                                            <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
-                                                                <form action="{{ route('orders.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
-                                                                    {{csrf_field()}}
-                                                                    <input type="hidden" name="order_id" value="{{$order->order_id}}" />
-                                                                    <input type="hidden" name="oms_store" value="{{$order->store}}" />
-                                                                        @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
-                                                                        <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                            class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->mobile}})">
-                                                                            Forward to Picking</button>
-                                                                        @endif
-                                                                </form>
-                                                            </a>
+                                                            @if( !$order->omsOrder )
+                                                                <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
+                                                                    <form action="{{ route('orders.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
+                                                                        {{csrf_field()}}
+                                                                        <input type="hidden" name="order_id" value="{{$order->order_id}}" />
+                                                                        <input type="hidden" name="oms_store" value="{{$order->store}}" />
+                                                                            @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
+                                                                            <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
+                                                                                class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->mobile}})">
+                                                                                Forward to Picking</button>
+                                                                            @endif
+                                                                    </form>
+                                                                </a>
+                                                            @endif
                                                         </div>
                                                     </div>
                                         </td>

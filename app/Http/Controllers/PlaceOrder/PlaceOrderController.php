@@ -15,6 +15,7 @@ use App\Models\Oms\OmsPlaceOrderModel;
 use App\Models\Oms\OmsActivityLogModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\DutyAssignedUserModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsBaOrderCounterModel;
@@ -24,6 +25,7 @@ use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\OmsOrderTotalModel;
 use App\Models\Oms\PaymentMethodModel;
 use App\Models\Oms\ShippingMethodModel;
+use App\Models\Oms\storeModel;
 use App\Providers\Reson8SmsServiceProvider;
 use Carbon\Carbon;
 use DB;
@@ -43,7 +45,7 @@ class PlaceOrderController extends Controller
     }
 
     public function view($store){
-        $sub_dir = $store == 1 ? "ba" : "df";
+        // $this->onHoldQuantity(20000034,2);
         $countries = array();
         $store_id = 0;
         $order_success_redirect = URL::to('/orders');
@@ -52,8 +54,9 @@ class PlaceOrderController extends Controller
         // echo "<pre>";print_r($customers);echo "</pre>";
         // echo "<pre>";print_r($orders);echo "</pre>";die;
         // $countries = CountryModel::select('country_id','name')->get()->toArray();
+        $store_data = storeModel::where('id',$store)->first();
 
-        return view(self::VIEW_DIR.$sub_dir. ".index");
+        return view(self::VIEW_DIR.".index",compact('store_data'));
     }
     public function getCustomerDetails(Request $request){
         $search = $request->get('keyword');
@@ -92,8 +95,8 @@ class PlaceOrderController extends Controller
         }])
         ->join("oms_inventory_product_descriptions AS oipd","oipd.product_id","=","oms_inventory_product.product_id")
         ->where("oipd.store_id",$store)->where('sku','LIKE',"%".$request->product_sku."%")->first();
-        // dd($product->toArray());
-        return view(self::VIEW_DIR . $sub_dir . '.product_search_form',compact('product'));
+        dd($product->toArray());
+        return view(self::VIEW_DIR.'.product_search_form',compact('product'));
     }
     public function addToCart(Request $request){
         // dd($request->all());
@@ -144,7 +147,7 @@ class PlaceOrderController extends Controller
         $server_session_id = session()->getId();
         $data = OmsCart::with('cartProductSize')->where("session_id",$server_session_id)->where("store_id",$store)->get();
         // dd($data->toArray());
-        return view(self::VIEW_DIR . $sub_dir . '.cartview',compact('data'));
+        return view(self::VIEW_DIR.'.cartview',compact('data'));
     }
     public function updateCart(Request $request){
         $cart_id  = $request->cart_id;
@@ -210,7 +213,7 @@ class PlaceOrderController extends Controller
      })->get();
 
      $orders = [];
-     return view(self::VIEW_DIR . $sub_dir . '.customer_search_form',compact('customer','countries','cities','areas','default_country','customer','orders'));
+     return view(self::VIEW_DIR.'.customer_search_form',compact('customer','countries','cities','areas','default_country','customer','orders'));
   }
   public function loadAreas(Request $request){
     $city_id = $request->city_id;
@@ -310,7 +313,7 @@ class PlaceOrderController extends Controller
     $payment_method      = session('payment_method');
     $totals = $this->formatTotal($store);
     // dd($totals);
-    return view(self::VIEW_DIR . $sub_dir . '.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals','shipping_method','payment_method'));
+    return view(self::VIEW_DIR . '.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals','shipping_method','payment_method'));
   }
   private function formatTotal($store){
     $totals = [];
@@ -362,6 +365,7 @@ class PlaceOrderController extends Controller
     $payment_method      = session('payment_method');
     $server_session_id   = session()->getId();
     $cart_data = OmsCart::with(['product','productOption.option','productOption.optionVal'])->where("session_id",$server_session_id)->where('store_id',$store_id)->get();
+    // dd($cart_data->toArray()); die("test");
     if( $store_id < 1 ){
         return response()->json(['status'=>false,"data"=>'','msg'=>"No store selected, or invalid store ID."]);
     }
@@ -386,91 +390,107 @@ class PlaceOrderController extends Controller
     // dd( $payment_method );
     // dd($customer_data->toArray());
     //first entry in store counter tabel
-    if( $store_id == 1 ){
-        $order_counter = OmsBaOrderCounterModel::create();
-        $order_id =  $order_counter->id;
-    }else if( $store_id == 2 ){
-        $order_counter = OmsDfOrderCounterModel::create();
-        $order_id =  $order_counter->id;
-    }
-    //entry in total table
-    $totals = $this->formatTotal($store_id);
-    $order_total_amount = 0;
-    if( is_array($totals) && count($totals) > 0 ){
-        foreach($totals as $title=>$total){
-            $insert_order_tot           = new OmsOrderTotalModel();
-            $insert_order_tot->order_id = $order_id;
-            $insert_order_tot->title    = $title;
-            $insert_order_tot->value    = $total;
-            $insert_order_tot->order_id = $order_id;
-            if( $insert_order_tot->save() ){
-                $order_total_amount += $total;
+    DB::beginTransaction();
+    try {
+
+        if( $store_id == 1 ){
+            $order_counter = OmsBaOrderCounterModel::create();
+            $order_id =  $order_counter->id;
+        }else if( $store_id == 2 ){
+            $order_counter = OmsDfOrderCounterModel::create();
+            $order_id =  $order_counter->id;
+        }
+        //entry in total table
+        $totals = $this->formatTotal($store_id);
+        $order_total_amount = 0;
+        if( is_array($totals) && count($totals) > 0 ){
+            foreach($totals as $title=>$total){
+                $insert_order_tot           = new OmsOrderTotalModel();
+                $insert_order_tot->order_id = $order_id;
+                $insert_order_tot->title    = $title;
+                $insert_order_tot->value    = $total;
+                $insert_order_tot->order_id = $order_id;
+                if( $insert_order_tot->save() ){
+                    $order_total_amount += $total;
+                }
+            }
+
+        }
+
+        //entry in place order table
+        $place_order = new OmsPlaceOrderModel();
+        $place_order->order_id    = $order_id;
+        $place_order->user_id     = session('user_id');
+        $place_order->store       = $store_id;
+        $place_order->customer_id = $customer_data->id;
+        $place_order->firstname   = $customer_data->firstname;
+        $place_order->email       = $customer_data->email;
+        $place_order->mobile      = $customer_data->mobile;
+        $place_order->alternate_number      = $alternate_number;
+        //payment address
+        $place_order->payment_country_id     =  $customer_data->defaultAddress->country_id;
+        $place_order->payment_city_id        =  $customer_data->defaultAddress->city_id;
+        $place_order->payment_city_area_id   =  $customer_data->defaultAddress->area_id;
+        $place_order->payment_firstname      =  $customer_data->defaultAddress->firstname;
+        $place_order->payment_address_1      =  $customer_data->defaultAddress->address;
+        $place_order->payment_street_building=  $customer_data->defaultAddress->street_building;
+        $place_order->payment_villa_flat     =  $customer_data->defaultAddress->villa_flat;
+        $place_order->payment_city           =  $customer_data->defaultAddress->city->name;
+        $place_order->payment_city_area      =  $customer_data->defaultAddress->area->name;
+        $place_order->payment_country        =  $customer_data->defaultAddress->country->name;
+        // //shipping address
+        $place_order->shipping_country_id     = $customer_data->defaultAddress->country_id;
+        $place_order->shipping_city_id        = $customer_data->defaultAddress->city_id;
+        $place_order->shipping_city_area_id   = $customer_data->defaultAddress->area_id;
+        $place_order->shipping_firstname      = $customer_data->defaultAddress->firstname;
+        $place_order->shipping_address_1      = $customer_data->defaultAddress->address;
+        $place_order->shipping_street_building= $customer_data->defaultAddress->street_building;
+        $place_order->shipping_villa_flat     = $customer_data->defaultAddress->villa_flat;
+        $place_order->shipping_city           = $customer_data->defaultAddress->city->name;
+        $place_order->shipping_city_area      = $customer_data->defaultAddress->area->name;
+        $place_order->shipping_country        = $customer_data->defaultAddress->country->name;
+        //payment method
+        $place_order->payment_method_id       = $payment_method['id'];
+        $place_order->payment_method_name     = $payment_method['name'];
+        //general statuses
+        $place_order->total_amount     = $order_total_amount;
+        $place_order->comment          = $comment;
+        $place_order->google_map_link  = $google_map_link ;
+        $place_order->online_approved  = 1;
+        $place_order->reseller_approve = 1;
+        $place_order->save();
+        //insertion in oms_order_products table
+        if($cart_data){
+            foreach($cart_data as $key => $cart_item){
+                $cart_quantity = $cart_item->product_quantity;
+                $cart_option_name = $cart_item->productOption->option->option_name;
+                $cart_option_value = $cart_item->productOption->optionVal->value;
+                if( $cart_quantity > $cart_item->productOption->available_quantity ){
+                    throw new \Exception("Desired quanity not available for ".$cart_item->product_sku." ".$cart_option_name.": ".$cart_option_value);
+                }
+                $insert_order_products = new OmsOrderProductModel();
+                $insert_order_products->order_id   = $order_id;
+                $insert_order_products->product_id = $cart_item->product_id;
+                $insert_order_products->store_id   = $cart_item->store_id;
+                $insert_order_products->name       = $cart_item->product_name;
+                $insert_order_products->sku        = $cart_item->product_sku;
+                $insert_order_products->quantity   = $cart_quantity;
+                $insert_order_products->price      = $cart_item->product_price;
+                $insert_order_products->total      = ($cart_quantity * $cart_item->product_price);
+                $insert_order_products->product_option_id = $cart_item->product_option_id;
+                $insert_order_products->option_name  = $cart_option_name;
+                $insert_order_products->option_value = $cart_option_value;
+                $insert_order_products->save();
             }
         }
-
+        $this->onHoldQuantity($order_id,$store_id);
+        OmsActivityLogModel::newLog($order_id,1,$store_id); // 1 for place order
+         DB::commit();
+    } catch (\Exception $e) {
+        DB::rollback();
+        // something went wrong
+        return response()->json(['status'=>false,"data"=>'','msg'=>$e->getMessage()]);
     }
-
-    //entry in place order table
-    $place_order = new OmsPlaceOrderModel();
-    $place_order->order_id    = $order_id;
-    $place_order->user_id     = session('user_id');
-    $place_order->store       = $store_id;
-    $place_order->customer_id = $customer_data->id;
-    $place_order->firstname   = $customer_data->firstname;
-    $place_order->email       = $customer_data->email;
-    $place_order->mobile      = $customer_data->mobile;
-    $place_order->alternate_number      = $alternate_number;
-    //payment address
-    $place_order->payment_country_id     =  $customer_data->defaultAddress->country_id;
-    $place_order->payment_city_id        =  $customer_data->defaultAddress->city_id;
-    $place_order->payment_city_area_id   =  $customer_data->defaultAddress->area_id;
-    $place_order->payment_firstname      =  $customer_data->defaultAddress->firstname;
-    $place_order->payment_address_1      =  $customer_data->defaultAddress->address;
-    $place_order->payment_street_building=  $customer_data->defaultAddress->street_building;
-    $place_order->payment_villa_flat     =  $customer_data->defaultAddress->villa_flat;
-    $place_order->payment_city           =  $customer_data->defaultAddress->city->name;
-    $place_order->payment_city_area      =  $customer_data->defaultAddress->area->name;
-    $place_order->payment_country        =  $customer_data->defaultAddress->country->name;
-    // //shipping address
-    $place_order->shipping_country_id     = $customer_data->defaultAddress->country_id;
-    $place_order->shipping_city_id        = $customer_data->defaultAddress->city_id;
-    $place_order->shipping_city_area_id   = $customer_data->defaultAddress->area_id;
-    $place_order->shipping_firstname      = $customer_data->defaultAddress->firstname;
-    $place_order->shipping_address_1      = $customer_data->defaultAddress->address;
-    $place_order->shipping_street_building= $customer_data->defaultAddress->street_building;
-    $place_order->shipping_villa_flat     = $customer_data->defaultAddress->villa_flat;
-    $place_order->shipping_city           = $customer_data->defaultAddress->city->name;
-    $place_order->shipping_city_area      = $customer_data->defaultAddress->area->name;
-    $place_order->shipping_country        = $customer_data->defaultAddress->country->name;
-    //payment method
-    $place_order->payment_method_id       = $payment_method['id'];
-    $place_order->payment_method_name     = $payment_method['name'];
-    //general statuses
-    $place_order->total_amount     = $order_total_amount;
-    $place_order->comment          = $comment;
-    $place_order->google_map_link  = $google_map_link ;
-    $place_order->online_approved  = 1;
-    $place_order->reseller_approve = 1;
-    $place_order->save();
-    //insertion in oms_order_products table
-    if($cart_data){
-        foreach($cart_data as $key => $cart_item){
-            $insert_order_products = new OmsOrderProductModel();
-            $insert_order_products->order_id   = $order_id;
-            $insert_order_products->product_id = $cart_item->product_id;
-            $insert_order_products->store_id   = $cart_item->store_id;
-            $insert_order_products->name       = $cart_item->product_name;
-            $insert_order_products->sku        = $cart_item->product_sku;
-            $insert_order_products->quantity   = $cart_item->product_quantity;
-            $insert_order_products->price      = $cart_item->product_price;
-            $insert_order_products->total      = ($cart_item->product_quantity*$cart_item->product_price);
-            $insert_order_products->product_option_id = $cart_item->product_option_id;
-            $insert_order_products->option_name = $cart_item->productOption->option->option_name;
-            $insert_order_products->option_value = $cart_item->productOption->optionVal->value;
-            $insert_order_products->save();
-        }
-    }
-    OmsActivityLogModel::newLog($order_id,1,$store_id); // 1 for place order
     $this->clearSessionAterOrder();
     return response()->json(['status'=>true,"data"=>'','msg'=>"order placed successfully."]);
   }
@@ -480,15 +500,41 @@ class PlaceOrderController extends Controller
     session()->forget('shipping_method');
     session()->forget('payment_method');
   }
-  public function onHoldQuantity($order_id){
-
+  public function onHoldQuantity($order_id,$store_id){
+    $order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+    if( $order_products ){
+        $order_quantity = 0;
+        foreach( $order_products as $key => $order_product ){
+            $order_quantity = $order_product->quantity;
+            $check_exist = OmsInventoryOnholdQuantityModel::where("order_id",$order_product->order_id)->where('product_id',$order_product->product_id)
+            ->where('option_id',$order_product->productOption->option_id)->where('option_value_id',$order_product->productOption->option_value_id)->where('store',$order_product->store_id)->first();
+            if( !$check_exist ){
+                $new_onhold = new OmsInventoryOnholdQuantityModel();
+                $new_onhold->order_id        = $order_product->order_id;
+                $new_onhold->product_id      = $order_product->product_id;
+                $new_onhold->option_id       = $order_product->productOption->option_id;
+                $new_onhold->option_value_id = $order_product->productOption->option_value_id;
+                $new_onhold->quantity        = $order_quantity;
+                $new_onhold->store           = $order_product->store_id;
+                if( $new_onhold->save() ){
+                    OmsInventoryProductOptionModel::where(["product_id"=>$order_product->product_id,"product_option_id"=>$order_product->product_option_id])
+                    ->update(['available_quantity'=>DB::raw("available_quantity - $order_quantity"),'onhold_quantity'=>DB::raw("onhold_quantity + $order_quantity")]);
+                }
+            }
+        }
+    }
+    // dd($order_products->toArray());
   }
   public function getProductSku(Request $request){
     // dd($request->all());
     if(count($request->all()) > 0){
         $product_sku = $request->product_sku;
+        $store_id    = $request->store;
         $skus = [];
-        $products = OmsInventoryProductModel::select('sku')->where("sku",'LIKE',"{$product_sku}%")->limit(10)->get();
+        $products = OmsInventoryProductModel::with(['productDescriptions'])
+                    ->whereHas('productDescriptions',function($query) use ($store_id){
+                        $query->where('store_id',$store_id);
+                    })->select('sku')->where("sku",'LIKE',"{$product_sku}%")->limit(10)->get();
         // dd($products->toArray());
         if($products->count()){
             foreach ($products as $product) {
