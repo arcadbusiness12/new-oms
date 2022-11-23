@@ -21,7 +21,7 @@
                         <div class="card-header white">
 
                                         <div class=" ">
-                                        <a href="javascript:;"> <button id="" type="button" class="btn btn-primary active add-method">
+                                        <a href="{{route('add.shipping.method')}}"> <button id="" type="button" class="btn btn-primary active add-method">
                                             <i class="icon-plus-circle"></i>  New
                                         </button>
                                         </a>
@@ -31,7 +31,6 @@
                 </div>
                 </div>
             </div>
-            <div class="card no-b form-box">
                 @if(session()->has('success'))
                     <div class="alert alert-success">
                         {{ session()->get('success') }}
@@ -67,7 +66,7 @@
                               >
                                 <th scope="col"><center>Name</center></th>
                                 <th scope="col"><center>Store</center></th>
-                                <th scope="col"><center>country</center></th>
+                                <th scope="col"><center>Geo Zone</center></th>
                                 <th scope="col"><center>Amount</center></th>
                                 {{-- <th scope="col"><center>Status</center></th> --}}
                                 <th scope="col"><center>Action</center></th>
@@ -82,7 +81,7 @@
 
                                         <td class="text-center">{{$method->name}}</td>
                                         <td class="text-center">{{@$method->store->name}}</td>
-                                        <td class="text-center">{{@$method->country->name}}</td>
+                                        <td class="text-center">{{($method->geo_zone_id == 0) ? 'All Zone' : @$method->geoZone->name}}</td>
                                         <td class="text-center">{{$method->amount}}</td>
                                         {{-- <td class="text-center">
                                             @if($method->status == 1)
@@ -92,7 +91,7 @@
                                             @endif
                                         </td> --}}
                                         <td class="text-center">
-                                            <a href="javascript:;" class="" onclick="editMothod({{$method}})"><i class="icon icon-edit"></i></a>
+                                            <a href="{{route('edit.shipping.method', $method->id)}}" class="" onclick="editMothod({{$method}})"><i class="icon icon-edit"></i></a>
                                             {{--  <a href="{{route('destroy.option',$list->id)}}"  onclick="return confirm('Are You Sure Want To Delete ?')" class=""><i class="icon-close2 text-danger-o text-danger"></i></a>  --}}
 
                                         </td>
@@ -120,70 +119,9 @@
                     </div>
                 </div>
 
-
-            </div>
         </div>
     </div>
 </div>
-
-<!-- Modal -->
-<div class="modal fade" id="paymentMethodModal" tabindex="-1" data-backdrop="static" aria-labelledby="ModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: aliceblue;">
-          <h5 class="modal-title" id="ModalLabel">Add Shipping Method</h5>
-          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form action="{{route('add.shipping.method')}}" method="POST">
-            {{ csrf_field() }}
-            <div class="form-group">
-                <label class="text-black">Store<span class="text-danger">*</span></label>
-                <select class="form-control custom-select" name="store" id="select-store">
-                    @foreach($stores as $store)
-                    <option value="{{$store->id}}">{{$store->name}}</option>
-                    @endforeach
-                </select>
-            </div>
-              <div class="form-group">
-                  <label class="text-black">Name<span class="text-danger">*</span></label>
-                  <input type="text" name="name" id="name" class="form-control">
-                  <input type="hidden" name="shipping_method_id" id="shipping_method_id" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="text-black">Country<span class="text-danger">*</span></label>
-                <select class="form-control custom-select" name="country" id="select-country">
-                    @foreach($countries as $country)
-                    <option value="{{$country->id}}">{{$country->name}}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                {{-- <div class="col-1 col-grid"> --}}
-                    <label class="text-black">Amount</label>
-                    <input type="number" name="amount" id="amount" class="form-control">
-                {{-- </div> --}}
-                {{-- <div class="col-6 col-grid">
-                    <label class="text-black">Status</label>
-                    <select class="form-control custom-select" name="status" id="select-status">
-                        <option value="1">Active</option>
-                        <option value="0">In-Active</option>
-                    </select>
-                </div> --}}
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary close-btn" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Add Method</button>
-              </div>
-          </form>
-        </div>
-      
-      </div>
-    </div>
-  </div>
-
-  
-  {{-- Modal End  --}}
 
   <!-- Modal -->
 <div class="modal fade" id="freeShippingModal" tabindex="-1" data-backdrop="static" aria-labelledby="ModalLabel" aria-hidden="true">
@@ -225,8 +163,6 @@
     });
 
     function editMothod(object) {
-        
-        console.log(object);
         if(object) {
             $('#name').val(object.name);
             $('#amount').val(object.amount);

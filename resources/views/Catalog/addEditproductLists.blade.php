@@ -38,18 +38,18 @@
                                                 
                                             </div>
                                             </div>
-                                    <div class="row" >
-                                        <div class="col-md-2" style="margin-left: 28px;">
-                                            <input type="submit" name="submit" value="Save Options" class="btn btn-success btn-lg">
-                                        </div>
-                                        
-                                        <div class=" col-md-2">
-                                        <button id="addRow" type="button" class="btn btn-primary col-md-6">
-                                            <i class="icon-plus-circle"></i>
-                                        </button>
-                                        </div>
+                                        <div class="row" >
+                                            <div class="col-md-2" style="margin-left: 28px;">
+                                                <input type="submit" name="submit" value="Save Options" class="btn btn-success btn-lg">
+                                            </div>
+                                            
+                                            <div class=" col-md-2">
+                                                <button id="addRow" type="button" class="btn btn-primary col-md-6">
+                                                    <i class="icon-plus-circle"></i>
+                                                </button>
+                                            </div>
                                    
-                                </div>
+                                         </div>
                                    
                                    </form>
                     </div>

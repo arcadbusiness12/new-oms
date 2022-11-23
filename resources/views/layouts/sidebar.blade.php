@@ -314,7 +314,9 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
+                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false 
+                        || strpos(Request::url(), '/omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false 
+                        || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li><a href="panel-page-users.html"><i class="icon icon-vcard"></i>Supplier</a>
@@ -337,18 +339,33 @@
                                 </ul>
                             </li>
 
-                            <li class="@if(strpos(Request::url(), 'omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false) active @endif"><a href="#"><i class="icon icon-cc"></i>Methods Management<i
+                            <li class="@if(strpos(Request::url(), 'omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false) active @endif"><a href="#"><i class="icon icon-cc"></i>Methods Management<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">
                                     <li class="@if(strpos(Request::url(), 'omsSetting/payment/method') !== false) active @endif">
                                         <a href="{{route('payment.method')}}">Payment Methods</a>
                                     </li>
-                                    <li class="@if(strpos(Request::url(), 'omsSetting/shipping/method') !== false) active @endif">
+                                    <li class="@if(strpos(Request::url(), 'omsSetting/shipping/method') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false) active @endif">
                                         <a href="{{route('shipping.method')}}">Shipping Methods</a>
                                     </li>
                                 </ul>
                             </li>
 
+                            <li class="@if(strpos(Request::url(), 'omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active @endif"><a href="#"><i class="icon icon-location_city"></i>Localisation<i
+                                    class=" icon-angle-left  pull-right"></i></a>
+                                <ul class="treeview-menu">
+                                    <li class="@if(strpos(Request::url(), 'omsSetting/payment/method') !== false) active @endif">
+                                        <a href="{{route('payment.method')}}">Countries</a>
+                                    </li>
+                                    <li class="@if(strpos(Request::url(), 'omsSetting/shipping/method') !== false) active @endif">
+                                        <a href="{{route('shipping.method')}}">Cities</a>
+                                    </li>
+                                    <li class="@if(strpos(Request::url(), 'omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active blink @endif">
+                                        <a href="{{route('geo.zones')}}">Geo Zone</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            
                                 <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-perm_data_setting"></i>Promotion Setting<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">
