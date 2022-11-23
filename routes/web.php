@@ -54,6 +54,10 @@ Route::prefix('place/order')->middleware('auth')->group(function(){
         Route::post('/search/customer', 'searchCustomer')->name('place.order.search.customer');
         Route::post('/load/areas', 'loadAreas')->name('place.order.load.areas');
         Route::post('/save/customer', 'saveCustomer')->name('place.order.save_customer');
+        Route::post('/set/payment/method', 'setPaymentMethod')->name('place.order.set.payment.method');
+        Route::post('/set/shipping/method', 'setShippingMethod')->name('place.order.set.shipping.method');
+        Route::get('/shipping/payment', 'paymentShipping')->name('place.order.shipping.payment');
+        Route::post('/confirm', 'confirmOrder')->name('place.order.confirm');
         // Route::post('/ajax/getCustomerDetails', 'getCustomerDetails')->name('place.order.ajax.getCustomerDetails');
         // Route::post('/ajax/addUserOrder', 'addUserOrder')->name('place.order.ajax.addUserOrder');
         // Route::post('/ajax/get_customer', 'get_customer')->name('place.order.ajax.get_customer');

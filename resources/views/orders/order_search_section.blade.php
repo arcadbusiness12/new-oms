@@ -43,11 +43,11 @@
                           <select name="order_status_id" id="order_status_id" class="form-control show-tick" data-live-search="true">
                             <option value="">--Select Status--</option>
                             @foreach($orderStatus as $status)
-                            <option value="{{ $status['order_status_id']}}"
+                            <option value="{{ $status->id }}"
                                     {{ isset($old_input['order_status_id'])?
-                                    $status['order_status_id'] == $old_input['order_status_id']?"selected='selected'":'' :''
+                                    $status->id == $old_input['order_status_id']?"selected='selected'":'' :''
                                     }}
-                                    >{{$status['name']}}</option>
+                                    >{{ $status->status_name }}</option>
                             @endforeach
                         </select>
                         @endif

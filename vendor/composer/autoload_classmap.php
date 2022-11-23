@@ -177,6 +177,7 @@ return array(
     'App\\Models\\Oms\\OmsOrderProductModel' => $baseDir . '/app/Models/Oms/OmsOrderProductModel.php',
     'App\\Models\\Oms\\OmsOrderReshipHistoryModel' => $baseDir . '/app/Models/Oms/OmsOrderReshipHistoryModel.php',
     'App\\Models\\Oms\\OmsOrderStatusInterface' => $baseDir . '/app/Models/Oms/OmsOrderStatusInterface.php',
+    'App\\Models\\Oms\\OmsOrderStatusModel' => $baseDir . '/app/Models/Oms/OmsOrderStatusModel.php',
     'App\\Models\\Oms\\OmsOrderTotalModel' => $baseDir . '/app/Models/Oms/OmsOrderTotalModel.php',
     'App\\Models\\Oms\\OmsOrdersModel' => $baseDir . '/app/Models/Oms/OmsOrdersModel.php',
     'App\\Models\\Oms\\OmsPlaceOrderModel' => $baseDir . '/app/Models/Oms/OmsPlaceOrderModel.php',

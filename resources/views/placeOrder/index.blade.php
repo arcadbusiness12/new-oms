@@ -15,8 +15,15 @@
         margin-top: 15px;
     }
 </style>
-<input type="hidden" id="txtbox_store_id" value="2">
+@if( !$store_data )
+    <h2>Store not found.</h2>
+    @php
+        die();
+    @endphp
+@endif
+    <input type="hidden" id="txtbox_store_id" value="{{ $store_data->id  }}">
     <div class="container-fluid relative animatedParent animateOnce my-3">
+        <h4>Place Order in {{ $store_data->name }}</h4>
         <div class="row row-eq-height my-3 mt-3">
             <div class="col-md-12 col-sm-12 place_order text-black">
                 <div class="card">
@@ -78,7 +85,7 @@
                     </div>{{--card end--}}
                     <div class="card">
                       <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" data-target="#step-3">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-3" id="heading-step-3">
                             3. Search Customer
                         </div>
                         <div class="panel-body collapse" id="step-3">
@@ -126,7 +133,7 @@
                     </div>card end--}}
                     <div class="card">
                       <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" data-target="#step-5">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#step-5" id="heading-step-5">
                             <div class="pull-left">5: Payment & Shipping</div>
                             <div class="cart-loader"></div>
                             <div class="clearfix"></div>

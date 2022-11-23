@@ -32,11 +32,14 @@ use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\DressFairOpenCart\Products\ProductOptionValueModel AS DFProductOptionValueModel;
 use App\Models\Oms\AirwayBillTrackingModel;
+use App\Models\Oms\CityArea;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryReturnQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryShippedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
+use App\Models\Oms\OmsOrderStatusModel;
+use App\Models\Oms\OmsPlaceOrderModel;
 use DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Request AS RequestFacad;
@@ -131,65 +134,33 @@ class OrdersController extends Controller
     // }
     public function index(){
         $old_input = RequestFacad::all();
-        $data = DB::table("oms_place_order AS opo")
-                ->leftjoin("oms_orders AS ord",function($join){
-                    $join->on("ord.order_id","=","opo.order_id");
-                    $join->on("ord.store","=","opo.store");
+        $data = OmsPlaceOrderModel::select('oms_place_order.*')
+                ->with(['orderProducts.product','omsOrder'])
+                ->leftjoin("oms_orders",function($join){
+                    $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
+                    $join->on('oms_orders.store', '=', 'oms_place_order.store');
                 })
-              ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                $join->on("baord.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("1"));
-              })
-              ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                $join->on("dford.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("2"));
-              })
-            // ->join("airwaybill_tracking AS awbt",function($join){
-            //   $join->on('awbt.order_id','=','ord.order_id');
-            //   $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-            //  })
-             ->leftjoin(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
-              $join->on('awbt.order_id','=','ord.order_id');
-              $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-             })
-             ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-             ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.reship,opo.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_2 WHEN opo.store = 2 THEN dford.shipping_address_2 ELSE 0 END) AS shipping_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_area WHEN opo.store = 2 THEN dford.shipping_area ELSE 0 END) AS shipping_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_zone WHEN opo.store = 2 THEN dford.shipping_zone ELSE 0 END) AS shipping_zone,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_1 WHEN opo.store = 2 THEN dford.payment_address_1 ELSE 0 END) AS payment_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_2 WHEN opo.store = 2 THEN dford.payment_address_2 ELSE 0 END) AS payment_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_area WHEN opo.store = 2 THEN dford.payment_area ELSE 0 END) AS payment_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_city WHEN opo.store = 2 THEN dford.shipping_city ELSE 0 END) AS shipping_city,
-                  (CASE WHEN opo.store = 1 THEN baord.firstname WHEN opo.store = 2 THEN dford.firstname ELSE 0 END) AS firstname,
-                  (CASE WHEN opo.store = 1 THEN baord.lastname WHEN opo.store = 2 THEN dford.lastname ELSE 0 END) AS lastname,
-                  (CASE WHEN opo.store = 1 THEN baord.telephone WHEN opo.store = 2 THEN dford.telephone ELSE 0 END) AS telephone,
-                  (CASE WHEN opo.store = 1 THEN baord.email WHEN opo.store = 2 THEN dford.email ELSE 0 END) AS email,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total,
-                  (CASE WHEN opo.store = 1 THEN baord.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) AS date_modified,
-                  (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added
-                "))
+                ->where('online_approved', 1)
+                ->where('reseller_approve', 1)
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
+                    return $query->where('oms_place_order.order_id',$old_input['order_id']);
                 })
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_status_id = '.$old_input["order_status_id"].' WHEN opo.store = 2 THEN dford.order_status_id = '.$old_input["order_status_id"].' ELSE 0 END)');
+                    return $query->where('oms_orders.oms_order_status',$old_input['order_status_id']);
                 });
             // if( @$old_input['order_id'] != "" ){
             //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
             // }
-            $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
+            $data = $data->orderByRaw("(CASE WHEN oms_orders.order_id > 0 THEN oms_orders.updated_at ELSE oms_place_order.created_at END) DESC")
                 ->paginate(20);
-            $data = $this->getOrdersWithImage($data);
+            // $data = $data->paginate(20);
+            // $data = $this->getOrdersWithImage($data);
             // dd($data->toArray());
         ///
         $searchFormAction = URL::to('orders');
-        $orderStatus = OrderStatusModel::all();
+        $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();
-        // dd($data)->toArray();
+        // dd($data->toArray());
         return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus','old_input','couriers'));
     }
     public function online(){
@@ -224,7 +195,7 @@ class OrdersController extends Controller
         // dd($data->toArray());
         ///extra variable
         $searchFormAction = URL::to('orders/online');
-        $orderStatus = OrderStatusModel::all();
+        $orderStatus = OrderStatusModel::orderBy('id','DESC')->get();
         return view(self::VIEW_DIR.".online",compact('data','searchFormAction','orderStatus','old_input','old_input'));
     }
     protected function getOrdersWithImage($orders){
@@ -345,68 +316,22 @@ class OrdersController extends Controller
         if (isset($old_input['o_id'])){
             return $this->generatePickingList($old_input['o_id']);
         }
-        $data = DB::table("oms_place_order AS opo")
-                ->leftjoin("oms_orders AS ord",function($join){
-                    $join->on("ord.order_id","=","opo.order_id");
-                    $join->on("ord.store","=","opo.store");
+        $data = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder'])
+                ->whereHas('omsOrder',function($q) use($old_input){
+                    $q->where('oms_order_status',0);
                 })
-              ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                $join->on("baord.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("1"));
-              })
-              ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                $join->on("dford.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("2"));
-              })
-            // ->join("airwaybill_tracking AS awbt",function($join){
-            //   $join->on('awbt.order_id','=','ord.order_id');
-            //   $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-            //  })
-             ->leftjoin(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
-              $join->on('awbt.order_id','=','ord.order_id');
-              $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-             })
-             ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-             ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.reship,ord.picklist_print,opo.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_2 WHEN opo.store = 2 THEN dford.shipping_address_2 ELSE 0 END) AS shipping_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_area WHEN opo.store = 2 THEN dford.shipping_area ELSE 0 END) AS shipping_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_zone WHEN opo.store = 2 THEN dford.shipping_zone ELSE 0 END) AS shipping_zone,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_1 WHEN opo.store = 2 THEN dford.payment_address_1 ELSE 0 END) AS payment_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_2 WHEN opo.store = 2 THEN dford.payment_address_2 ELSE 0 END) AS payment_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_area WHEN opo.store = 2 THEN dford.payment_area ELSE 0 END) AS payment_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_city WHEN opo.store = 2 THEN dford.shipping_city ELSE 0 END) AS shipping_city,
-                  (CASE WHEN opo.store = 1 THEN baord.firstname WHEN opo.store = 2 THEN dford.firstname ELSE 0 END) AS firstname,
-                  (CASE WHEN opo.store = 1 THEN baord.lastname WHEN opo.store = 2 THEN dford.lastname ELSE 0 END) AS lastname,
-                  (CASE WHEN opo.store = 1 THEN baord.telephone WHEN opo.store = 2 THEN dford.telephone ELSE 0 END) AS telephone,
-                  (CASE WHEN opo.store = 1 THEN baord.email WHEN opo.store = 2 THEN dford.email ELSE 0 END) AS email,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total,
-                  (CASE WHEN opo.store = 1 THEN baord.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) AS date_modified,
-                  (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added
-                "))
-                ->where('oms_order_status',0)
-                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
-                })
-                ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_status_id = '.$old_input["order_status_id"].' WHEN opo.store = 2 THEN dford.order_status_id = '.$old_input["order_status_id"].' ELSE 0 END)');
-                })
-                ->when(@$old_input['search_by_print'] != "",function($query) use ($old_input){
+                ->whereHas('omsOrder',function($query) use($old_input){
                     if( $old_input['search_by_print'] == 1 ){
                         return $query->where('picklist_print',$old_input['search_by_print']);
                     }else if( $old_input['search_by_print'] == 0 ){
                        return $query->whereNull('picklist_print');
                     }
-
+                })
+                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+                    return $query->where('order_id',$old_input["order_id"]);
                 });
-            // if( @$old_input['order_id'] != "" ){
-            //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
-            // }
-            $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
-                ->paginate(20);
-            $data = $this->getOrdersWithImage($data);
+
+            $data = $data->paginate(10);
             // dd($data->toArray());
         ///
         $searchFormAction = URL::to('orders/picking-list-awaiting');
@@ -487,47 +412,33 @@ class OrdersController extends Controller
         return view(self::VIEW_DIR . ".print_pick_list", ["orders" => $orders, "pagination" => '']);
     }
     public function updateCustomerDetails(Request $request){
+        // dd($request->all());
         $order_id = $request->order_id;
         $store    = $request->store;
         if( $request->isMethod('POST') ){
           //update details
+            // dd($request->all());
           $address_1 = $request->address_1;
           $area = $request->area;
           $city = $request->city;
-          $adress_2 = $request->street_building.",-".$request->villa_flat;
+          $street_building = $request->street_building;
+          $villa_flat      = $request->villa_flat;
           $telephone = $request->telephone;
           $name = $request->name;
           $google_map_link = $request->google_map;
-          $update_array = ["payment_address_1"=>$address_1,"payment_address_2"=>$adress_2,"payment_city"=>$city,"payment_area"=>$area,"payment_zone"=>$city,"shipping_address_1"=>$address_1,"shipping_address_2"=>$adress_2,"shipping_city"=>$city,"shipping_area"=>$area,"shipping_zone"=>$city,'telephone'=>$telephone,'firstname'=>$name,'google_map_link'=>$google_map_link];
-          if( $store == 1 ){
-            $qry = OrdersModel::where('order_id',$order_id)->update($update_array);
-          }else if(  $store == 2 ){
-            $qry = DFOrdersModel::where('order_id',$order_id)->update($update_array);
-          }
+          $update_array = ["shipping_address_1"=>$address_1,"shipping_city"=>$city,"shipping_city_area"=>$area,"shipping_street_building"=>$street_building,"shipping_villa_flat"=>$villa_flat,'mobile'=>$telephone,'firstname'=>$name,'google_map_link'=>$google_map_link];
+
+          $qry = OmsPlaceOrderModel::where('order_id',$order_id)->where('store',$store)->update($update_array);
           if($qry){
             OmsActivityLogModel::newLog($order_id,21,$store);
           }
           return redirect()->back()->with('success_msg',"Customer details updated successfully in order # ".$order_id);
         }else{
-          //get details
-          if( $store == 1 ){
-            $data = OrdersModel::select("payment_address_1","shipping_address_2","shipping_zone","payment_area",'telephone','firstname','google_map_link','payment_zone_id')->where("order_id",$order_id)->first();
-            $areas = AreaModel::select('name')->where('zone_id', $data->payment_zone_id)->where('status', 1)->pluck('name');
-          }else if( $store == 2 ){
-            $data  = DFOrdersModel::select("payment_address_1","shipping_address_2","shipping_zone","payment_area",'telephone','firstname','google_map_link','payment_zone_id')->where("order_id",$order_id)->first();
-            $areas = DFAreaModel::select('name')->where('zone_id', $data->payment_zone_id)->where('status', 1)->pluck('name');
-          }
+          $data  = OmsPlaceOrderModel::where('store',$store)->where("order_id",$order_id)->first();
+          $areas = CityArea::where('city_id', $data->shipping_city_id)->pluck('name');
           $data->areas = $areas->toArray();
           $data->store = $store;
           if( $data  ){
-            $address_two_arr = explode(',-',$data->shipping_address_2);
-            if( is_array($address_two_arr) && count($address_two_arr) > 0 ){
-              $data->street_building = $address_two_arr[0];
-              $data->villa_flat = @$address_two_arr[1];
-            }else{
-              $data->street_building = "";
-              $data->villa_flat = "";
-            }
            return response()->json($data);
           }
         }

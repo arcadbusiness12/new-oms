@@ -52,42 +52,41 @@
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span></center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_added }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_modified }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->telephone }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->omsOrder->updated_at }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->email }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total_amount }} </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
-                                        <td>@if( $order->picklist_print == 1 )<span class="badge badge-success green darken-1"><strong>Printed<strong></span> @endif</td>
-                                        <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
-                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
+                                        <td>@if( $order->omsOrder?->picklist_print == 1 )<span class="badge badge-success green darken-1"><strong>Printed<strong></span> @endif</td>
+                                        <td colspan="2"><strong>Address:</strong>{{ $order->shipping_city_area }},{{ $order->shipping_address_1 }},{{ $order->shipping_street_building }},{{ $order->shipping_villa_flat }}</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city }}</td>
                                         <td colspan="4" >
                                             <div class="normal-order-progress">
                                                 @include('orders.order_progress_bar')</td>
                                             </div>
                                         </td>
                                     </tr>
-                                    @if( $order->orderd_products )
+                                    @if( $order->orderProducts )
                                         <tr class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
                                             <td colspan="9">
                                                 <center>
                                                 <table width="100%" style="font-size:12px;">
-                                                    @foreach ( $order->orderd_products as $ordered_product )
+                                                    @foreach ( $order->orderProducts as $ordered_product )
                                                         <tr>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
-                                                            <td><img src="{{ $ordered_product?->product_details?->image }}" /></td>
+                                                            <td style="width: 5%; border:1px solid red"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
                                                             <td>{{ $ordered_product->name }}<br>
-                                                                @forelse ($ordered_product->order_options as $order_option )
-                                                                    <strong>{{ $order_option->name }} :</strong> {{ $order_option->value }}
-                                                                @empty
-                                                                @endforelse
-                                                            </td>
-                                                            <td>{{ $ordered_product->model }}</td>
+                                                                @if(  $ordered_product->product?->option_value > 0  )
+                                                                    <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,
+                                                                @endif
+                                                                <strong>Color : </strong>{{ $ordered_product->product?->option_name }}</td>
+                                                            <td>{{ $ordered_product->sku }}</td>
                                                             <td>{{ $ordered_product->quantity }}</td>
                                                             <td>{{ $ordered_product->price }}</td>
                                                             <td>{{ $ordered_product->total }}</td>
@@ -114,11 +113,11 @@
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
 @include('orders.edit_customer_popup')
-@include('orders.popup_forwordpicklist_courier');
-@include('orders.popup_courier_tracking');
-@include('orders.popup_order_details');
-@include('orders.popup_order_activity_log');
-@include('orders.ccvaneue_details');
+@include('orders.popup_forwordpicklist_courier')
+@include('orders.popup_courier_tracking')
+@include('orders.popup_order_details')
+@include('orders.popup_order_activity_log')
+@include('orders.ccvaneue_details')
 <style>
 .table td {
     border-top: none !important;

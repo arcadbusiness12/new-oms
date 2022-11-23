@@ -34,7 +34,10 @@ class OmsInventoryProductOptionModel extends Model
     {
         return $this->belongsTo(OmsOptions::class, 'option_id');
     }
-
+    public function optionVal()
+    {
+        return $this->belongsTo(OmsDetails::class, 'option_value_id');
+    }
     public function product() {
         return $this->belongsTo(OmsInventoryProductModel::class, 'product_id');
     }
