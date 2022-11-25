@@ -72,7 +72,7 @@
                                       @endif
                                     @else
 
-                                        <img src="{{URL::asset('/assets/images/logo.jpg')}}" />
+                                        <img src="{{URL::asset('/assets/images/'.$order->omsStore->logo) }}" alt="{{ $order->omsStore->name }}" />
                                     @endif
                                 </td>
                                   <td align="right" style="width: 30%">
@@ -80,10 +80,10 @@
                                            jsbarcode-textmargin="0" jsbarcode-height="100"></svg></div>
                                   </td>
                                   <td align="right" style="width: 30%">
-                                    @if( !empty(@$order->courier_datail) )
-                                    <b>{{ @$order->courier_datail->name }}</b><br>
+                                    @if( $order->omsOrder->assignedCourier )
+                                    <b>{{ $order->omsOrder->assignedCourier->name }}</b><br>
                                     {{--  <img src="{{ @$order->courier_datail->company_logo }}" alt="{{ @$order->courier_datail->name }}">  --}}
-                                    <img src="{{ URL::to(@$order->courier_datail->company_logo) }}" alt="{{ @$order->courier_datail->name }}" width="45%">
+                                    <img src="{{ URL::to($order->omsOrder->assignedCourier->company_logo) }}" alt="{{ $order->omsOrder->assignedCourier->name }}" width="45%">
                                     @else
                                       {{--  <b>Courier not selected at picklist.</b>  --}}
                                     @endif
@@ -118,45 +118,40 @@
                                     <tr class="row_{{$order->order_id}}">
                                         <td>{{$order->order_id}}</td>
                                         <td>{{$order->firstname}} {{$order->lastname}}</td>
-                                        <td>{{$order->telephone}}<br>
+                                        <td>{{$order->mobile}}<br>
                                             {!! $whatsapp !!} {{$order->alternate_number}}
                                         </td>
-                                        <td><span class="font-10 font-bold"> {{$order->currency_code}} </span> {{$order->total}}</td>
+                                        <td><span class="font-10 font-bold"> {{$order->currency_code}} </span> {{$order->total_amount}}</td>
                                     </tr>
                                     <tr class="row_{{$order->order_id}}">
-                                        <td colspan="1">Total Product(s) = <span class="count">
-                                                {{array_sum(array_column(json_decode(json_encode($order->orderd_products), True),'quantity'))}}</span></td>
-                                        <td colspan="1"><strong>Address: </strong><i>{{$order->shipping_area}}, {{$order->shipping_address_1}} {{$order->shipping_address_2 ? ", ".$order->shipping_address_2 : "" }}</i></td>
+                                        <td colspan="1">Total Product(s) = <span class="count">{{ $order->orderProducts->count() }}</span></td>
+                                        <td colspan="1"><strong>Address: </strong><i>{{$order->shipping_city_area}}, {{$order->shipping_address_1}}, {{$order->shipping_street_building }}, {{$order->shipping_villa_flat }}</i></td>
                                         <td colspan="1"><strong>City: </strong><i>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</i></td>
                                     </tr>
                                     <tr>
                                         <td colspan="4" class="margin-0 padding-0" >
                                             <table class="table ">
                                               <tbody>
-                                                @foreach ($order->orderd_products as $product )
+                                                @foreach ($order->orderProducts as $ordered_product )
                                                 <tr class="order-products">
                                                     <td>
-                                                        <img width="100" src="{{$product->product_details->image}}" />
+                                                        <img width="100" src="{{ URL::asset('uploads/inventory_products/'.$ordered_product->product->image)}}" />
                                                     </td>
                                                     <td>
-                                                        {{ $product->name }}
-                                                        @if ( $product->order_options )
+                                                        {{ $ordered_product->name }}
+                                                        @if ( $ordered_product->product?->option_value > 0 )
                                                         <div class="m-t-5">
-                                                            @foreach ($product->order_options as $option)
-                                                            @if ($product->order_product_id == $product->order_product_id)
-                                                            <span>{{$option->name}} : </span><strong>{{$option->value}} </strong>
-                                                            @if(!$loop->last)
-                                                            <label>|</label>
+                                                            @if(  $ordered_product->product?->option_value > 0  )
+                                                                    <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,
                                                             @endif
-                                                            @endif
-                                                            @endforeach
+                                                            <strong>Color : </strong>{{ $ordered_product->product?->option_name }}
                                                         </div>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $product->model }}</td>
-                                                    <td><span class="count">{{$product->quantity}}</span></td>
-                                                    <td>{{$product->price}}</td>
-                                                    <td>{{$product->total}}</td>
+                                                    <td>{{ $ordered_product->sku }}</td>
+                                                    <td><span class="count">{{$ordered_product->quantity}}</span></td>
+                                                    <td>{{$ordered_product->price}}</td>
+                                                    <td>{{$ordered_product->total}}</td>
                                                 </tr>
                                                 @endforeach
                                               </tbody>

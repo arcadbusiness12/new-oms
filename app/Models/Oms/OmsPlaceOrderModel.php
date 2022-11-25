@@ -3,6 +3,7 @@
 namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Description of OmsPlaceOrderModel
@@ -24,5 +25,8 @@ class OmsPlaceOrderModel extends Model
     }
     public function omsOrder(){
         return $this->hasOne(OmsOrdersModel::class,"order_id","order_id");
+    }
+    public function omsStore(){
+        return $this->BelongsTo(storeModel::class,'store');
     }
 }

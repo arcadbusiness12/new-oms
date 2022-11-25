@@ -4,6 +4,7 @@
 
 namespace App\Models\Oms\InventoryManagement;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductDescriptionModel;
 use App\Models\Oms\OmsProductDiscountModel;
 use App\Models\Oms\OmsProductRewardPointModel;
@@ -11,8 +12,6 @@ use App\Models\Oms\OmsUserModel;
 use App\Models\Reseller\PriceHistoryModel;
 use App\Models\Reseller\ResellerProductModel;
 use Illuminate\Database\Eloquent\Model;
-
-
 
 class OmsInventoryProductModel extends Model
 

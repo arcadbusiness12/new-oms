@@ -36,7 +36,7 @@
                                 <td><input name="o_id[]" value="20000030" type="checkbox" id="md_checkbox_20000030" class="chk-col-green fwd-ordr-generate-awb-checkbox"></td>
                                 <th scope="col"><center>Order Id</center></th>
                                 <th scope="col"><center>Customer</center></th>
-                                <th scope="col"><center>Status</center></th>
+                                <th scope="col"><center>Store</center></th>
                                 <th scope="col"><center>Date Added</center></th>
                                 <th scope="col"><center>Date Modified</center></th>
                                 <th scope="col"><center>Telephone</center></th>
@@ -51,7 +51,7 @@
                                         <td class="col-sm-1"><input name="o_id[]" value="{{ $order->order_id }}" type="checkbox" id="md_checkbox_{{ $order->order_id }}" class="chk-col-green fwd-ordr-generate-awb-checkbox"></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span></center></td>
+                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->omsOrder->updated_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>

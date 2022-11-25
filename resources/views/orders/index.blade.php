@@ -40,7 +40,7 @@
                               <tr style="background-color: #3f51b5;color:white">
                                 <th scope="col"><center>Order Id</center></th>
                                 <th scope="col"><center>Customer</center></th>
-                                <th scope="col"><center>Status</center></th>
+                                <th scope="col"><center>Store</center></th>
                                 <th scope="col"><center>Date Added</center></th>
                                 <th scope="col"><center>Date Modified</center></th>
                                 <th scope="col"><center>Telephone</center></th>
@@ -54,7 +54,7 @@
                                     <tr class="row_{{ $order->order_id }}">
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span></center></td>
+                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->updated_at  }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
@@ -100,7 +100,7 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr  class="order-action" class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
+                                    <tr  class="order-action row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
                                         <td colspan="11">
                                                     <div class="row">
                                                         <div class="col-1">

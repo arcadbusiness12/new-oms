@@ -3,6 +3,7 @@
 namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Description of OmsOrdersModel
@@ -24,9 +25,13 @@ class OmsOrdersModel extends Model
   {
     return $this->hasOne(__NAMESPACE__ . '\ShippingProvidersModel', ShippingProvidersModel::FIELD_SHIPPING_PROVIDER_ID, self::FIELD_LAST_SHIPPED_WITH_PROVIDER);
   }
-  public function assigned_courier()
+  public function assignedCourier()
   {
-    return $this->hasOne(__NAMESPACE__ . '\ShippingProvidersModel', ShippingProvidersModel::FIELD_SHIPPING_PROVIDER_ID, "picklist_courier");
+    return $this->belongsTo(ShippingProvidersModel::class,"picklist_courier","shipping_provider_id");
+  }
+  public function generatedCourier()
+  {
+    return $this->belongsTo(ShippingProvidersModel::class,"last_shipped_with_provider","shipping_provider_id");
   }
   public function inventoryOnHold(){
     return $this->hasMany(__NAMESPACE__ . '\InventoryManagement\OmsInventoryOnholdQuantityModel',self::FIELD_ORDER_ID, self::FIELD_ORDER_ID);

@@ -135,7 +135,7 @@ class OrdersController extends Controller
     public function index(){
         $old_input = RequestFacad::all();
         $data = OmsPlaceOrderModel::select('oms_place_order.*')
-                ->with(['orderProducts.product','omsOrder'])
+                ->with(['orderProducts.product','omsOrder','omsStore'])
                 ->leftjoin("oms_orders",function($join){
                     $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
                     $join->on('oms_orders.store', '=', 'oms_place_order.store');
@@ -145,12 +145,24 @@ class OrdersController extends Controller
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_place_order.order_id',$old_input['order_id']);
                 })
+                ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.store',$old_input['by_store']);
+                })
+                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
+                })
+                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
+                })
+                ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
+                })
+                ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.total_amount',$old_input['total']);
+                })
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_orders.oms_order_status',$old_input['order_status_id']);
                 });
-            // if( @$old_input['order_id'] != "" ){
-            //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
-            // }
             $data = $data->orderByRaw("(CASE WHEN oms_orders.order_id > 0 THEN oms_orders.updated_at ELSE oms_place_order.created_at END) DESC")
                 ->paginate(20);
             // $data = $data->paginate(20);
@@ -316,78 +328,37 @@ class OrdersController extends Controller
         if (isset($old_input['o_id'])){
             return $this->generatePickingList($old_input['o_id']);
         }
-        $data = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder'])
+        $data = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder','omsStore'])
                 ->whereHas('omsOrder',function($q) use($old_input){
                     $q->where('oms_order_status',0);
-                })
-                ->whereHas('omsOrder',function($query) use($old_input){
-                    if( $old_input['search_by_print'] == 1 ){
-                        return $query->where('picklist_print',$old_input['search_by_print']);
-                    }else if( $old_input['search_by_print'] == 0 ){
-                       return $query->whereNull('picklist_print');
-                    }
                 })
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
                     return $query->where('order_id',$old_input["order_id"]);
                 });
-
+                if( @$old_input['search_by_print'] != "" ){
+                    $data = $data->whereHas('omsOrder',function($query) use($old_input){
+                        if( $old_input['search_by_print'] == 1 ){
+                            return $query->where('picklist_print',$old_input['search_by_print']);
+                        }else if( $old_input['search_by_print'] == 0 ){
+                            return $query->whereNull('picklist_print');
+                        }
+                    });
+                }
+            // $data = $data->orderByRaw("omsOrder.updated_at DESC");
             $data = $data->paginate(10);
             // dd($data->toArray());
         ///
         $searchFormAction = URL::to('orders/picking-list-awaiting');
-        $orderStatus = OrderStatusModel::all();
+        $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();
         // dd($data)->toArray();
         return view(self::VIEW_DIR.".pick_list_view",compact('data','searchFormAction','orderStatus','old_input','couriers'));
     }
     protected function generatePickingList($orderIds = []){
-        $orders = DB::table("oms_place_order AS opo")
-                ->leftjoin("oms_orders AS ord",function($join){
-                    $join->on("ord.order_id","=","opo.order_id");
-                    $join->on("ord.store","=","opo.store");
-                })
-            ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                $join->on("baord.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("1"));
-            })
-            ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                $join->on("dford.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("2"));
-            })
-            // ->join("airwaybill_tracking AS awbt",function($join){
-            //   $join->on('awbt.order_id','=','ord.order_id');
-            //   $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-            //  })
-            ->leftjoin(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
-            $join->on('awbt.order_id','=','ord.order_id');
-            $join->on('awbt.shipping_provider_id','=','ord.picklist_courier');
-            })
-            ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-            ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.reship,opo.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                (CASE WHEN opo.store = 1 THEN baord.currency_code WHEN opo.store = 2 THEN dford.currency_code ELSE 0 END) AS currency_code,
-                (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
-                (CASE WHEN opo.store = 1 THEN baord.shipping_address_2 WHEN opo.store = 2 THEN dford.shipping_address_2 ELSE 0 END) AS shipping_address_2,
-                (CASE WHEN opo.store = 1 THEN baord.shipping_area WHEN opo.store = 2 THEN dford.shipping_area ELSE 0 END) AS shipping_area,
-                (CASE WHEN opo.store = 1 THEN baord.shipping_zone WHEN opo.store = 2 THEN dford.shipping_zone ELSE 0 END) AS shipping_zone,
-                (CASE WHEN opo.store = 1 THEN baord.payment_address_1 WHEN opo.store = 2 THEN dford.payment_address_1 ELSE 0 END) AS payment_address_1,
-                (CASE WHEN opo.store = 1 THEN baord.payment_address_2 WHEN opo.store = 2 THEN dford.payment_address_2 ELSE 0 END) AS payment_address_2,
-                (CASE WHEN opo.store = 1 THEN baord.payment_area WHEN opo.store = 2 THEN dford.payment_area ELSE 0 END) AS payment_area,
-                (CASE WHEN opo.store = 1 THEN baord.shipping_city WHEN opo.store = 2 THEN dford.shipping_city ELSE 0 END) AS shipping_city,
-                (CASE WHEN opo.store = 1 THEN baord.firstname WHEN opo.store = 2 THEN dford.firstname ELSE 0 END) AS firstname,
-                (CASE WHEN opo.store = 1 THEN baord.lastname WHEN opo.store = 2 THEN dford.lastname ELSE 0 END) AS lastname,
-                (CASE WHEN opo.store = 1 THEN baord.telephone WHEN opo.store = 2 THEN dford.telephone ELSE 0 END) AS telephone,
-                (CASE WHEN opo.store = 1 THEN baord.alternate_number WHEN opo.store = 2 THEN dford.alternate_number ELSE 0 END) AS alternate_number,
-                (CASE WHEN opo.store = 1 THEN baord.email WHEN opo.store = 2 THEN dford.email ELSE 0 END) AS email,
-                (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total,
-                (CASE WHEN opo.store = 1 THEN baord.comment WHEN opo.store = 2 THEN dford.comment ELSE 0 END) AS comment,
-                (CASE WHEN opo.store = 1 THEN baord.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) AS date_modified,
-                (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added
-                "))
-                ->whereIn("opo.order_id",$orderIds)
+        $orders = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->whereIn("order_id",$orderIds)
                 ->get();
-
+        // dd($orders->toArray());
         if (sizeof($orders) > 0)
         {
             // Update the print picklist status to 1 in oms table
@@ -407,7 +378,7 @@ class OrdersController extends Controller
             }
         }
         // dd($orders);
-        $orders = $this->getOrdersWithImage($orders);
+        // $orders = $this->getOrdersWithImage($orders);
         // dd($orders);
         return view(self::VIEW_DIR . ".print_pick_list", ["orders" => $orders, "pagination" => '']);
     }
@@ -482,12 +453,14 @@ class OrdersController extends Controller
             $old_input = RequestFacad::all();
             if(count($old_input) > 0){
                 $order_id = $old_input['order_id'];
-                $order = OmsOrdersModel::select('*')
+
+                $order = OmsPlaceOrderModel::with(['orderProducts.product','orderProducts.productOption','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->whereHas('omsOrder',function($query){
+                    $query->where('oms_order_status', 0)->where('picklist_print', 1);
+                })
                 ->where('order_id', $order_id)
-                ->where('oms_order_status', OmsOrderStatusInterface::OMS_ORDER_STATUS_IN_QUEUE_PICKING_LIST)
-                // ->where('store',$this->store)
-                ->where('picklist_print', 1)
                 ->first();
+                dd($order->toArray());
                 $order_array = array();
                 if($order){
                     $store = $order->store;
@@ -509,16 +482,6 @@ class OrdersController extends Controller
                             }
                             $omsProduct = OmsInventoryProductModel::select('*','option_name as color','option_value as size')->where('sku', $opencartProduct->sku)->first();
                             if(!empty($omsProduct)){
-                                // die("exist");
-                                if( $store == 1 ){
-                                    $options = OrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-                                    ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-                                    ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-                                }else if($store == 2){
-                                    $options = DFOrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-                                    ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-                                    ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-                                }
                                 // dd($options);
                                 $option_array = array();
                                 foreach ($options as $option) {

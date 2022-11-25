@@ -89,13 +89,16 @@ class PlaceOrderController extends Controller
     public function searchProducts(Request $request){
         // dd($request->all());
         $store = $request->store;
-        $sub_dir = $request->store == 1 ? "ba" : "df";
         $product = OmsInventoryProductModel::with(['ProductsSizes'=>function($query){
             $query->where("available_quantity",">",0);
+        },'productDescriptions'=>function($query) use ($store){
+            $query->where("store_id",$store);
+        },'productSpecials'=>function($query) use ($store){
+            $query->where("store_id",$store)->whereDate("date_start",'<=',date('Y-m-d'))->whereDate("date_end",'>=',date('Y-m-d'))->orderBy('sort_order');
         }])
-        ->join("oms_inventory_product_descriptions AS oipd","oipd.product_id","=","oms_inventory_product.product_id")
-        ->where("oipd.store_id",$store)->where('sku','LIKE',"%".$request->product_sku."%")->first();
-        dd($product->toArray());
+        ->where('sku','LIKE',"%".$request->product_sku."%")->first();
+        // echo $product->productSpecials->count();
+        // dd($product->toArray());
         return view(self::VIEW_DIR.'.product_search_form',compact('product'));
     }
     public function addToCart(Request $request){
