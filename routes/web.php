@@ -8,6 +8,7 @@ use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
 use App\Http\Controllers\inventoryManagement\InventoryManagementController;
+use App\Http\Controllers\omsSetting\localisation\GeoZoneController;
 use App\Http\Controllers\omsSetting\PaymentMethodController;
 use App\Http\Controllers\omsSetting\ShippingMethodController;
 use App\Http\Controllers\Orders\OrdersAjaxController;
@@ -130,9 +131,22 @@ Route::prefix('omsSetting')->middleware('auth')->group(function () {
     });
     Route::controller(ShippingMethodController::class)->group(function() {
         Route::get('/shipping/method', 'shippingMethods')->name('shipping.method');
-        Route::post('/add/shipping/method', 'addShippingMethods')->name('add.shipping.method');
+        Route::get('/add/shipping/method', 'addShippingMethods')->name('add.shipping.method');
+        Route::post('/save/shipping/method', 'saveShippingMethods')->name('save.shipping.method');
+        Route::get('/edit/shipping/method/{shippingMethod}', 'editShippingMethod')->name('edit.shipping.method');
+        Route::post('/update/shipping/method', 'updateShippingMethods')->name('update.shipping.method');
         Route::get('/get/countries', 'getCountries')->name('get.countries');
         Route::post('/free/shipping/setting/form', 'AddFreeShippingSetting')->name('free.shipping.setting.form');
+        Route::get('/destroy/weight/amount/{id}', 'destroyWeightAmount')->name('destroy.weight.amount');
+    });
+    Route::prefix('localisations')->controller(GeoZoneController::class)->group(function() {
+        Route::get('/geo/zones', 'geoZones')->name('geo.zones');
+        Route::get('/add/geo/zones', 'addGeoZones')->name('add.geo.zone');
+        Route::get('/get/zones/{country}', 'getZones')->name('get.zones');
+        Route::get('/get/areas/{city}', 'getAreas')->name('get.areas');
+        Route::post('/save/goe/zone', 'saveGeoZone')->name('save.geo.zones');
+        Route::get('/edit/goe/zone/{id}', 'editGeoZone')->name('edit.geo.zone');
+        Route::post('/update/goe/zone', 'updateGeoZone')->name('update.geo.zones');
     });
 });
 
@@ -141,7 +155,6 @@ Route::prefix('rolepermision')->middleware('auth')->group(function () {
         Route::get('/roles', 'getRoles')->name('get.roles');
         Route::post('/add/role', 'addEditRole')->name('add.edit.role');
     });
-
 
 });
 

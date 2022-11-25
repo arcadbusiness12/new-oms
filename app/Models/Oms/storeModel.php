@@ -18,4 +18,8 @@ class storeModel extends Model
       public function specialPrices() {
         return $this->hasMany(OmsInventoryProductSpecialModel::class, 'store_id');
       }
+      
+      public function shippingMethods() {
+        return $this->hasMany(ShippingMethodModel::class, 'store_id');
+      }
 }
