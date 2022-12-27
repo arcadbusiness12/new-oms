@@ -139,14 +139,12 @@
                                                     </td>
                                                     <td>
                                                         {{ $ordered_product->name }}
-                                                        @if ( $ordered_product->product?->option_value > 0 )
                                                         <div class="m-t-5">
                                                             @if(  $ordered_product->product?->option_value > 0  )
                                                                     <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,
                                                             @endif
                                                             <strong>Color : </strong>{{ $ordered_product->product?->option_name }}
                                                         </div>
-                                                        @endif
                                                     </td>
                                                     <td>{{ $ordered_product->sku }}</td>
                                                     <td><span class="count">{{$ordered_product->quantity}}</span></td>

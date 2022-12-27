@@ -10,7 +10,7 @@
    }'>
    <ul class="nav step-anchor">
       <li style="display: none"><a href=""></a></li>
-      <li class="@if( $order->omsOrder?->oms_order_status == '0' || $order->oms_order_status > 0 ) active @endif"><a href=""  class="circle"></a><center>Picklist</center></li>
+      <li class="@if( $order->omsOrder?->oms_order_status == '0' || $order->omsOrder?->oms_order_status > 0 ) active @endif"><a href=""  class="circle"></a><center>Picklist</center></li>
       <li class="@if( $order->omsOrder?->oms_order_status > 0 ) active @endif"><a  class="circle"></a><center>Packed</center></li>
       <li class="@if( $order->omsOrder?->oms_order_status > 1 ) active @endif"><a  class="circle"></a><center>AWB</center></li>
       <li class="@if( $order->omsOrder?->oms_order_status > 2 ) active @endif" ><a  class="circle"></a><center>Shipped</center></li>
