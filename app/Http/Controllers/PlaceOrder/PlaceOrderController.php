@@ -520,8 +520,9 @@ class PlaceOrderController extends Controller
                 $new_onhold->quantity        = $order_quantity;
                 $new_onhold->store           = $order_product->store_id;
                 if( $new_onhold->save() ){
+                    $decrement_query = 'IF (available_quantity-' . $order_quantity . ' <= 0, 0, available_quantity-' . $order_quantity . ')';
                     OmsInventoryProductOptionModel::where(["product_id"=>$order_product->product_id,"product_option_id"=>$order_product->product_option_id])
-                    ->update(['available_quantity'=>DB::raw("available_quantity - $order_quantity"),'onhold_quantity'=>DB::raw("onhold_quantity + $order_quantity")]);
+                    ->update(['available_quantity'=>DB::raw($decrement_query),'onhold_quantity'=>DB::raw("onhold_quantity + $order_quantity")]);
                 }
             }
         }

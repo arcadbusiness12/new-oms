@@ -79,11 +79,13 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::post('/get/pack/order', 'getPackOrder')->name('orders.get.pack.order');
         Route::post('/update/pack/order', 'updatePackOrder')->name('orders.update.pack.order');
         Route::get('/generate/awb', 'generateAwb')->name('orders.generate.awb');
+        Route::get('/awb', 'awb')->name('orders.awb');
         Route::get('/awb/generated', 'awbGenerated')->name('orders.awb.generated');
         Route::get('/ship/order', 'shipOrdersToCourier')->name('orders.ship.order');
         Route::post('/ship/orders/to/courier', 'shipOrders')->name('orders.ship.orders.to.courier');
         Route::get('/return/order', 'returnOrder')->name('orders.return.order');
         Route::post('/get/return/order', 'getReturnOrder')->name('orders.get.return.order');
+        Route::get('/print/label/{id}', 'printLabel')->name('orders.print.label');
         Route::post('/orders/update/return/order', 'updateReturnOrder')->name('orders.update.return.order');
     });
     Route::controller(OrdersAjaxController::class)->group(function() {

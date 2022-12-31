@@ -33,6 +33,7 @@ use App\Models\OpenCart\Products\ProductOptionValueModel;
 use App\Models\DressFairOpenCart\Products\ProductOptionValueModel AS DFProductOptionValueModel;
 use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\CityArea;
+use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryReturnQuantityModel;
@@ -539,20 +540,7 @@ class OrdersController extends Controller
         $orderIds = Session::get('orderIdsForAWBGenerate')[0];
         Session::put('orderIdsForAWBGenerate', array());
         $orders = collect();
-        if( is_array($orderIds) && count($orderIds) > 0 ){
-            foreach( $orderIds as $order_id ){
-                $data = OmsOrdersModel::where("order_id",$order_id )->first();
-                if( $data->store == 1 ){
-                    $order = OrdersModel::with(['status', 'orderd_products'])
-                    ->where("order_id", $order_id)->first();
-                }else if( $data->store == 2 ){
-                    $order = DFOrdersModel::with(['status', 'orderd_products'])
-                      ->where("order_id", $order_id)->first();
-                }
-                $orders->push($order);
-            }
-        }
-        // dd($orderIds);
+        $orders = OmsPlaceOrderModel::with(['orderProducts.product'])->whereIn('order_id',$orderIds)->get();
         //// Need enhancement
         $order_tracking = AirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
         // dd($order_tracking->toArray());
@@ -609,56 +597,23 @@ class OrdersController extends Controller
     public function shipOrders(){
         $orderIds = RequestFacad::get('generate-awb-chbx'); // ordersID array
         $stores   = RequestFacad::get('store');
-        // dd($stores);
         if ($orderIds){
             try{
                 foreach ($orderIds as $orderId)
                 {
-                    $omsOrder = OmsOrdersModel::where(OmsOrdersModel::FIELD_ORDER_ID, $orderId)->where('store',$stores[$orderId])->first();
-                    if( $omsOrder->store == 1 ){
-                        $openCartOrder = OrdersModel::findOrFail($orderId);
-                    }else if( $omsOrder->store == 2 ){
-                        $openCartOrder = DFOrdersModel::findOrFail($orderId);
-                    }
-                    // echo $omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS}."==".OmsOrderStatusInterface::OMS_ORDER_STATUS_AIRWAY_BILL_GENERATED; die;
-                    if (($omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} == OmsOrderStatusInterface::OMS_ORDER_STATUS_AIRWAY_BILL_GENERATED)){
+                    $omsOrder = OmsOrdersModel::where("order_id", $orderId)->where('store',$stores[$orderId])->first();
+
+                    if ( $omsOrder->oms_order_status == 2 ){
                         if( $omsOrder->reship != 1 ){
                           $this->shippedInventoryQuantity($omsOrder);
                         }
                         //UPDATE OMS ORDER STATUS
-                        $omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_SHIPPED;
-                        $omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
+                        $omsOrder->oms_order_status = 3; // 3 for shipped status
+                        $omsOrder->updated_at = \Carbon\Carbon::now();
                         $omsOrder->save();
 
-                        $openCartOrder->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
-                        $openCartOrder->{OrdersModel::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_SHIPPED;
-                        $openCartOrder->save(); // update the order status
-
-                        /*if($openCartOrder->shipping_country_id == 99){
-                            $header = 'RESIND';
-                        }else{
-                            $header = 'Reson8';
-                        }*/
                         $awb_number = AirwayBillTrackingModel::select('airway_bill_number')->where('order_id', $orderId)->where('store',$omsOrder->store)->first();
 
-                        // $sms = new Reson8SmsServiceProvider();
-                        // $message = "Dear " . $openCartOrder->firstname . "\n";
-                        // $message .= "Your order #" . $openCartOrder->order_id . " shipped out to courier Shipping number " . $awb_number->airway_bill_number . ". if have any Question contact us on 971-506465814.";
-                        // $sms->SendSMS(urlencode($message), $openCartOrder->telephone, 'BusinsArcad');
-
-                        //UPDATE OPENCART ORDER HISTORY
-
-                        if( $omsOrder->store == 1 ){
-                            $orderHistory = new OrderHistory();
-                        }else if( $omsOrder->store == 2 ){
-                            $orderHistory = new DFOrderHistory();
-                        }
-                        $orderHistory->{OrderHistory::FIELD_COMMENT} = "Order shipped from OMS";
-                        $orderHistory->{OrderHistory::FIELD_ORDER_ID} = $orderId;
-                        $orderHistory->{OrderHistory::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_SHIPPED;
-                        $orderHistory->{OrderHistory::FIELD_DATE_ADDED} = \Carbon\Carbon::now();
-                        $orderHistory->{OrderHistory::FIELD_NOTIFY} = OrderHistory::NOTIFY_CUSTOMER;
-                        $orderHistory->save();
 					    OmsActivityLogModel::newLog($orderId,5, $omsOrder->store); //5 is for Ship order
 
                         // if($openCartOrder->reseller_id > 0) {
@@ -681,110 +636,31 @@ class OrdersController extends Controller
         }else{
             Session::flash('message', 'Please select order to ship.');
             Session::flash('alert-class', 'alert-danger');
-            return redirect('/orders/ship-orders');
+            return redirect('/orders/ship/order');
         }
     }
     public function shippedInventoryQuantity($omsOrder){
         $order_id = $omsOrder->order_id;
-        if( $omsOrder->store == 1 ){
-            $orderd_products = OrdersModel::with(['orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
-        }else if( $omsOrder->store == 2 ){
-            $orderd_products = DFOrdersModel::with(['orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $order_id)->first();
-        }
-        // echo "<pre>"; print_r($orderd_products->toArray()); die;
-        if($orderd_products->orderd_products){
-            foreach ($orderd_products->orderd_products as $key => $product) {
-                if( $omsOrder->store == 1 ){
-                    $opencart_sku = ProductsModel::select('sku')->where('product_id', $product->product_id)->first();
-                }else if( $omsOrder->store == 2 ){
-                    $opencart_sku = DFProductsModel::select('sku')->where('product_id', $product->product_id)->first();
-                }
-                $exists = OmsInventoryProductModel::select("*","option_name AS color","option_value AS size")->where('sku', $opencart_sku->sku)->first();
-                // dd($exists->toArray());
-                if($exists){
-                    $product_id = $exists->product_id;
-                    if(!empty($exists->size) && $exists->size > 0){
-                        $total_quantity = 0;
-                        foreach ($product->order_options as $key => $option) {
-                            if( $omsOrder->store == 1 ){
-                                $option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                    ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                    ->where('option_description.name', $option->name)
-                                    ->where('ovd.name', $option->value)
-                                    ->first();
-                            }else if( $omsOrder->store == 2 ){
-                                $option_data = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                    ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                    ->where('option_description.name', $option->name)
-                                    ->where('ovd.name', $option->value)
-                                    ->first();
-                            }
-
-                            // dd($product->order_options->toArray());
-                            if( $omsOrder->store == 1 ){
-                                $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
-                            }else if( $omsOrder->store == 2 ){
-                                $ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
-                            }
-                            if($option_data && $option_data->option_id != $ba_color_option_id){
-                                if( $omsOrder->store == 1 ){
-                                    $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
-                                }else if( $omsOrder->store == 2 ){
-                                    $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_data->option_id,$option_data->option_value_id);
-                                }
-                                // dd($oms_option_det->toArray());
-                                $total_quantity = $total_quantity + $product->quantity;
-                                $decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
-                                OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'shipped_quantity' => DB::raw('shipped_quantity+' . $product->quantity) ));
-                                $OmsInventoryShippedQuantityModel = new OmsInventoryShippedQuantityModel();
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_PRODUCT_ID} = $product_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_ORDER_ID} = $order_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_OPTION_ID} = $oms_option_det->oms_options_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_OPTION_VALUE_ID} = $oms_option_det->oms_option_details_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_QUANTITY} = $product->quantity;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_STORE} = $omsOrder->store;
-                                $OmsInventoryShippedQuantityModel->save();
-                            }
-                        }
-                    }else{
-                        // echo $exists->size."<br>";
-                        // echo $product->quantity;
-                        // dd($product->order_options->toArray());
-                        foreach ($product->order_options as $key => $option) {
-                            if( $omsOrder->store == 1 ){
-                                $option_data = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                ->where('option_description.name', $option->name)
-                                ->where('ovd.name', $option->value)
-                                ->first();
-                            }else if( $omsOrder->store == 2 ){
-                                $option_data = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                    ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                    ->where('option_description.name', $option->name)
-                                    ->where('ovd.name', $option->value)
-                                    ->first();
-                            }
-
-                            if($option_data){
-                                if( $omsOrder->store == 1 ){
-                                    $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_data->option_id,$option_data->option_value_id);
-                                }else if( $omsOrder->store == 2 ){
-                                    $oms_option_det = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_data->option_id,$option_data->option_value_id);
-                                }
-                                // dd($oms_option_det->toArray());
-                                $decrement_query = 'IF (pack_quantity-' . $product->quantity . ' <= 0, 0, pack_quantity-' . $product->quantity . ')';
-                                OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $oms_option_det->oms_options_id)->where('option_value_id', $oms_option_det->oms_option_details_id)->update(array('pack_quantity' => DB::raw($decrement_query), 'shipped_quantity' => DB::raw('shipped_quantity+' . $product->quantity) ));
-
-                                $OmsInventoryShippedQuantityModel = new OmsInventoryShippedQuantityModel();
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_PRODUCT_ID} = $product_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_ORDER_ID} = $order_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_OPTION_ID} = $oms_option_det->oms_options_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_OPTION_VALUE_ID} = $oms_option_det->oms_option_details_id;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_QUANTITY} = $product->quantity;
-                                $OmsInventoryShippedQuantityModel->{OmsInventoryShippedQuantityModel::FIELD_STORE} = $omsOrder->store;
-                                $OmsInventoryShippedQuantityModel->save();
-                            }
-                        }
+        $store_id = $omsOrder->store;
+        $order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+        if( $order_products ){
+            $order_quantity = 0;
+            foreach( $order_products as $key => $order_product ){
+                $order_quantity = $order_product->quantity;
+                $check_exist = OmsInventoryShippedQuantityModel::where("order_id",$order_product->order_id)->where('product_id',$order_product->product_id)
+                ->where('option_id',$order_product->productOption->option_id)->where('option_value_id',$order_product->productOption->option_value_id)->where('store',$order_product->store_id)->first();
+                if( !$check_exist ){
+                    $new_shipped = new OmsInventoryShippedQuantityModel();
+                    $new_shipped->order_id        = $order_product->order_id;
+                    $new_shipped->product_id      = $order_product->product_id;
+                    $new_shipped->option_id       = $order_product->productOption->option_id;
+                    $new_shipped->option_value_id = $order_product->productOption->option_value_id;
+                    $new_shipped->quantity        = $order_quantity;
+                    $new_shipped->store           = $order_product->store_id;
+                    if( $new_shipped->save() ){
+                        $decrement_query = 'IF (pack_quantity-' . $order_quantity . ' <= 0, 0, pack_quantity-' . $order_quantity . ')';
+                        OmsInventoryProductOptionModel::where(["product_id"=>$order_product->product_id,"product_option_id"=>$order_product->product_option_id])
+                        ->update(['pack_quantity'=>DB::raw($decrement_query),'shipped_quantity'=>DB::raw("shipped_quantity + $order_quantity")]);
                     }
                 }
             }
@@ -795,12 +671,10 @@ class OrdersController extends Controller
         return view(self::VIEW_DIR.".return_order",compact('old_input'));
     }
     public function getReturnOrder(){
-
         if(count(RequestFacad::all()) > 0){
             $order_id = RequestFacad::get('order_id');
-            $order = OmsOrdersModel::select('*')
-            ->where('order_id', $order_id)
-            ->where('oms_order_status', OmsOrderStatusInterface::OMS_ORDER_STATUS_SHIPPED)
+            $order = OmsOrdersModel::where('order_id', $order_id)
+            ->where('oms_order_status', 3) //3 for shipped order
             // ->where('store',$this->store)
             ->first();
 
@@ -808,294 +682,244 @@ class OrdersController extends Controller
               echo "<h2 style='color:red'>Order cannot be return, contact operation team.</h2>";
               return;
             }
-
-            $order_array = array();
             if($order){
-                $oms_store = $order->store;
-                if( $oms_store == 1 ){
-                    $products = OrderedProductModel::select('*')->where('order_id', $order_id)->get();
-                     $opencartOrder = OrdersModel::select('total')->where('order_id', $order_id)->first();
-                }else if( $oms_store == 2 ){
-                    $products      = DFOrderedProductModel::select('*')->where('order_id', $order_id)->get();
-                    $opencartOrder = DFOrdersModel::select('total')->where('order_id', $order_id)->first();
-                }
-                $product_array = array();
-
-                foreach ($products as $product) {
-                    if( $oms_store == 1 ){
-                        $opencartProduct = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
-                    }else if( $oms_store == 2 ){
-                        $opencartProduct = DFProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
-                    }
-                    $omsProduct = OmsInventoryProductModel::select('*','option_name AS color','option_value AS size')->where('sku', $opencartProduct->sku)->first();
-                    // echo "<pre>"; print_r($omsProduct->toArray()); die;
-                    if($omsProduct){
-                        if( $oms_store == 1 ){
-                            $options = OrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-                            ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-                            ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-                        }else if( $oms_store == 2 ){
-                            $options = DFOrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-                            ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-                            ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-                        }
-
-                        $option_array = array();
-                        foreach ($options as $option) {
-                            if( $oms_store == 1 ){
-                                $optionData = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                ->where('option_description.name', $option['name'])
-                                ->where('ovd.name', $option['value'])
-                                ->first();
-                                $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($optionData->option_id,$optionData->option_value_id);
-                            }else if( $oms_store == 2 ){
-                                $optionData = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-                                ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-                                ->where('option_description.name', $option['name'])
-                                ->where('ovd.name', $option['value'])
-                                ->first();
-                                $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($optionData->option_id,$optionData->option_value_id);
-                            }
-                            // dd($optionData->toArray());
-                            $omsColorId = OmsDetails::colorId($omsProduct['color']);
-                            $oms_color_option_id = OmsOptions::colorOptionId();
-                            if($omsProduct['size'] == 0){
-                                $barcode = $omsProduct->product_id;
-                                $barcode .= $omsColorId;
-                                $option_n_v = $option['name']. ' - ' .$option['value'];
-
-                                $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$oms_color_option_id)->where('option_value_id', $omsColorId)->where('store', $oms_store)->exists();
-
-                                $option_array[] = array(
-                                    'option'                    =>  $option_n_v,
-                                    'option_id'                 =>  $optionData->option_id,
-                                    'option_value_id'           =>  $optionData->option_value_id,
-                                    'barcode'                   =>  $barcode,
-                                    'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
-                                    'product_option_value_id'   =>  $option['product_option_value_id'],
-                                    'manual_checkable'          =>  $this->forceScanning($product->model),
-                                );
-                            }else{
-                                if( $oms_store == 1 ){
-                                    $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
-                                }else if( $oms_store == 2 ){
-                                    $ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
-                                }
-                                if($optionData->option_id != $ba_color_option_id){
-                                    $barcode = $omsProduct->product_id;
-                                    $barcode .= $OmsOptionsData->oms_option_details_id;
-                                    $option_n_v = $option['name']. ' - ' .$option['value'];
-
-                                    $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$OmsOptionsData->oms_options_id)->where('option_value_id', $OmsOptionsData->oms_option_details_id)->where('store', $oms_store)->exists();
-
-                                    $option_array[] = array(
-                                        'option'                    =>  $option_n_v,
-                                        'option_id'                 =>  $optionData->option_id,
-                                        'option_value_id'           =>  $optionData->option_value_id,
-                                        'barcode'                   =>  $barcode,
-                                        'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
-                                        'product_option_value_id'   =>  $option['product_option_value_id'],
-                                        'manual_checkable'          =>  $this->forceScanning($product->model),
-                                    );
-                                }
-                            }
-                        }
-
-                        $product_array[] = array(
-                         'order_product_id'  =>  $product->order_product_id,
-                         'product_id'        =>  $product->product_id,
-                         'oms_product_id'    =>  $omsProduct->product_id,
-                         'image'             =>  $this->getProductImage($product->product_id,$oms_store,100, 100),
-                         'name'              =>  $product->name,
-                         'model'             =>  $product->model,
-                         'options'           =>  $option_array,
-                     );
-                    }
-                }
-                $order_array = array(
-                    'order_id'          =>  $order_id,
-                    'oms_store'         =>  $oms_store,
-                    'total'             =>  $opencartOrder->total,
-                    'status'            =>  $order->status,
-                    'date'              =>  $order->created_at,
-                    'products'          =>  $product_array,
-                );
+                $order->order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id", $order->store)->get();
+            }else{
+                echo "<h2 style='color:red'>Order cannot be return in this status OR order not found.</h2>";
+                return;
             }
-        }
+            // $order_array = array();
+            // if($order){
+            //     $oms_store = $order->store;
+            //     $products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$oms_store)->get();
+            //     // dd($products->toArray());
+            //     $product_array = array();
 
-        return view(self::VIEW_DIR.'.return_order_search', ["order" => $order_array]);
+            //     foreach ($products as $product) {
+            //         if( $oms_store == 1 ){
+            //             $opencartProduct = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
+            //         }else if( $oms_store == 2 ){
+            //             $opencartProduct = DFProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
+            //         }
+            //         $omsProduct = OmsInventoryProductModel::select('*','option_name AS color','option_value AS size')->where('sku', $opencartProduct->sku)->first();
+            //         // echo "<pre>"; print_r($omsProduct->toArray()); die;
+            //         if($omsProduct){
+            //             if( $oms_store == 1 ){
+            //                 $options = OrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
+            //                 ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
+            //                 ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
+            //             }else if( $oms_store == 2 ){
+            //                 $options = DFOrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
+            //                 ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
+            //                 ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
+            //             }
+
+            //             $option_array = array();
+            //             foreach ($options as $option) {
+            //                 if( $oms_store == 1 ){
+            //                     $optionData = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+            //                     ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+            //                     ->where('option_description.name', $option['name'])
+            //                     ->where('ovd.name', $option['value'])
+            //                     ->first();
+            //                     $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($optionData->option_id,$optionData->option_value_id);
+            //                 }else if( $oms_store == 2 ){
+            //                     $optionData = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
+            //                     ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
+            //                     ->where('option_description.name', $option['name'])
+            //                     ->where('ovd.name', $option['value'])
+            //                     ->first();
+            //                     $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($optionData->option_id,$optionData->option_value_id);
+            //                 }
+            //                 // dd($optionData->toArray());
+            //                 $omsColorId = OmsDetails::colorId($omsProduct['color']);
+            //                 $oms_color_option_id = OmsOptions::colorOptionId();
+            //                 if($omsProduct['size'] == 0){
+            //                     $barcode = $omsProduct->product_id;
+            //                     $barcode .= $omsColorId;
+            //                     $option_n_v = $option['name']. ' - ' .$option['value'];
+
+            //                     $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$oms_color_option_id)->where('option_value_id', $omsColorId)->where('store', $oms_store)->exists();
+
+            //                     $option_array[] = array(
+            //                         'option'                    =>  $option_n_v,
+            //                         'option_id'                 =>  $optionData->option_id,
+            //                         'option_value_id'           =>  $optionData->option_value_id,
+            //                         'barcode'                   =>  $barcode,
+            //                         'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
+            //                         'product_option_value_id'   =>  $option['product_option_value_id'],
+            //                         'manual_checkable'          =>  $this->forceScanning($product->model),
+            //                     );
+            //                 }else{
+            //                     if( $oms_store == 1 ){
+            //                         $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
+            //                     }else if( $oms_store == 2 ){
+            //                         $ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
+            //                     }
+            //                     if($optionData->option_id != $ba_color_option_id){
+            //                         $barcode = $omsProduct->product_id;
+            //                         $barcode .= $OmsOptionsData->oms_option_details_id;
+            //                         $option_n_v = $option['name']. ' - ' .$option['value'];
+
+            //                         $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$OmsOptionsData->oms_options_id)->where('option_value_id', $OmsOptionsData->oms_option_details_id)->where('store', $oms_store)->exists();
+
+            //                         $option_array[] = array(
+            //                             'option'                    =>  $option_n_v,
+            //                             'option_id'                 =>  $optionData->option_id,
+            //                             'option_value_id'           =>  $optionData->option_value_id,
+            //                             'barcode'                   =>  $barcode,
+            //                             'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
+            //                             'product_option_value_id'   =>  $option['product_option_value_id'],
+            //                             'manual_checkable'          =>  $this->forceScanning($product->model),
+            //                         );
+            //                     }
+            //                 }
+            //             }
+
+            //             $product_array[] = array(
+            //              'order_product_id'  =>  $product->order_product_id,
+            //              'product_id'        =>  $product->product_id,
+            //              'oms_product_id'    =>  $omsProduct->product_id,
+            //              'image'             =>  $this->getProductImage($product->product_id,$oms_store,100, 100),
+            //              'name'              =>  $product->name,
+            //              'model'             =>  $product->model,
+            //              'options'           =>  $option_array,
+            //          );
+            //         }
+            //     }
+            //     $order_array = array(
+            //         'order_id'          =>  $order_id,
+            //         'oms_store'         =>  $oms_store,
+            //         'total'             =>  $opencartOrder->total,
+            //         'status'            =>  $order->status,
+            //         'date'              =>  $order->created_at,
+            //         'products'          =>  $product_array,
+            //     );
+            // }
+        }
+        return view(self::VIEW_DIR.'.return_order_search', ["order" => $order]);
     }
     public function updateReturnOrder(){
         // echo "<pre>"; print_r($_SERVER); die;
         // dd(RequestFacad::all());
         if(count(RequestFacad::all()) > 0 && RequestFacad::get('submit') == 'update_returned'){
             $order_id  = RequestFacad::get('order_id');
-            $oms_store = RequestFacad::get('oms_store');
-            $exists    = OmsOrdersModel::select('*')
-            ->where('order_id', $order_id)
-            ->where('oms_order_status', OmsOrderStatusInterface::OMS_ORDER_STATUS_SHIPPED)
-            ->where('store',$oms_store)
+            $store_id = RequestFacad::get('oms_store');
+            $exists    = OmsOrdersModel::where('order_id', $order_id)
+            ->where('oms_order_status', 3)  //3 for shipped status
+            ->where('store',$store_id)
             ->exists();
 
             if($exists){
-                foreach (RequestFacad::get('returned') as $product_id => $values) {
-                    if( $oms_store == 1 ){
-                        $opencartProduct = ProductsModel::select('sku')->where('product_id', $product_id)->first();
-                    }else if( $oms_store == 2 ){
-                        $opencartProduct = DFProductsModel::select('sku')->where('product_id', $product_id)->first();
-                    }
-                    $omsProduct      = OmsInventoryProductModel::select('product_id','option_name AS color','option_value AS size')->where('sku', $opencartProduct->sku)->first();
-
-                    if(!empty($omsProduct->size) && $omsProduct->size > 0){
-                     $quantity_data = "";
-                     $total_quantity = 0;
-                     foreach ($values as $option_value_id => $packed) {
-                        $total_quantity = $total_quantity + count($packed);
-                        if( $oms_store == 1 ){
-                            $option_id = ProductOptionValueModel::select('product_option_value.option_id','ovd.name')
-                                ->leftJoin('option_value_description as ovd', 'ovd.option_value_id', '=', 'product_option_value.option_value_id')
-                                ->where('product_option_value.option_value_id', $option_value_id)->first();
-                            $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_id->option_id,$option_value_id);
-                        }else if( $oms_store == 2 ){
-                            $option_id = DFProductOptionValueModel::select('product_option_value.option_id','ovd.name')
-                                ->leftJoin('option_value_description as ovd', 'ovd.option_value_id', '=', 'product_option_value.option_value_id')
-                                ->where('product_option_value.option_value_id', $option_value_id)->first();
-                            $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_id->option_id,$option_value_id);
+                $order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+                // dd($order_products->toArray());
+                if( $order_products ){
+                    $order_quantity = 0;
+                    $quantity_data = "";
+                    foreach( $order_products as $key => $order_product ){
+                        $order_quantity = $order_product->quantity;
+                        $product_id      = $order_product->product_id;
+                        $option_id       = $order_product->productOption->option_id;
+                        $option_value_id = $order_product->productOption->option_value_id;
+                        $check_exist = OmsInventoryReturnQuantityModel::where("order_id",$order_product->order_id)->where('product_id',$product_id)
+                        ->where('option_id',$option_id)->where('option_value_id',$option_value_id)->where('store',$order_product->store_id)->first();
+                        if( !$check_exist ){
+                            $new_shipped = new OmsInventoryReturnQuantityModel();
+                            $new_shipped->order_id        = $order_product->order_id;
+                            $new_shipped->product_id      = $product_id;
+                            $new_shipped->oms_product_id  = $product_id;
+                            $new_shipped->option_id       = $option_id;
+                            $new_shipped->option_value_id = $option_value_id;
+                            $new_shipped->quantity        = $order_quantity;
+                            $new_shipped->store           = $order_product->store_id;
+                            if( $new_shipped->save() ){
+                                $decrement_query     = 'IF (shipped_quantity-' . $order_quantity . ' <= 0, 0, shipped_quantity-' . $order_quantity . ')';
+                                $decrement_available = 'IF (available_quantity-' . $order_quantity . ' <= 0, 0, available_quantity-' . $order_quantity . ')';
+                                $return_query = OmsInventoryProductOptionModel::where(["product_id"=>$product_id,"product_option_id"=>$order_product->product_option_id])
+                                ->update(['shipped_quantity'=>DB::raw($decrement_query),'return_quantity'=>DB::raw("return_quantity + $order_quantity"),"available_quantity"=>DB::raw($decrement_available)]);
+                                if( $return_query ){
+                                    //stock history
+                                    $quantity_data .= $order_product->option_value . "-(" .$order_quantity. "), ";
+                                    $comment = "This quantity added is returned from the order number #".$order_id." from Customer.<br>Quantity: ". rtrim($quantity_data, ", ");
+                                    $OmsInventoryAddStockHistoryModel = new OmsInventoryAddStockHistoryModel();
+                                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_PRODUCT_ID} = $product_id;
+                                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_USER_ID} = session('user_id');
+                                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_COMMENT} = $comment;
+                                    if( $OmsInventoryAddStockHistoryModel->save() ){
+                                        //stock history details details
+                                        $OmsInventoryAddStockOptionModel = new OmsInventoryAddStockOptionModel();
+                                        $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_HISTORY_ID} = $OmsInventoryAddStockHistoryModel->history_id;
+                                        $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_PRODUCT_ID} = $product_id;
+                                        $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_ID}  = $option_id;
+                                        $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_VALUE_ID} = $option_value_id;
+                                        $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_QUANTITY} = $order_quantity;
+                                        $OmsInventoryAddStockOptionModel->save();
+                                    }
+                                }
+                            }
                         }
-
-                        $quantity_data .= $option_id->name . "-(" . count($packed) . "), ";
-
-                        $OmsInventoryReturnQuantityModel = new OmsInventoryReturnQuantityModel();
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_ORDER_ID} = RequestFacad::get('order_id');
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_PRODUCT_ID} = $product_id;
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OMS_PRODUCT_ID} = $omsProduct->product_id;
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OPTION_ID} = $OmsOptionsData->oms_options_id;
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OPTION_VALUE_ID} = $OmsOptionsData->oms_option_details_id;
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_QUANTITY} = count($packed);
-                        $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_STORE} = $oms_store;
-                        $OmsInventoryReturnQuantityModel->save();
-
-                        $decrement_query = 'IF (shipped_quantity-'.count($packed) . ' <= 0, 0, shipped_quantity-'.count($packed) . ')';
-                        OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)->where('option_id', $OmsOptionsData->oms_options_id)->where('option_value_id', $OmsOptionsData->oms_option_details_id)->update(array('available_quantity' => DB::Raw('available_quantity+'.count($packed)), 'shipped_quantity' => DB::Raw($decrement_query), 'return_quantity' => DB::Raw('return_quantity+'.count($packed)) ));
                     }
-                    // History Add Stock
-                    $comment = "This quantity added is returned from the order number #".RequestFacad::get('order_id')." from Customer.<br>Quantity: ". rtrim($quantity_data, ", ");
-                    $OmsInventoryAddStockHistoryModel = new OmsInventoryAddStockHistoryModel();
-                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
-                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_USER_ID} = session('user_id');
-                    $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_COMMENT} = $comment;
-                    $OmsInventoryAddStockHistoryModel->save();
-                    foreach ($values as $option_value_id => $packed) {
-                        if( $oms_store == 1 ){
-                            $option_id = ProductOptionValueModel::select('option_id')->where('option_value_id', $option_value_id)->first();
-                            $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_id->option_id,$option_value_id);
-                        }else if( $oms_store == 2 ){
-                            $option_id = DFProductOptionValueModel::select('option_id')->where('option_value_id', $option_value_id)->first();
-                            $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_id->option_id,$option_value_id);
-                        }
-                       $OmsInventoryAddStockOptionModel = new OmsInventoryAddStockOptionModel();
-                       $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_HISTORY_ID} = $OmsInventoryAddStockHistoryModel->history_id;
-                       $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
-                       $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_ID} = $OmsOptionsData->oms_options_id;
-                       $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_VALUE_ID} = $OmsOptionsData->oms_option_details_id;
-                       $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_QUANTITY} = count($packed);
-                       $OmsInventoryAddStockOptionModel->save();
-                   }
-               }else{
-                 $quantity_data = "";
-                 $total_quantity = 0;
-                 foreach ($values as $option_value_id => $packed) {
-                    if( $oms_store == 1 ){
-                        $option_id = ProductOptionValueModel::select('product_option_value.option_id','ovd.name')
-                        ->leftJoin('option_value_description as ovd', 'ovd.option_value_id', '=', 'product_option_value.option_value_id')
-                        ->where('product_option_value.option_value_id', $option_value_id)->first();
-                        $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_id->option_id,$option_value_id);
-                    }else if( $oms_store == 2 ){
-                        $option_id = DFProductOptionValueModel::select('product_option_value.option_id','ovd.name')
-                        ->leftJoin('option_value_description as ovd', 'ovd.option_value_id', '=', 'product_option_value.option_value_id')
-                        ->where('product_option_value.option_value_id', $option_value_id)->first();
-                        $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_id->option_id,$option_value_id);
-                    }
-
-
-                     $quantity_data .= $option_id->name . "-(" . count($packed) . "), ";
-
-                     $OmsInventoryReturnQuantityModel = new OmsInventoryReturnQuantityModel();
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_ORDER_ID} = RequestFacad::get('order_id');
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_PRODUCT_ID} = $product_id;
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OMS_PRODUCT_ID} = $omsProduct->product_id;
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OPTION_ID} = $OmsOptionsData->oms_options_id;
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_OPTION_VALUE_ID} = $OmsOptionsData->oms_option_details_id;
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_QUANTITY} = count($packed);
-                     $OmsInventoryReturnQuantityModel->{OmsInventoryReturnQuantityModel::FIELD_STORE} = $oms_store;
-                     $OmsInventoryReturnQuantityModel->save();
-
-                     $decrement_query = 'IF (shipped_quantity-'.count($packed) . ' <= 0, 0, shipped_quantity-'.count($packed) . ')';
-                     OmsInventoryProductOptionModel::where('product_id', $omsProduct->product_id)->where('option_id', $option_id->option_id)->where('option_value_id', $option_value_id)->update(array('available_quantity' => DB::Raw('available_quantity+'.count($packed)), 'shipped_quantity' => DB::Raw($decrement_query), 'return_quantity' => DB::Raw('return_quantity+'.count($packed)) ));
-                 }
-
-                            // History Add Stock
-                 $comment = "This quantity added is returned from the order number #".Input::get('order_id')." from Customer.<br>Quantity: ". rtrim($quantity_data, ", ");
-                 $OmsInventoryAddStockHistoryModel = new OmsInventoryAddStockHistoryModel();
-                 $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
-                 $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_USER_ID} = session('user_id');
-                 $OmsInventoryAddStockHistoryModel->{OmsInventoryAddStockHistoryModel::FIELD_COMMENT} = $comment;
-                 $OmsInventoryAddStockHistoryModel->save();
-
-                 foreach ($values as $option_value_id => $packed) {
-                   if( $oms_store == 1 ){
-                        $option_id = ProductOptionValueModel::select('option_id')->where('option_value_id', $option_value_id)->first();
-                        $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($option_id->option_id,$option_value_id);
-                    }else if( $oms_store == 2 ){
-                        $option_id = DFProductOptionValueModel::select('option_id')->where('option_value_id', $option_value_id)->first();
-                        $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($option_id->option_id,$option_value_id);
-                    }
-                   $OmsInventoryAddStockOptionModel = new OmsInventoryAddStockOptionModel();
-                   $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_HISTORY_ID} = $OmsInventoryAddStockHistoryModel->history_id;
-                   $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_PRODUCT_ID} = $omsProduct->product_id;
-                   $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_ID} = $OmsOptionsData->oms_options_id;
-                   $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_OPTION_VALUE_ID} = $OmsOptionsData->oms_option_details_id;
-                   $OmsInventoryAddStockOptionModel->{OmsInventoryAddStockOptionModel::FIELD_QUANTITY} = count($packed);
-                   $OmsInventoryAddStockOptionModel->save();
-               }
-           }
-       }
-
-                    $orderId = RequestFacad::get('order_id');
-                    $omsOrder = OmsOrdersModel::where(OmsOrdersModel::FIELD_ORDER_ID, $orderId)->where('store',$oms_store)->first();
-                    $openCartOrder = OrdersModel::findOrFail($orderId);
-
-                                    //UPDATE OMS ORDER STATUS
-                    $omsOrder->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_RETURN;
-                    $omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
-                    $omsOrder->save();
-
-                    $openCartOrder->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
-                    $openCartOrder->{OrdersModel::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_RETURNED;
-                    $openCartOrder->save(); // update order status
-                    //UPDATE OPENCART ORDER HISTORY
-                    $orderHistory = new OrderHistory();
-                    $orderHistory->{OrderHistory::FIELD_COMMENT} = "Order returned from OMS";
-                    $orderHistory->{OrderHistory::FIELD_ORDER_ID} = $orderId;
-                    $orderHistory->{OrderHistory::FIELD_ORDER_STATUS_ID} = OrdersModel::OPEN_CART_STATUS_RETURNED;
-                    $orderHistory->{OrderHistory::FIELD_DATE_ADDED} = \Carbon\Carbon::now();
-                    $orderHistory->{OrderHistory::FIELD_NOTIFY} = OrderHistory::NOTIFY_CUSTOMER;
-                    $orderHistory->save();
-                    OrdersAjaxController::addQuantity($orderId,$oms_store);
-                    OmsActivityLogModel::newLog($orderId,8, $oms_store); //8 is for return order
-                    Session::flash('message', 'Order returned successfully.');
-                    Session::flash('alert-class', 'alert-success');
-                    return redirect('/orders/return/order');
-                }else{
-                    Session::flash('message', "Order product returned in 'Shipped' status only.");
-                    Session::flash('alert-class', 'alert-danger');
-                    return redirect('/orders/return/order');
+                    //update order status
+                    OmsOrdersModel::where("order_id",$order_id)->update(['oms_order_status'=>6]);  //6 is for return order.
                 }
-            }else{
-                Session::flash('message', 'Order product picked successfully.');
+                OmsActivityLogModel::newLog($order_id,8, $store_id); //8 is for return order
+                Session::flash('message', 'Order returned successfully.');
                 Session::flash('alert-class', 'alert-success');
                 return redirect('/orders/return/order');
+            }else{
+                Session::flash('message', "Order product returned in 'Shipped' status only OR order not found.");
+                Session::flash('alert-class', 'alert-danger');
+                return redirect('/orders/return/order');
             }
+        }
+    }
+    public function printLabel($order_id){
+        $print_label = '';
+
+        $order = OmsOrdersModel::select('*')->where('order_id', $order_id)->first();
+        if($order){
+            $products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id", $order->store)->get();
+            // dd( $products->toArray() );
+            $label_array = array();
+
+            foreach ($products as $product) {
+                    $color = '';
+                    $option_array = array();
+
+                    $barcode = $product->product_id;
+                    $barcode .= $product->productOption->option_value_id;
+
+                        // $option_array = array();
+
+                        $option_array = array(
+                            'color'   =>  $product->product?->option_name
+                        );
+                        $option_array['size'] = "";
+                        if( $product->product?->option_value > 0 ){
+                            $option_array['size']  = $product->option_value;
+                        }
+
+                        $print_label = "big";
+                        for ($i=0; $i < $product->quantity; $i++) {
+                            if($print_label === 'big'){
+                                $label_array['big'][] = array(
+                                    'product_image' =>  URL::asset('uploads/inventory_products/'.$product->product->image),
+                                    'product_sku'   =>  $product->sku,
+                                    'option'        =>  $option_array,
+                                    'barcode'       =>  $barcode,
+                                );
+                            }else{
+                                $label_array['small'][] = array(
+                                    'product_image' =>  URL::asset('uploads/inventory_products/'.$product->product->image),
+                                    'product_sku'   =>  $product->sku,
+                                    'option'        =>  $option_array,
+                                    'barcode'       =>  $barcode,
+                                );
+                            }
+                        }
+            }
+        }
+
+        return view(self::VIEW_DIR.'.print_label', ["labels" => $label_array,"label_type" => $print_label]);
     }
 }

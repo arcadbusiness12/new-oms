@@ -8,7 +8,7 @@
                 </div>
                 <hr />
                 <div class="modal-body  col-black ">
-                    <div class="form-float">
+                    {{--  <div class="form-float">
                         <div class="col-sm-5 col-grid text-black">
                             <label class="form-label" for="open_cart_order_status">Order Status</label>
                             <select required="required" name="open_cart_order_status" id="open_cart_order_status" class="form-control" data-live-search="true">
@@ -19,7 +19,7 @@
                             </select>
                         </div>
 
-                    </div>
+                    </div>  --}}
 
                     <div class="form-float">
                         <div class="col-sm-5 col-grid text-black" id="shipping-provider-select1">

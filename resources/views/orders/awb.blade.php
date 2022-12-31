@@ -19,7 +19,7 @@
         if($order_tracking->count() > 0)
         {
           foreach($order_tracking as $data):
-            if($order['order_id'] == $data['order_id'])
+            if($order->order_id == $data['order_id'])
             {
               foreach($shipping_providers as $provider)
               {
@@ -35,11 +35,11 @@
         }
         @endphp
         <td>
-          <?php if($company_logo) { ?>
-          <img class='logo' src="{{ URL::to($company_logo) }}" style="width:{{ $logo_width }}px" />
-          <?php }else{ ?>
-          <h2><?php echo $company_name ?></h2>
-          <?php } ?>
+          @if($company_logo)
+            <img class='logo' src="{{ URL::to($company_logo) }}" style="width:{{ $logo_width }}px" />
+          @else
+            <h2>{{ $company_name }}</h2>
+          @endif
         </td>
         <td>
           @php
@@ -48,7 +48,7 @@
           if($order_tracking->count() > 0)
           {
             foreach($order_tracking as $data):
-              if($order['order_id'] == $data['order_id'])
+              if($order->order_id == $data['order_id'])
               {
                 $awb =  $data['airway_bill_number'];
                 $sortingCode =  $data['sortingCode'];
@@ -78,9 +78,9 @@
         <td style="padding:0px">
           @if($company_name != 'GetGive' && $company_name != 'ShafiExpress' && $company_name != 'NiazExpress')
           <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-height="20" jsbarcode-textmargin="0"
-          jsbarcode-value="{{$order['order_id']}}"></svg>
+          jsbarcode-value="{{ $order->order_id }}"></svg>
           @else
-          {{$order['order_id']}}
+          {{ $order->order_id }}
           @endif
         </td>
       </tr>
@@ -91,10 +91,10 @@
       <tr>
         <td>
           <strong> To (Receiver) </strong> <br />
-          {{$order['shipping_firstname']}} {{$order['shipping_lastname']}}<br />
-          {{$order['shipping_area']}}, {{$order['shipping_address_1']}} {{  ($order['shipping_address_2']) ?  ",".$order['shipping_address_2'] : ""}} <br />
-          {{$order['shipping_zone']}} <br />
-          <strong>Mobile:</strong> {{$order['telephone']}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!! ($order['alternate_number'] != "") ? '<strong>Alternate:</strong> '.$order['alternate_number'] : "" !!}
+          {{ $order->shipping_firstname }} {{ $order->shipping_lastname }}<br />
+          {{ $order->shipping_city_area }}, {{$order->shipping_address_1 }} {{  ($order->shipping_address_2) ?  ",".$order->shipping_address_2 : ""}} <br />
+          {{ $order->shipping_city }} <br />
+          <strong>Mobile:</strong> {{$order->mobile}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!! ($order->alternate_number != "") ? '<strong>Alternate:</strong> '.$order->alternate_number : "" !!}
         </td>
       </tr>
     </table>
@@ -110,19 +110,19 @@
       <tbody>
         <tr>
           <td><strong> <span class="total_amount">
-            <?php if ($order['payment_code'] == 'cod' || $order['payment_code'] == 'cod_order_fee' || $order['payment_code'] == ''){ ?>
-            {{(number_format($order['total'], 2))}}
-            <?php }else{ ?>
+            @if( $order->payment_method_id == 1 )
+                {{(number_format($order->total_amount, 2))}}
+            @else
             0
-            <?php } ?>
-          </span> {{$order['currency_code']}}</strong></td>
+            @endif
+          </span> AED</strong></td>
           <td></td>
           <td>
-            <?php if ($order['payment_code'] == 'cod' || $order['payment_code'] == 'cod_order_fee' || $order['payment_code'] == ''){ ?>
-            {{($order['payment_method'] !='') ? $order['payment_method'] : 'Cash On Delivery'}}
-            <?php }else{ ?>
-            Prepaid
-            <?php } ?>
+            @if( $order->payment_method_id == 1 OR $order->payment_method_id == "" )
+                Cash On Delivery
+            @else
+                Prepaid
+            @endif
           </td>
         </tr>
       </tbody>
@@ -134,31 +134,25 @@
           @php
           $totalProducts =0;
           @endphp
-          @foreach ($order['orderd_products'] as $product )
-          @php
-          $totalProducts += $product['quantity'];
-          @endphp
+          @foreach ($order->orderProducts as $product )
+            @php
+            $totalProducts += $product->quantity;
+            @endphp
           @endforeach
           <strong> Details </strong> Total Products : <span class="count">{{$totalProducts}} </span><br />
           @php
           $totalProducts = 0;
           @endphp
-          @foreach ($order['orderd_products'] as $product )
           [
-          {{ $product['model'] }}
-          (QTY:{{$product['quantity']}})
-          @if (count($product['order_options']) > 0)
-          @foreach ($product['order_options'] as $option)
-          @if ($product['order_product_id'] == $option['order_product_id'])
-          ({{$option['name']}} : {{$option['value']}})
-          @if(!$loop->last)
-          <label>|</label>
-          @endif
-          @endif
+          @foreach ( $order->orderProducts as $product )
+          {{ $product->sku }}
+          (QTY:{{$product->quantity}})
+            @if(  $product->product?->option_value > 0  )
+                    <strong>{{ $product->option_name }}</strong> : {{ $product->option_value }}
+            @endif
+            <strong>Color : </strong>{{ $product->product?->option_name }},
           @endforeach
-          @endif
           ]
-          @endforeach
         </td>
       </tr>
     </table>

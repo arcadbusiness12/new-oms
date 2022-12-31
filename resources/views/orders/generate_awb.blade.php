@@ -29,7 +29,7 @@
                                     </div>
                                     <div class="col-lg-6 col-md-6 col-sm-6">
                                         <div class="generate-awb-btn pull-right">
-                                            <button data-toggle="modal" data-target="#forward_for_awb_generation_options" class="btn btn-success waves-effect pull-left btn-generate-awb">Generate AirwayBills</button>
+                                            <button data-toggle="modal" data-target="#forward_for_awb_generation_options" class="btn btn-success waves-effect pull-left active btn-generate-awb">Generate AirwayBills</button>
                                         </div>
                                     </div>
                                 </div>

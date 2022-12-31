@@ -83,7 +83,7 @@
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
-                                                            <td style="width: 5%; border:1px solid red"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
+                                                            <td style="width: 5%;"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
                                                             <td>{{ $ordered_product->name }}<br>
                                                                 @if(  $ordered_product->product?->option_value > 0  )
                                                                     <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,

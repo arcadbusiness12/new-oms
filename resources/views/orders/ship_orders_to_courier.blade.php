@@ -30,7 +30,7 @@
                             Ready Shipments for Courier.
                             </div>
                             <div class="col-sm-6">
-                                <button type="submit" class="btn btn-success btn-sm float-right">Update Status to Shipped</button>
+                                <button type="submit" class="btn btn-success active btn-sm float-right">Update Status to Shipped</button>
                             </div>
                         </div>
                     </div>
@@ -99,7 +99,7 @@ function fetchOrderDetails(orderID) {
       method: 'POST',
       // url: APP_URL + '/orders/getOrderDetail',
       // data: { orderId: orderId },
-      url: APP_URL + '/get/order/id/from/airwaybill',
+      url: APP_URL + '/orders/get/order/id/from/airwaybill',
       data: { airwaybillno: orderId },
       headers: {
           'X-CSRF-Token': $('input[name="_token"]').val()

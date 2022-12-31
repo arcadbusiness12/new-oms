@@ -282,16 +282,18 @@ class OrdersAjaxController extends Controller {
 		}
 	}
     public function forwardForShipping() {
+        // dd( RequestFacad::all() );
         $orderIDs         = ( RequestFacad::get('orderIDs') && count(RequestFacad::get('orderIDs')) > 0 ) ? RequestFacad::get('orderIDs') : [RequestFacad::get('order_id')];
         $order_id  = RequestFacad::has('order_id') ? RequestFacad::get('order_id') : '';
         $orderIDs = array_unique($orderIDs);
         $awb_from_packing = 0;
         if( $order_id != "" && $order_id > 0 ){
         $awb_from_packing = 1;
-        $get_courier_data = OmsOrdersModel::with(["assigned_courier"])->where(OmsOrdersModel::FIELD_ORDER_ID, $order_id)->first();
+        $get_courier_data = OmsOrdersModel::with(["assignedCourier"])->where(OmsOrdersModel::FIELD_ORDER_ID, $order_id)->first();
+        // dd( $get_courier_data->toArray() );
         if($get_courier_data){
-            $shippingProviders =  $get_courier_data->assigned_courier->name; // Shipping provider Name // GetGive , MaraXpress etc
-            $shippingProviderID = $get_courier_data->assigned_courier->shipping_provider_id;  // Shipping Provider ID
+            $shippingProviders =  $get_courier_data->assignedCourier->name; // Shipping provider Name // GetGive , MaraXpress etc
+            $shippingProviderID = $get_courier_data->assignedCourier->shipping_provider_id;  // Shipping Provider ID
         }
 
         }else{
@@ -300,7 +302,7 @@ class OrdersAjaxController extends Controller {
             $shippingProviderID = $shippingProviderInput[0]; // Shipping Provider ID
         }
 
-        $assigned_courier_data = OmsOrdersModel::with(["assigned_courier"])->whereIn(OmsOrdersModel::FIELD_ORDER_ID, $orderIDs)->where("picklist_courier","!=",$shippingProviderID)->get();
+        $assigned_courier_data = OmsOrdersModel::with(["assignedCourier"])->whereIn(OmsOrdersModel::FIELD_ORDER_ID, $orderIDs)->where("picklist_courier","!=",$shippingProviderID)->get();
             //echo "<pre>"; print_r($orderIDs);
         // echo "<pre>"; print_r($assigned_courier_data);
         if( $assigned_courier_data->count() > 0 ){
@@ -317,7 +319,6 @@ class OrdersAjaxController extends Controller {
 		Session::push('orderIdsForAWBGenerate', $orderIDs);
 		// try
 		// {
-			$openCartOrderStatus = RequestFacad::get('open_cart_order_status') ? RequestFacad::get('open_cart_order_status') : 15; // Status to be updated in opencart
 			// Value from Ajax form
 			if (empty($shippingProviders)) {
 				throw new \Exception("Please select Shipping Provider");
@@ -328,23 +329,14 @@ class OrdersAjaxController extends Controller {
 
 			// echo "<pre>"; print_r($shippingProviderInput); die;
 
-			if (!empty($openCartOrderStatus) && !empty($shippingProviders)) {
-				// Get orders from OMS table where oms status is processing
-				$omsOrders = OmsOrdersModel::whereIn(OmsOrdersModel::FIELD_ORDER_ID, $orderIDs)->get();
-				// Map Opencart Order id to Oms order id
-				$omsOrderIDtoOpencarOrderIDMap = $omsOrders->mapWithKeys(function ($item) {
-					return [$item[OmsOrdersModel::FIELD_ORDER_ID] => $item[OmsOrdersModel::FIELD_OMS_ORDER_ID]];
-				});
+			if ( !empty($shippingProviders) ) {
 
-				$omsOrderIDtoOpencarOrderIDMap = $omsOrderIDtoOpencarOrderIDMap->toArray();
-				// echo "<pre>"; print_r($omsOrderIDtoOpencarOrderIDMap); die;
 
-				// Get Order Details from Opencart
-			    $orders = OmsOrdersModel::select('oms_order_status','last_shipped_with_provider',"order_id","store")->whereIn("order_id",$orderIDs)->get();
-				// $orders = OrdersModel::with(['status', 'orderd_products'])->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIDs)->get();
-				// dd($orders->toArray());
+			    $orders = OmsOrdersModel::select('oms_order_id','oms_order_status','last_shipped_with_provider',"order_id","store")->whereIn("order_id",$orderIDs)->get();
+
 
 				$ordersGolemArray = [];
+                $omsOrderIDs = [];
 				foreach ($orders as $omsOrder) {
 					// echo "<pre>"; print_r($order->toArray()); die;
 					// $omsOrder = OmsOrdersModel::select('oms_order_status','last_shipped_with_provider',"order_id")->where(OmsOrdersModel::FIELD_ORDER_ID, $order->order_id)->first();
@@ -360,17 +352,16 @@ class OrdersAjaxController extends Controller {
 					if (!class_exists($shippingCompanyClass)) {
 						throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
 					}
+                    $omsOrderIDs[$omsOrder->order_id] = $omsOrder->oms_order_id;
                     $store = $omsOrder->store;
-                    if( $store == 1 ){
-				        $order = OrdersModel::with(['status', 'orderd_products'])->where("order_id",$omsOrder->order_id)->first();
-                    }else if( $store == 2 ){
-				        $order = DFOrdersModel::with(['status', 'orderd_products'])->where("order_id",$omsOrder->order_id)->first();
-                    }
+
+                    $order = OmsPlaceOrderModel::with(['orderProducts.product'])->where('order_id',$omsOrder->order_id)->first();
+
 					$shipping = new $shippingCompanyClass();
 
 					// Initialize Order Golem to make a unified order object representation in order to send data to all shipping providers
 					$orderGolem = new OrderGolem();
-					$orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
+					// $orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
 					if ($shippingProviders === 'ShamilExpress') {
 						if ($order->invoice_no != 0) {
 							$orderGolem->setInvoiceNumber($order->{'invoice_prefix'} . $order->{'invoice_no'} . '-BA');
@@ -388,82 +379,54 @@ class OrdersAjaxController extends Controller {
 					} else if ($shippingProviders === 'Jeebly') {
 						$orderGolem->setcustomerPincode($order->{'shipping_postcode'});
 					}
-					$orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
-					$name = $order->{OrdersModel::FIELD_CUSTOMER_FIRST_NAME} . " " . $order->{OrdersModel::FIELD_CUSTOMER_LAST_NAME};
+					$orderGolem->setOrderID($order->order_id);
+					$name = $order->firstname . " " . $order->lastname;
 					$orderGolem->setCustomerName($name);
 
-					$orderGolem->setCustomerMobileNumber($order->{OrdersModel::FIELD_CUSTOMER_MOBILE_NUMBER});
-					$orderGolem->setOrderTotalAmount($order->{OrdersModel::FIELD_ORDER_TOTAL});
+					$orderGolem->setCustomerMobileNumber($order->mobile);
+					$orderGolem->setOrderTotalAmount($order->total_amount);
 
-					$shppingAddress = $order->{OrdersModel::FIELD_SHIPPING_ADDRESS_1} . " " .
-					$order->{OrdersModel::FIELD_SHIPPING_ADDRESS_2};
+					$shppingAddress = $order->shipping_address_1 . " " .
+					$order->shipping_address_2;
 
 					$orderGolem->setCustomerAddress($shppingAddress);
-					$orderGolem->setCustomerCity($order->{OrdersModel::FIELD_SHIPPING_ZONE});
-					$orderGolem->setPaymentMethod($order->{OrdersModel::FIELD_PAYMENT_METHOD});
-					$orderGolem->setCashOnDeliveryAmount($order->{OrdersModel::FIELD_ORDER_TOTAL});
-					$orderGolem->setSpecialInstructions($order->{OrdersModel::FIELD_ORDER_COMMENTS});
-					$orderGolem->setCustomerEmail($order->{OrdersModel::FIELD_CUSTOMER_EMAIL});
-					$orderGolem->setCustomerArea($order->{OrdersModel::FIELD_SHIPPING_AREA});
+					$orderGolem->setCustomerCity($order->shipping_city);
+					$orderGolem->setPaymentMethod($order->payment_method_id);
+					$orderGolem->setCashOnDeliveryAmount($order->total_amount);
+					$orderGolem->setSpecialInstructions($order->comment);
+					$orderGolem->setCustomerEmail($order->email);
+					$orderGolem->setCustomerArea($order->shipping_city_area);
 					$orderGolem->setCustomerAlternateNumber($order->alternate_number);
 					$productDesc = "";
 					$qty = 0;
-					foreach ($order->orderd_products as $product) {
-						$productDesc .= "[" . $product['model'];
-						$productDesc .= " (QTY:{$product['quantity']})";
-						if (count($product['order_options']) > 0) {
-							foreach ($product['order_options'] as $option) {
-								if ($product['order_product_id'] == $option['order_product_id']) {
-									$productDesc .= " (" . $option['name'] . ":" . $option['value'] . ")";
-								}
-							}
-						}
+					foreach ($order->orderProducts as $product) {
+						$productDesc .= "[" . $product->model;
+						$productDesc .= " (QTY:{ $product->quantity })";
+                        if( $product->product?->option_value > 0  ){
+                            $productDesc .= " (" . $product->option_name . ":" . $product->option_value . ")";
+                        }
+                        $productDesc .= " (Color :" . $product->product->option_name . ")";
+
 						$productDesc .= "] ";
-						$qty = $qty + $product['quantity'];
+						$qty = $qty + $product->quantity;
 					}
 					// echo $shippingProviders; die;
-					if ($shippingProviders === 'FetchrExpress' || $shippingProviders === 'Jeebly' ||  $shippingProviders === 'RisingStar') {
-						$orderItems = array();
-						foreach ($order->orderd_products as $product) {
-							$productDesc = '';
-							$productDesc .= "[" . $product['model'];
-							$productDesc .= " (QTY:{$product['quantity']})";
-							if (count($product['order_options']) > 0) {
-								foreach ($product['order_options'] as $option) {
-									if ($product['order_product_id'] == $option['order_product_id']) {
-										$productDesc .= " (" . $option['name'] . ":" . $option['value'] . ")";
-									}
-								}
-							}
-							$productDesc .= "]";
-							$orderItems[] = array(
-								'description' => $productDesc,
-								'sku' => $product['model'],
-								'quantity' => $product['quantity'],
-								'order_value_per_unit' => $product['price'],
-								'weight' => $product->product_details->weight,
-								'height' => $product->product_details->height,
-								'length' => $product->product_details->length,
-								'width' => $product->product_details->width,
-							);
-						}
-						$orderGolem->setOrderItems($orderItems);
-					}
 
 					$orderGolem->setTotalItemsQuantity($qty);
 					$orderGolem->setGoodsDescription($productDesc);
 					$orderGolem->setStore($store);
 					$ordersGolemArray[] = $orderGolem;
 				}
+				// echo "<pre>"; print_r($orderGolem); die("on main page");
 				$response = $shipping->forwardOrder($ordersGolemArray);
-				// echo "<pre>"; print_r($response); die("on main page");
+				// echo "<pre>"; print_r($omsOrderIDs); die("on main page");
 				$shippingProviderResposne = [];
 				foreach ($response as $orderID => $airwayBillNumber) {
 					if (!empty($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER])) {
-						$omsUpdateStatus = OmsOrdersModel::find($omsOrderIDtoOpencarOrderIDMap[$orderID]);
+						$omsUpdateStatus = OmsOrdersModel::find($omsOrderIDs[$orderID]);
 						$awbTracking = new AirwayBillTrackingModel();
 						// Store Oms ID
-						$awbTracking->{AirwayBillTrackingModel::FIELD_OMS_ORDER_ID} = $omsOrderIDtoOpencarOrderIDMap[$orderID];
+						$awbTracking->{AirwayBillTrackingModel::FIELD_OMS_ORDER_ID} = $omsOrderIDs[$orderID];
 						// Store Opencart Order IDs
 						$awbTracking->{AirwayBillTrackingModel::FIELD_ORDER_ID} = $orderID;
 						// Store Shipping Provider ID
@@ -482,27 +445,7 @@ class OrdersAjaxController extends Controller {
 						$omsUpdateStatus->{OmsOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_AIRWAY_BILL_GENERATED;
 						$omsUpdateStatus->{OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = $shippingProviderID;
 						$omsUpdateStatus->save();
-						// Chnage the OpenCart Order Status to the status selected
-                        if( $omsUpdateStatus->store == 1 ){
-						    $openCartStatusUpdate = OrdersModel::find($orderID);
-                        }else if( $omsUpdateStatus->store == 2 ){
-						    $openCartStatusUpdate = DFOrdersModel::find($orderID);
-                        }
-						$openCartStatusUpdate->{OrdersModel::FIELD_ORDER_STATUS_ID} = $openCartOrderStatus;
-						$openCartStatusUpdate->{OrdersModel::FIELD_DATE_MODIFIED} = \Carbon\Carbon::now();
-						$openCartStatusUpdate->save();
-						// Store the Order History in Order history table
-                        if( $omsUpdateStatus->store == 1 ){
-						    $orderHistory = new OrderHistory();
-                        }else if( $omsUpdateStatus->store == 2 ){
-						    $orderHistory = new DFOrderHistory();
-                        }
-						$orderHistory->{OrderHistory::FIELD_COMMENT} = "Tracking Link: " . $shippingCompanyClass::getTrackingUrl($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER]);
-						$orderHistory->{OrderHistory::FIELD_ORDER_ID} = $orderID;
-						$orderHistory->{OrderHistory::FIELD_ORDER_STATUS_ID} = $openCartOrderStatus;
-						$orderHistory->{OrderHistory::FIELD_DATE_ADDED} = \Carbon\Carbon::now();
-						$orderHistory->{OrderHistory::FIELD_NOTIFY} = OrderHistory::NOTIFY_CUSTOMER;
-						$orderHistory->save();
+
 						OmsActivityLogModel::newLog($orderID,4,$omsUpdateStatus->store); //4 is for Generate Airwaybill order
 						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
 					} else {
@@ -525,11 +468,11 @@ class OrdersAjaxController extends Controller {
 			'data' => view(self::VIEW_DIR . ".shipping_providers_response", ["response" => $shippingProviderResposne])->render(),
 		));
 	}
-  public function getOrderDetail($orderId = '', $amount = '') {
+  public function getOrderDetail($orderId = '', $amount = 0) {
 		try
 		{
 			$orderId = (RequestFacad::get('orderId')) ? RequestFacad::get('orderId') : $orderId; // if ajax post or same controller call ref: line# 542
-			$order = $omsOrderStatus = [];
+			$order = [];
 			$omsOrder = OmsOrdersModel::where(OmsOrdersModel::FIELD_ORDER_ID, $orderId)->get();
             $shipping_name = "";
             if ( $omsOrder->count() > 0 ) {
@@ -539,22 +482,14 @@ class OrdersAjaxController extends Controller {
                 }else if( $omsOrder[0]->picklist_print != 1 ){
                     return "<script>alert('Change picklist print for $orderId on packing Box.')</script>";
                 }
-                if( $omsOrder[0]->store == 1 ){
-                    $order = OrdersModel::with(['status', 'orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $orderId)
-                        ->orderBy(OmsOrdersModel::FIELD_ORDER_ID, 'desc')
-                        ->first();
-                }else if( $omsOrder[0]->store == 2 ){
-                    $order = DFOrdersModel::with(['status', 'orderd_products'])->where(OrdersModel::FIELD_ORDER_ID, $orderId)
-                        ->orderBy(OmsOrdersModel::FIELD_ORDER_ID, 'desc')
-                        ->first();
-                }
-                $order->oms_order_store = $omsOrder[0]->store;
-				$order->orderd_products = $this->getOrderProductWithImage($order->orderd_products,$store);
+                $order = OmsPlaceOrderModel::with(['orderProducts.product'])->where("order_id",$orderId)->first();
+                // $order->oms_order_store = $omsOrder[0]->store;
+				// $order->orderd_products = $this->getOrderProductWithImage($order->orderd_products,$store);
 
-				$omsOrderStatusMap = $omsOrder->mapWithKeys(function ($item) {
-					return [$item[OmsOrdersModel::FIELD_ORDER_ID] => $item[OmsOrdersModel::FIELD_OMS_ORDER_STATUS]];
-				});
-				$omsOrderStatus = $omsOrderStatusMap->all();
+				// $omsOrderStatusMap = $omsOrder->mapWithKeys(function ($item) {
+				// 	return [$item[OmsOrdersModel::FIELD_ORDER_ID] => $item[OmsOrdersModel::FIELD_OMS_ORDER_STATUS]];
+				// });
+				// $omsOrderStatus = $omsOrderStatusMap->all();
                 //courier details
                 $shipping_name =  OmsOrdersModel::shippingName($orderId,$store);
                 if( $shipping_name != "" ){
@@ -566,7 +501,8 @@ class OrdersAjaxController extends Controller {
                     }
                 }
 			}
-			return view(self::VIEW_DIR . ".order_detail_for_generate_awb", ["order" => $order, "omsOrderStatus" => $omsOrderStatus, "file_amount" => $amount,'shipping_name'=>$shipping_name]);
+            // dd($order->toArray());
+			return view(self::VIEW_DIR . ".order_detail_for_ship", ["order" => $order, "file_amount" => $amount,'shipping_name'=>$shipping_name]);
 		} catch (\Exception $e) {
 			return $e;
 		}
@@ -707,6 +643,7 @@ class OrdersAjaxController extends Controller {
     public function getOrderIdFromAirwayBill(Request $request){
         $airwaybill_number = $request->airwaybillno;
         $data = AirwayBillTrackingModel::with('shipping_provider')->where("airway_bill_number",$airwaybill_number)->orderBy("tracking_id","DESC")->first();
+        // dd($data->toArray());
         if( $data ){
           $pickup_start_time = ($data->shipping_provider) ? $data->shipping_provider->pickup_start_time : "";
           $pickup_end_time   = ($data->shipping_provider) ? $data->shipping_provider->pickup_end_time : "";
