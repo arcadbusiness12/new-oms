@@ -24,6 +24,14 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
+                        <div class="row action_button_row" style="display:none">
+                            <div class="col-sm-2 exchange_action" style="display:none">
+                                <button class="btn btn-info active" id="btn_exchange">Exchange</button>
+                            </div>
+                            <div class="col-sm-2 reship_action" style="display:none">
+                                <button class="btn btn-warning active" id="btn_reship">Reship</button>
+                            </div>
+                        </div>
                         <div class="panel-heading">All Orders</div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
@@ -38,6 +46,7 @@
                             <table class="table" width="100%" style="font-size: 14px !important; color:black !important">
                              <thead>
                               <tr style="background-color: #3f51b5;color:white">
+                                <th scope="col">&nbsp;</th>
                                 <th scope="col"><center>Order Id</center></th>
                                 <th scope="col"><center>Customer</center></th>
                                 <th scope="col"><center>Store</center></th>
@@ -52,6 +61,7 @@
                                 @if($data->count())
                                 @foreach($data as $key=>$order)
                                     <tr class="row_{{ $order->order_id }}">
+                                        <td class="col-sm-1"><input type="checkbox" class="order_checkbox" order-status="{{ $order->omsOrder?->oms_order_status }}" value="{{ $order->order_id }}" /></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
@@ -75,6 +85,10 @@
                                         <tr class="row_{{ $order->order_id }}">
                                             <td colspan="8">
                                                 <center>
+                                                <form method="post" action="{{ route('exchange.create') }}" id="frm_{{ $order->order_id }}">
+                                                    <input type="hidden" name="order_id_for_exchange" value="{{ $order->order_id }}" />
+                                                    <input type="hidden" name="store_id_for_exchange" value="{{ $order->store }}" />
+                                                @csrf
                                                 <table width="100%" style="font-size:12px;">
                                                     @foreach ( $order->orderProducts as $ordered_product )
                                                         <tr>
@@ -82,7 +96,7 @@
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
-                                                            <td>&nbsp;</td>
+                                                            <td><input type="checkbox" class="product_{{ $order->order_id }} check_product_for_exchange" name="ordered_product_ids[{{ $ordered_product->product_option_id }}]" order-id={{ $order->order_id }} value="{{ $ordered_product->product_id }}" style="display:none" /></td>
                                                             <td style="width: 5%;"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
                                                             <td>{{ $ordered_product->name }}<br>
                                                                 @if(  $ordered_product->product?->option_value > 0  )
@@ -95,7 +109,11 @@
                                                             <td>{{ $ordered_product->total }}</td>
                                                         </tr>
                                                     @endforeach
+                                                    <tr>
+                                                        <td colspan="11"><input type="submit" id="create_exchange_{{ $order->order_id }}" class="float-right btn btn-sm btn-success active" value="Create Exchange" style="display:none"></td>
+                                                    </tr>
                                                 </table>
+                                                </form>
                                                 </center>
                                             </td>
                                         </tr>
@@ -190,6 +208,35 @@ thead, tbody, tfoot, tr, td, th {
 
 @push('scripts')
 <script>
+    $(document).on('change','.order_checkbox',function(){
+        var $this = $(this);
+        var order_id  = $this.val();
+        //alert( $this.attr('order-status') );
+        if( $this.is(':checked') && $this.attr('order-status') == 3 ){
+            $('.action_button_row, .exchange_action, .reship_action').show();
+            //$('.exchange_action').show();
+            //$('.reship_action').show();
+        }else{
+            $('.action_button_row, .exchange_action, .reship_action').hide();
+        }
+
+    });
+    $(document).on('click','#btn_exchange',function(){
+        var checked_order_id = $('.order_checkbox:checked').val();
+        //alert(checked_order_id);
+        $('.product_'+checked_order_id).show();
+    });
+    $(document).on('change','.check_product_for_exchange',function(){
+        var $this = $(this);
+        var order_id = $this.attr('order-id');
+        //alert(order_id);
+        if( $('.product_'+order_id).is(':checked') ){
+            $('#create_exchange_'+order_id).show();
+        }else{
+            $('#create_exchange_'+order_id).hide();
+        }
+    });
+    //------------
     $(".cancel-order").on('click', function() {
         var order_id = $(this).attr("order_id");
         var id_to_remove = ".row_" + order_id;

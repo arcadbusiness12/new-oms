@@ -2,35 +2,22 @@
 
 namespace App\Http\Controllers\Orders;
 use App\Http\Controllers\Controller;
-use App\Models\DressFairOpenCart\ExchangeOrders\AreaModel AS DFAreaModel;
-use App\Models\DressFairOpenCart\Orders\OrderStatusModel;
 use App\Models\Oms\OmsActivityLogModel;
 use App\Models\Oms\OmsActivityModel;
 use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\ShippingProvidersModel;
-use App\Models\OpenCart\ExchangeOrders\AreaModel;
-use App\Models\OpenCart\Orders\OrderedProductModel;
-use App\Models\DressFairOpenCart\Orders\OrderHistory AS DFOrderHistory;
-use App\Models\OpenCart\Orders\OrderHistory;
-use App\Models\DressFairOpenCart\Orders\OrderedProductModel AS DFOrderedProductModel;
-use App\Models\OpenCart\Orders\OrdersModel;
-use App\Models\DressFairOpenCart\Orders\OrdersModel AS DFOrdersModel;
+
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsOrderStatusInterface;
 use App\Models\Oms\OmsUserModel;
-use App\Models\OpenCart\Products\ProductsModel;
-use App\Models\DressFairOpenCart\Products\ProductsModel AS DFProductsModel;
+
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
-use App\Models\OpenCart\Orders\OrderOptionsModel;
-use App\Models\DressFairOpenCart\Orders\OrderOptionsModel AS DFOrderOptionsModel;
-use App\Models\OpenCart\Products\OptionDescriptionModel;
-use App\Models\DressFairOpenCart\Products\OptionDescriptionModel AS DFOptionDescriptionModel;
+
 use App\Models\Oms\InventoryManagement\OmsDetails;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionValueModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
-use App\Models\OpenCart\Products\ProductOptionValueModel;
-use App\Models\DressFairOpenCart\Products\ProductOptionValueModel AS DFProductOptionValueModel;
+
 use App\Models\Oms\AirwayBillTrackingModel;
 use App\Models\Oms\CityArea;
 use App\Models\Oms\OmsOrderProductModel;

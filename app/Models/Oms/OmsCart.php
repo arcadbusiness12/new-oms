@@ -9,7 +9,7 @@ use DB;
 class OmsCart extends Model
 {
     // protected $table = 'oms_promotion_socials';
-    protected $fillable = ['store_id','session_id','product_id','product_option_id','product_sku','product_name','product_image','product_color','product_quantity','product_price'];
+    protected $fillable = ['store_id','session_id','product_id','product_option_id','product_sku','product_name','product_image','product_color','product_quantity','product_price','is_exchange'];
 
     public function cartProductSize(){
 

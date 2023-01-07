@@ -104,10 +104,19 @@ Route::prefix('orders')->middleware('auth')->group(function(){
 Route::prefix('exchange')->middleware('auth')->group(function(){
     Route::controller(ExchangeOrdersController::class)->group(function() {
         Route::get("/","index")->name('exchange');
+        Route::post('/create', 'createExchange')->name('exchange.create');
         Route::get('/picking/list/awaiting', 'pickingListAwaiting')->name('exchange.picking.list.awaiting');
     });
     Route::controller(ExchangeOrdersAjaxController::class)->group(function() {
+        Route::post('/add/to/cart', 'addToCart')->name('exchange.add.to.cart');
+        Route::post('/get/cart', 'getCart')->name('exchange.get.cart');
+        Route::post('/update/cart', 'updateCart')->name('exchange.update.cart');
+        Route::post('/remove/cart', 'removeCart')->name('exchange.remove.cart');
+        Route::post('/set/payment/method', 'setPaymentMethod')->name('exchange.set.payment.method');
+        Route::post('/set/shipping/method', 'setShippingMethod')->name('exchange.set.shipping.method');
         Route::post('/cancel/order', 'cancelOrder')->name('exchange.cancel.order');
+        Route::post('/confirm', 'confirm')->name('exchange.confirm');
+
         Route::get('/cancel/quantity', 'cancelQuantity')->name('exchange.cancel.quantity');
         Route::post('/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('exchange.forword.for.awb.generation');
     });

@@ -3,14 +3,11 @@ namespace App\Http\Controllers\Exchange;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrderProductModel as DFExchangeOrderProductModel;
-use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrdersModel as DFExchangeOrdersModel;
 use App\Models\Oms\OmsSettingsModel;
-use App\Models\OpenCart\ExchangeOrders\ExchangeOrderProductModel;
-use App\Models\OpenCart\ExchangeOrders\ExchangeOrdersModel;
-use App\Models\OpenCart\ExchangeOrders\ExchangeOrderStatusModel;
+use App\Models\Oms\OmsOrderProductModel;
 use DB;
 use Illuminate\Support\Facades\URL;
+use App\Models\Oms\storeModel;
 use Illuminate\Support\Facades\Request AS RequestFacad;
 use App\Platform\Helpers\ToolImage;
 use Illuminate\Support\Facades\Storage;
@@ -127,5 +124,26 @@ class ExchangeOrdersController extends Controller
             }])->where('exchange_order_id',$order->exchange_order_id)->get();
         }
         return $data;
+    }
+    public function createExchange(Request $request){
+        $order_id            = $request->order_id_for_exchange;
+        $store_id            = $request->store_id_for_exchange;
+        $ordered_product_ids = $request->ordered_product_ids;
+        // dd($ordered_product_ids);
+        $data = [];
+        if( is_array( $ordered_product_ids ) && count($ordered_product_ids) > 0 ){
+            foreach($ordered_product_ids as $product_option_id => $product_id){
+                $product = OmsOrderProductModel::with(['product'])->where("product_id",$product_id)->where("product_option_id",$product_option_id)->where("order_id",$order_id)->first();
+                if( $product ){
+                    $data[] = $product->toArray();
+                }
+            }
+        }
+        $store_data = storeModel::where('id',$store_id)->first();
+        return view("placeExchange.index",compact('data','store_data'));
+    }
+    public function placeExchange(){
+        // dd($request->all());
+        die("placeExchange");
     }
 }
