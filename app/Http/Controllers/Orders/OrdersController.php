@@ -195,7 +195,7 @@ class OrdersController extends Controller
         // dd($data->toArray());
         ///extra variable
         $searchFormAction = URL::to('orders/online');
-        $orderStatus = OrderStatusModel::orderBy('id','DESC')->get();
+        $orderStatus = OmsOrderStatusModel::orderBy('id','DESC')->get();
         return view(self::VIEW_DIR.".online",compact('data','searchFormAction','orderStatus','old_input','old_input'));
     }
     protected function getOrdersWithImage($orders){
@@ -307,7 +307,7 @@ class OrdersController extends Controller
             // dd($data->toArray());
         ///
         $searchFormAction = URL::to('orders/reship-orders');
-        $orderStatus = OrderStatusModel::all();
+        $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();
         return view(self::VIEW_DIR.".reship_orders",compact('data','searchFormAction','orderStatus','old_input','couriers'));
     }
@@ -519,7 +519,7 @@ class OrdersController extends Controller
             }
         }
     public function generateAwb(){
-      $ordersStatus = OrderStatusModel::all();
+      $ordersStatus = OmsOrderStatusModel::all();
       $shippingProviders = ShippingProvidersModel::where('is_active', 1)->get();
       return view(self::VIEW_DIR . ".generate_awb", ["orderStatus" => $ordersStatus, "shippingProviders" => $shippingProviders]);
     }
@@ -539,12 +539,12 @@ class OrdersController extends Controller
     public function awbGenerated(){
         $orders = array();
         if( session('user_group_id') == 5 || session('user_group_id') == 6 ){
-            $ordersStatus = OrderStatusModel::whereIn('order_status_id',[3,15,25])->get();
+            $ordersStatus = OmsOrderStatusModel::whereIn('order_status_id',[3,15,25])->get();
             if( !RequestFacad::all() ){
                 RequestFacad::merge(['order_status_id' => 3]);
             }
         }else{
-            $ordersStatus = OrderStatusModel::get();
+            $ordersStatus = OmsOrderStatusModel::get();
         }
         $omsOrders = OmsOrdersModel::with(['airway_bills','shipping_provider'])
         ->orderBy(OmsOrdersModel::UPDATED_AT, 'DESC')
@@ -573,7 +573,7 @@ class OrdersController extends Controller
         $omsOrders = $omsOrders->paginate(20)->appends(RequestFacad::all());
         // dd($omsOrders->toArray());
         $shippingProviders = ShippingProvidersModel::orderBy('is_active', 'DESC')->get();
-        $ordersStatus      = OrderStatusModel::all();
+        $ordersStatus      = OmsOrderStatusModel::all();
 
         return view(self::VIEW_DIR . ".airway_bill_generated_orders",compact('omsOrders','shippingProviders','ordersStatus'));
     }
