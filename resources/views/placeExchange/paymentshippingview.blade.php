@@ -75,12 +75,11 @@
                             <td>{{ $total }}</td>
                         </tr>
                         @endforeach
-                        @if( $g_total > 0 )
-                            <tr>
-                                <td><b>Total:</b></td>
-                                <td><strong>{{ $g_total }}<strong></td>
-                            </tr>
-                        @endif
+
+                        <tr>
+                            <td><b>Total:</b></td>
+                            <td><strong>{{ ( $g_total < 1 ) ? 0 : $g_total }}<strong></td>
+                        </tr>
                 </table>
                 <div class="form-group">
                     <button type="button" name="generate_exchange" id="confirm-order" class="btn btn-primary btn-block">Place Order</button>

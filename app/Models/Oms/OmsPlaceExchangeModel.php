@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Models\Oms;
+namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class OmsPlaceExchangeModel extends Model
 {
     use HasFactory;
+    protected $table = "oms_place_exchanges";
 }

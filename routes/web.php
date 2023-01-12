@@ -114,7 +114,8 @@ Route::prefix('exchange')->middleware('auth')->group(function(){
         Route::post('/remove/cart', 'removeCart')->name('exchange.remove.cart');
         Route::post('/set/payment/method', 'setPaymentMethod')->name('exchange.set.payment.method');
         Route::post('/set/shipping/method', 'setShippingMethod')->name('exchange.set.shipping.method');
-        Route::post('/cancel/order', 'cancelOrder')->name('exchange.cancel.order');
+        Route::post('/cancel', 'cancelOrder')->name('exchange.cancel');
+        Route::get('/shipping/payment', 'paymentShipping')->name('exchange.shipping.payment');
         Route::post('/confirm', 'confirm')->name('exchange.confirm');
 
         Route::get('/cancel/quantity', 'cancelQuantity')->name('exchange.cancel.quantity');

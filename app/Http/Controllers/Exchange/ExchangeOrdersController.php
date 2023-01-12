@@ -140,7 +140,7 @@ class ExchangeOrdersController extends Controller
             }
         }
         $store_data = storeModel::where('id',$store_id)->first();
-        return view("placeExchange.index",compact('data','store_data'));
+        return view("placeExchange.index",compact('data','store_data','order_id'));
     }
     public function placeExchange(){
         // dd($request->all());

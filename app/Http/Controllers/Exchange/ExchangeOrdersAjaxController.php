@@ -3,10 +3,10 @@ namespace App\Http\Controllers\Exchange;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrderHistoryModel as DFExchangeOrderHistoryModel;
-use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrdersModel as DFExchangeOrdersModel;
-use App\Models\DressFairOpenCart\Products\OptionDescriptionModel as DFOptionDescriptionModel;
-use App\Models\DressFairOpenCart\Products\ProductsModel as DFProductsModel;
+use App\Models\Oms\OmsExchangeProductModel;
+use App\Models\Oms\OmsExchangeTotalModel;
+use App\Models\Oms\OmsPlaceExchangeModel;
+use App\Models\Oms\Customer;
 use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductModel;
@@ -14,14 +14,12 @@ use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
 use App\Models\Oms\OmsActivityLogModel;
 use App\Models\Oms\OmsCart;
 use App\Models\Oms\OmsExchangeOrdersModel;
+use App\Models\Oms\OmsExchangeReturnProductModel;
+use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\OmsOrderStatusInterface;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\PaymentMethodModel;
 use App\Models\Oms\ShippingMethodModel;
-use App\Models\OpenCart\ExchangeOrders\ExchangeOrderHistoryModel;
-use App\Models\OpenCart\ExchangeOrders\ExchangeOrdersModel;
-use App\Models\OpenCart\Products\OptionDescriptionModel;
-use App\Models\OpenCart\Products\ProductsModel;
 use Illuminate\Support\Facades\Request AS Input;
 use DB;
 class ExchangeOrdersAjaxController extends Controller
@@ -240,10 +238,11 @@ class ExchangeOrdersAjaxController extends Controller
     }
     public function getCart(Request $request){
         $store   = $request->store;
+        $total_exchange_amount = $request->total_exchange_amount;
         $server_session_id = session()->getId();
         $data = OmsCart::with('cartProductSize')->where("session_id",$server_session_id)->where("store_id",$store)->where('is_exchange',1)->get();
         // dd($data->toArray());
-        return view('placeExchange.cartview',compact('data'));
+        return view('placeExchange.cartview',compact('data','total_exchange_amount'));
     }
     public function updateCart(Request $request){
         $cart_id  = $request->cart_id;
@@ -273,37 +272,66 @@ class ExchangeOrdersAjaxController extends Controller
             return 0;
         }
     }
+    public function paymentShipping(Request $request){
+        // dd($request->all());
+        $store   = $request->store_id;
+        $sub_dir = $store == 1 ? "ba" : "df";
+        $shipping_methods = ShippingMethodModel::where("store_id",$store)->get();
+        $payment_methods  = PaymentMethodModel::where('status',1)->get();
+        $e_wallet_balance = 0;
+        $shipping_method     = session('exchange_shipping_method');
+        $payment_method      = session('exchange_payment_method');
+        $totals = $this->formatTotal($store);
+
+        // dd($totals);
+        return view('placeExchange.paymentshippingview',compact('shipping_methods','payment_methods','e_wallet_balance','totals','shipping_method','payment_method'));
+      }
+    public function removeCart(Request $request){
+        $cart_id = $request->cart_id;
+        $data = OmsCart::destroy($cart_id);
+        if($data){
+            return response()->json(['status'=>1,"msg"=>"Item deleted from cart successfully."]);
+        }else{
+            return response()->json(['status'=>0,"msg"=>"Error."]);
+        }
+    }
     public function setPaymentMethod(Request $request){
-        session()->forget('payment_method');
+        session()->forget('exchange_payment_method');
         $store_id = $request->store_id;
         $request_payment_method = $request->payment_method;
         $data = PaymentMethodModel::select('id','name','fee','fee_label')->where("id",$request_payment_method)->first();
         if( $data ){
-            session()->put('payment_method', $data->toArray());
+            session()->put('exchange_payment_method', $data->toArray());
         }else{
             echo "no data found, in table.";
         }
     }
     public function setShippingMethod(Request $request){
-        session()->forget('shipping_method');
+        session()->forget('exchange_shipping_method');
         $store_id = $request->store_id;
         $shipping_method = $request->shipping_method;
         $data = ShippingMethodModel::select('id','name','amount')->where("store_id",$store_id)->where('id',$shipping_method)->first();
         if( $data ){
-            session()->put('shipping_method', $data->toArray());
+            session()->put('exchange_shipping_method', $data->toArray());
         }else{
             echo "no data found, in table.";
         }
     }
     public function confirm(Request $request){
+        // dd($request->all());
+        $return_products_quantity = $request->quantity;
+        $return_products_amount   = $request->amount;
+        // echo count($return_products_quantity);
+        // dd($request->all());
         $store_id = $request->store_id;
         $comment  = $request->comment;
+        $order_id = $request->order_id;
         $google_map_link     = $request->google_map_link;
         $alternate_number    = $request->alternate_number;
         $shipping_method     = session('exchange_shipping_method');
         $payment_method      = session('exchange_payment_method');
         $server_session_id   = session()->getId();
-        $cart_data = OmsCart::with(['product','productOption.option','productOption.optionVal'])->where("session_id",$server_session_id)->where('store_id',$store_id)->get();
+        $cart_data = OmsCart::with(['product','productOption.option','productOption.optionVal'])->where("session_id",$server_session_id)->where('is_exchange',1)->where('store_id',$store_id)->get();
         // dd($cart_data->toArray()); die("test");
         if( $store_id < 1 ){
             return response()->json(['status'=>false,"data"=>'','msg'=>"No store selected, or invalid store ID."]);
@@ -328,23 +356,18 @@ class ExchangeOrdersAjaxController extends Controller
         }
         // dd( $payment_method );
         // dd($customer_data->toArray());
+
         //first entry in store counter tabel
         DB::beginTransaction();
         try {
 
-            if( $store_id == 1 ){
-                $order_counter = OmsBaOrderCounterModel::create();
-                $order_id =  $order_counter->id;
-            }else if( $store_id == 2 ){
-                $order_counter = OmsDfOrderCounterModel::create();
-                $order_id =  $order_counter->id;
-            }
             //entry in total table
             $totals = $this->formatTotal($store_id);
             $order_total_amount = 0;
             if( is_array($totals) && count($totals) > 0 ){
                 foreach($totals as $title=>$total){
-                    $insert_order_tot           = new OmsOrderTotalModel();
+
+                    $insert_order_tot           = new OmsExchangeTotalModel();
                     $insert_order_tot->order_id = $order_id;
                     $insert_order_tot->title    = $title;
                     $insert_order_tot->value    = $total;
@@ -357,7 +380,7 @@ class ExchangeOrdersAjaxController extends Controller
             }
 
             //entry in place order table
-            $place_order = new OmsPlaceOrderModel();
+            $place_order = new OmsPlaceExchangeModel();
             $place_order->order_id    = $order_id;
             $place_order->user_id     = session('user_id');
             $place_order->store       = $store_id;
@@ -395,8 +418,6 @@ class ExchangeOrdersAjaxController extends Controller
             $place_order->total_amount     = $order_total_amount;
             $place_order->comment          = $comment;
             $place_order->google_map_link  = $google_map_link ;
-            $place_order->online_approved  = 1;
-            $place_order->reseller_approve = 1;
             $place_order->save();
             //insertion in oms_order_products table
             if($cart_data){
@@ -407,7 +428,8 @@ class ExchangeOrdersAjaxController extends Controller
                     if( $cart_quantity > $cart_item->productOption->available_quantity ){
                         throw new \Exception("Desired quanity not available for ".$cart_item->product_sku." ".$cart_option_name.": ".$cart_option_value);
                     }
-                    $insert_order_products = new OmsOrderProductModel();
+                    $item_total_price = ($cart_quantity * $cart_item->product_price);
+                    $insert_order_products = new OmsExchangeProductModel();
                     $insert_order_products->order_id   = $order_id;
                     $insert_order_products->product_id = $cart_item->product_id;
                     $insert_order_products->store_id   = $cart_item->store_id;
@@ -415,25 +437,67 @@ class ExchangeOrdersAjaxController extends Controller
                     $insert_order_products->sku        = $cart_item->product_sku;
                     $insert_order_products->quantity   = $cart_quantity;
                     $insert_order_products->price      = $cart_item->product_price;
-                    $insert_order_products->total      = ($cart_quantity * $cart_item->product_price);
+                    $insert_order_products->total      = $item_total_price;
                     $insert_order_products->product_option_id = $cart_item->product_option_id;
                     $insert_order_products->option_name  = $cart_option_name;
                     $insert_order_products->option_value = $cart_option_value;
                     $insert_order_products->save();
                 }
             }
-            $this->onHoldQuantity($order_id,$store_id);
-            OmsActivityLogModel::newLog($order_id,1,$store_id); // 1 for place order
+            //return products entry
+            if( is_array( $return_products_quantity ) && count($return_products_quantity) > 0 ){
+                foreach( $return_products_quantity as $order_product_id => $quantity ){  //$order_product_id this contain primary key of oms_order_products
+                    $order_product_data = OmsOrderProductModel::where("id",$order_product_id)->first();
+                    // dd( $order_product_data->toArray() );
+                    $insert_return_products = new OmsExchangeReturnProductModel();
+                    $insert_return_products->order_id	 = $order_product_data->order_id;
+                    $insert_return_products->store_id	 = $order_product_data->store_id;
+                    $insert_return_products->product_id	 = $order_product_data->product_id;
+                    $insert_return_products->name	     = $order_product_data->name;
+                    $insert_return_products->sku	     = $order_product_data->sku;
+                    $insert_return_products->total	     = ( $quantity * $order_product_data->price);
+                    $insert_return_products->product_option_id = $order_product_data->product_option_id;
+                    $insert_return_products->option_name = $order_product_data->option_name;
+                    $insert_return_products->option_value= $order_product_data->option_value;
+                    $insert_return_products->quantity	 = $quantity;  //quantity is comming from post, how many quantity customer want to return
+                    $insert_return_products->save();
+                }
+            }
+            // $this->onHoldQuantity($order_id,$store_id);
+            OmsActivityLogModel::newLog($order_id,11,$store_id); // 1 for place exchange
              DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
             // something went wrong
             return response()->json(['status'=>false,"data"=>'','msg'=>$e->getMessage()]);
         }
-        $this->clearSessionAterOrder();
+        $this->clearSessionAfterOrder();
         return response()->json(['status'=>true,"data"=>'','msg'=>"order placed successfully."]);
       }
-      private function clearSessionAterOrder(){
+      private function formatTotal($store){
+        $totals = [];
+        $exchange_total = Input::get('total_exchange_amount');
+        $cart_sub_total = OmsCart::getExchangeCartTotalAmount($store);
+        $totals['Sub-Total'] = $cart_sub_total;
+        //exchange start
+        //shipping method
+        $shipping_method     = session('exchange_shipping_method');
+        if($shipping_method ){
+            $totals[$shipping_method['name']] = $shipping_method['amount'];
+        }
+        //payment method
+        $payment_method      = session('exchange_payment_method');
+        if( $payment_method && $payment_method['fee'] > 0 ){
+            $totals[$payment_method['fee_label']] = $payment_method['fee'];
+        }
+        //exchange start
+        $totals['Exchange-Total'] = -$exchange_total;
+        //Ewallet start
+        $ewallet_amount = $exchange_total-$cart_sub_total;
+        $totals['E-wallet Total'] = $ewallet_amount;
+        return $totals;
+      }
+      private function clearSessionAfterOrder(){
         $server_session_id   = session()->getId();
         OmsCart::where('session_id',$server_session_id)->where('is_exchange',1)->delete();
         session()->forget('exchange_shipping_method');
