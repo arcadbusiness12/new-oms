@@ -158,12 +158,12 @@
                             </ul>
                         </li>
 
-                        <li class="treeview @if( str_contains(Request::url(), 'PurchaseManagement/') ) active @endif)">
+                        <li class="treeview @if( str_contains(Request::url(), 'PurchaseManagement/') && strpos(Request::url(), 'withdraw/money') === false && strpos(Request::url(), 'account/summary') === false)  active @endif">
                             <a href="#">
-                            <i class="icon icon icon-shopping-bag s-24"></i>
-                            Purchase Management
-                            <i class=" icon-angle-left  pull-right"></i></a>
-                        </a>
+                                <i class="icon icon icon-shopping-bag s-24"></i>
+                                Purchase Management
+                                <i class=" icon-angle-left  pull-right"></i></a>
+                            </a>
                             <ul class="treeview-menu">
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/place/purchase/order') !== false || strpos(Request::url(), 'out/stock/product') !== false) active @endif">
                                     <a href="{{route('place.purchase.order')}}"><i class="icon icon-add"></i>Add
@@ -209,15 +209,37 @@
                                 </li>
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/add/complaint') !== false) active @endif">
                                     <a href="{{route('add.complaint')}}"><i class="icon icon-announcement"></i>Add Complaint</a>
+                                </li >
+
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/accounts') !== false) active @endif">
+                                    <a href="{{route('accounts')}}"><i class="icon icon-account_balance"></i>Accounts</a>
                                 </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-account_balance"></i>Accounts</a>
+                                
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/account/summary/report') !== false) active @endif">
+                                    <a href="{{route('account.summary.report')}}"><i class="icon icon-report"></i>Account Summary Report</a>
                                 </li>
-                                <li><a href="panel-page-products-create.html"><i class="icon icon-report"></i>Account Summary Report</a>
-                                </li>
-                                <li><a href="panel-page-products.html"><i class="icon icon-money"></i>Withdraw Request</a>
+                                <li class="@if(strpos(Request::url(), 'PurchaseManagement/withdraw/requests') !== false) active @endif">
+                                    <a href="{{route('withdraw.request')}}"><i class="icon icon-money"></i>Withdraw Request</a>
                                 </li>
                             </ul>
                         </li>
+
+                        <li class="treeview @if(str_contains(Request::url(), 'PurchaseManagement/withdraw/money') || str_contains(Request::url(), 'PurchaseManagement/account/summary')) active @endif">
+                            <a href="javascript:void(0)" class="menu-toggle waves-effect waves-block">
+                               <i class="icon icon icon-payment s-24"></i>
+                               <span>Payments</span>
+                               <i class=" icon-angle-left  pull-right"></i>
+                           </a>
+                           <ul class="treeview-menu">
+                             <li class="@if(strpos(Request::url(), 'PurchaseManagement/withdraw/money') !== false) active @endif">
+                                 <a href="{{route('withdraw.money')}}"><i class="icon icon-money"></i>Withdraw</a>
+                             </li>
+                             <li class="@if(strpos(Request::url(), 'PurchaseManagement/account/summary') !== false) active @endif">
+                                <a href="{{route('account.summary')}}"><i class="icon icon-money"></i>Balance</a>
+                            </li>
+                         </ul>
+                        </li>
+
                         {{--  <li class="treeview @if(strpos(Request::url(), 'inventoryManagement/add/inventory') !== false || strpos(Request::url(), 'inventoryManagement/inventory/dashboard') !== false) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i
                             class=" icon-angle-left  pull-right"></i></a>  --}}
                         <li class="treeview @if( str_contains(Request::url(), 'inventoryManagement/') ) active @endif)"><a href="#"><i class="icon icon-cubes s-24"></i>Inventory Management<i

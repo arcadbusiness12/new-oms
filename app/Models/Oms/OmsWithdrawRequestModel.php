@@ -12,4 +12,8 @@ class OmsWithdrawRequestModel extends Model
     const FIELD_USER_ID = "user_id";
     const FIELD_AMOUNT = "amount";
     const FIELD_STATUS = "status";
+
+    public function user() {
+        return $this->belongsTo(OmsUserModel::class, 'user_id');
+    }
 }

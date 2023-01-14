@@ -81,7 +81,6 @@
                         <div class="panel-heading">
                             Product Listing
                           </div>
-                          <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                            <table class="table" width="100%" style="border-left: 1px solid #3f51b5; border-right: 1px solid #3f51b5;">
 
@@ -283,8 +282,6 @@
                     <div id="gr">
                     
                     </div>
-
-            </div>
 
             
                     </div>

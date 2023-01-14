@@ -14,4 +14,8 @@ class OmsPurchaseOrdersTotalModel extends Model
     const FIELD_TITLE = 'title';
     const FIELD_VALUE = 'value';
     const FIELD_SORT_ORDER = 'sort_order';
+
+    public function purchaseOrder() {
+        return $this->belongsTo(OmsPurchaseOrdersModel::class, 'order_id');
+    }
 }

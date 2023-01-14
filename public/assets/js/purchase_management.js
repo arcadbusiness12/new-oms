@@ -417,14 +417,15 @@ $(document).ready(function() {
             $('#' + parent).html(html);
         });
     });
-    $(document).delegate('.account-summary-pagination-area ul li a', 'click', function(e) {
+    $(document).delegate('.account-summary-pagination-area a', 'click', function(e) {
         e.preventDefault();
+        console.log("Purchase");
         var parent = $(this).parents('.tab-pane').attr('id');
         var url = $(this).attr('href');
         var ac = getUrlVars(url, parent);
         $.ajax({
             method: "POST",
-            url: APP_URL + '/account_summary_report_ajax',
+            url: APP_URL + '/PurchaseManagement/account/summary/report/ajax',
             data: ac,
             headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
             beforeSend: function() {
@@ -470,10 +471,10 @@ $(document).ready(function() {
     $(document).on('change keyup', '.select_supplier ', function() {
         var supplier = $('#supplier').val();
         var order_id = $('#order_id').val();
-
+        console.log("yessssssss");
         $.ajax({
             method: "POST",
-            url: APP_URL + "/account_summary_report_ajax",
+            url: APP_URL + "/PurchaseManagement/account/summary/report/ajax",
             data: { supplier: supplier, order_id: order_id },
             headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
             beforeSend: function() {
@@ -616,7 +617,6 @@ $(document).ready(function() {
         $("#payment-modal .response-message").html('');
         e.preventDefault();
         var formData = new FormData($(this)[0]);
-
         $.ajax({
             method: "POST",
             url: $(this).attr('action'),

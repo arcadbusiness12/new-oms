@@ -11,4 +11,8 @@ class OmsAccountSummaryModel extends Model
     const FIELD_ACCOUNT_ID = "account_id";
     const FIELD_USER_ID = "user_id";
     const FIELD_BALANCE = "balance";
+
+    public function transactions() {
+        return $this->hasMany(OmsAccountTransactionModel::class, 'account_id');
+    }
 }

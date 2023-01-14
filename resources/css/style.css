@@ -310,3 +310,14 @@ input[type="checkbox"] {
 td .icon {
     font-size: 20px !important;
 }
+#accounts .block-header ul li.top-tabs {
+    padding: 10px 15px 10px 15px;
+                                margin: 0px 10px 10px 0px;
+                                border: 2px solid #c1c1c1;
+                                position: relative;
+}
+#accounts .block-header ul li.active {
+    border: 2px solid green;
+    color: green;
+    font-weight: bold;
+}
