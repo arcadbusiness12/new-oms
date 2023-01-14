@@ -221,16 +221,14 @@ $(document).on('click', '#button-payment-method', function() {
     });
 });
 $(document).on('click', '#confirm-order', function() {
+    var total_exchange_amount = $('#tatal_exchange_amount').val();
     $('.confirm_error').addClass('d-none');
     var form_data = $('#exchange_return_form').serialize();
     var comment = $('#comment').val();
     var order_id = $('#order_id').val();
     var gmap_link = $('#gmap_link').val();
     var alternate_number = $('#alternate_number').val();
-    form_data.append("comment", comment);
-    form_data.append("order_id", order_id);
-    form_data.append("gmap_link", gmap_link);
-    form_data.append("alternate_number", alternate_number);
+    form_data += "&comment=" + comment + "&order_id=" + order_id + "&gmap_link=" + gmap_link + "&alternate_number=" + alternate_number + "&store_id=" + store + "&total_exchange_amount=" + total_exchange_amount;
     $.ajax({
         method: "POST",
         url: APP_URL + "/exchange/confirm",

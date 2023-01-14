@@ -87,7 +87,7 @@
                                 <li class="@if( str_contains(Request::url(), '/exchange') ) active @endif"><a href="#"><i class="icon icon-bug text-red"></i>Exchange<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li class="@if( Request::url() == route('exchange') ) active @endif" ><a href="{{ route('exchange') }}">All Orders</a>
+                                        <li class="@if( Request::url() == route('exchange') ) active @endif" ><a href="{{ route('exchange') }}">All List</a>
                                         </li>
                                         <li class="@if( Request::url() == route('exchange') ) active @endif"><a href="{{ route('exchange') }}?order_status_id=1">Pending</a>
                                         </li>
@@ -95,7 +95,7 @@
                                         </li>  --}}
                                         <li class="@if( Request::url() == route('exchange.picking.list.awaiting') ) active @endif"><a href="{{ route('exchange.picking.list.awaiting') }}">Pick List</a>
                                         </li>
-                                        <li><a href="login.html">Pack Orders</a>
+                                        <li class="@if( Request::url() == route('exchange.pack') ) active @endif"><a href="{{ route('exchange.pack') }}">Pack</a>
                                         </li>
                                         <li><a href="login-2.html">Generate & Print AWB</a>
                                         </li>
@@ -328,8 +328,8 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false 
-                        || strpos(Request::url(), '/omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false 
+                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false
+                        || strpos(Request::url(), '/omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false
                         || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
@@ -379,7 +379,7 @@
                                     </li>
                                 </ul>
                             </li>
-                            
+
                                 <li class="@if(strpos(Request::url(), 'omsSetting/category/setting') !== false) active @endif"><a href="#"><i class="icon icon-perm_data_setting"></i>Promotion Setting<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">

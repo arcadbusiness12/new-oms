@@ -409,6 +409,7 @@ class PlaceOrderController extends Controller
         if( is_array($totals) && count($totals) > 0 ){
             foreach($totals as $title=>$total){
                 $insert_order_tot           = new OmsOrderTotalModel();
+                $insert_order_tot->store_id = $store_id;
                 $insert_order_tot->order_id = $order_id;
                 $insert_order_tot->title    = $title;
                 $insert_order_tot->value    = $total;

@@ -23,7 +23,7 @@
                                 Pick List
                             </div>
                             <div class="col-sm-2 col-grid">
-                                <a href="javascrip:void()" onclick="$('#frm_print_pick_list').submit()" class="btn btn-success btn-sm float-right">Print Picking list</a>
+                                <a href="javascrip:void()" onclick="$('#frm_print_pick_list').submit()" class="btn btn-success active btn-sm float-right">Print Picking list</a>
                             </div>
                         </div>
                         <form method="get" target="_blank" id="frm_print_pick_list">
