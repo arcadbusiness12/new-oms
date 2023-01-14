@@ -66,10 +66,11 @@ $(document).on('submit', '#frm_add_to_cart', function(e) {
 });
 
 function getCart() {
+    var total_exchange_amount = $('#tatal_exchange_amount').val();
     $.ajax({
         method: "POST",
         url: APP_URL + "/exchange/get/cart",
-        data: { store: store },
+        data: { store: store, total_exchange_amount: total_exchange_amount },
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         console.log(data);
@@ -183,11 +184,12 @@ $(document).on('submit', '#customer_save', function(e) {
 });
 
 function shippingPayment() {
+    var total_exchange_amount = $('#tatal_exchange_amount').val();
     $.ajax({
         method: "GET",
-        url: APP_URL + "/place/order/shipping/payment",
+        url: APP_URL + "/exchange/shipping/payment",
         cache: false,
-        data: 'store_id=' + store,
+        data: 'store_id=' + store + '&total_exchange_amount=' + total_exchange_amount,
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         console.log(data);
@@ -198,7 +200,7 @@ $(document).on('click', '#button-shipping-method', function() {
     var shipping_method = $('#sb_shipping_method').val();
     $.ajax({
         method: "POST",
-        url: APP_URL + "/place/exchange/set/shipping/method",
+        url: APP_URL + "/exchange/set/shipping/method",
         cache: false,
         data: { shipping_method: shipping_method, store_id: store },
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
@@ -210,7 +212,7 @@ $(document).on('click', '#button-payment-method', function() {
     var payment_method = $('#sb_payment_method').val();
     $.ajax({
         method: "POST",
-        url: APP_URL + "/place/exchange/set/payment/method",
+        url: APP_URL + "/exchange/set/payment/method",
         cache: false,
         data: { payment_method: payment_method, store_id: store },
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
@@ -219,15 +221,19 @@ $(document).on('click', '#button-payment-method', function() {
     });
 });
 $(document).on('click', '#confirm-order', function() {
+    var total_exchange_amount = $('#tatal_exchange_amount').val();
     $('.confirm_error').addClass('d-none');
+    var form_data = $('#exchange_return_form').serialize();
     var comment = $('#comment').val();
+    var order_id = $('#order_id').val();
     var gmap_link = $('#gmap_link').val();
     var alternate_number = $('#alternate_number').val();
+    form_data += "&comment=" + comment + "&order_id=" + order_id + "&gmap_link=" + gmap_link + "&alternate_number=" + alternate_number + "&store_id=" + store + "&total_exchange_amount=" + total_exchange_amount;
     $.ajax({
         method: "POST",
         url: APP_URL + "/exchange/confirm",
         cache: false,
-        data: { store_id: store, alternate_number: alternate_number, google_map_link: gmap_link, comment: comment },
+        data: form_data,
         headers: { 'X-CSRF-Token': $('input[name="_token"]').val() },
     }).done(function(data) {
         // alert(data);

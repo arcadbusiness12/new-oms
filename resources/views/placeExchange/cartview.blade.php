@@ -53,10 +53,29 @@
                     </td>
                 </tr>
             @endforeach
+
+            <tr style="border-bottom:1px solid lightgray">
+                <td colspan="4"></td>
+                <td><center><strong>Sub Total:</strong></center></td>
+                <td><center><strong>{{ $total }}</strong><center></td>
+            </tr>
+            <tr style="border-bottom:1px solid lightgray">
+                <td colspan="4"></td>
+                <td><center><strong>Exchange Total:</strong></center></td>
+                <td><center><strong>-{{ $total_exchange_amount }}</strong><center></td>
+            </tr>
+            @php
+                $grand_total = $total - $total_exchange_amount;
+            @endphp
+            <tr style="border-bottom:1px solid lightgray">
+                <td colspan="4"></td>
+                <td><center><strong>Wallet Total:</strong></center></td>
+                <td><center><strong>{{ ($grand_total < 0) ? abs($grand_total) : 0  }}</strong><center></td>
+            </tr>
             <tr>
                 <td colspan="4"></td>
                 <td><center><strong>Total:</strong></center></td>
-                <td><center><strong>{{ $total }}</strong><center></td>
+                <td><center><strong>{{ ($grand_total < 1) ? 0 : $grand_total }}</strong><center></td>
             </tr>
         </tbody>
     </table>

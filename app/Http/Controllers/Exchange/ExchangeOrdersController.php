@@ -3,8 +3,18 @@ namespace App\Http\Controllers\Exchange;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
+use App\Models\Oms\OmsExchangeOrderAttachment;
+use App\Models\Oms\OmsExchangeOrdersModel;
+use App\Models\Oms\OmsExchangeProductModel;
+use App\Models\Oms\OmsExchangeReturnProductModel;
+use App\Models\Oms\OmsExchangeTotalModel;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\OmsOrderProductModel;
+use App\Models\Oms\OmsOrderStatusModel;
+use App\Models\Oms\OmsPlaceExchangeModel;
+use App\Models\Oms\OmsUserModel;
 use DB;
 use Illuminate\Support\Facades\URL;
 use App\Models\Oms\storeModel;
@@ -38,60 +48,183 @@ class ExchangeOrdersController extends Controller
     }
     public function index(){
         $old_input = RequestFacad::all();
-        $data = DB::table("oms_exchange_orders AS eord")
-        ->rightjoin(DB::raw("(SELECT * FROM
-                    ( SELECT exchange_order_id,order_id,1 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_BAOPENCART_DATABASE.oc_exchange_order
-                    UNION
-                    SELECT exchange_order_id,order_id,2 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_DFOPENCART_DATABASE.oc_exchange_order
-                    )
-                    AS exchanges) AS exchanges"),function($join){
-                    $join->on('exchanges.order_id','=','eord.order_id');
-                    $join->on('exchanges.oms_store','=','eord.store');
-        })
-        ->select(DB::raw("exchanges.*,eord.oms_order_status,0 AS payment_status"))
-        ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-            return $query->where("order_id",$old_input['order_id']);
-        })
-        ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-            return $query->where("order_status_id",$old_input['order_status_id']);
-        })->orderByRaw("date_modified DESC")
-        ->paginate(20);
-        // dd($data->toArray());
-        //
-        $data = $this->getOrdersWithImage($data);
+        $old_input = RequestFacad::all();
+
+        $data = OmsPlaceExchangeModel::select('oms_place_exchanges.*')
+                ->with(['exchangeProducts.product','omsExchange','omsStore'])
+                ->leftjoin("oms_exchange_orders",function($join){
+                    $join->on('oms_exchange_orders.order_id', '=', 'oms_place_exchanges.order_id');
+                    $join->on('oms_exchange_orders.store', '=', 'oms_place_exchanges.store');
+                })
+                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.order_id',$old_input['order_id']);
+                })
+                ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.store',$old_input['by_store']);
+                })
+                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.mobile','LIKE',"%".$old_input['telephone']."%");
+                })
+                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.firstname','LIKE',"%".$old_input['customer']."%");
+                })
+                ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.email','LIKE',"%".$old_input['email']."%");
+                })
+                ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_exchanges.total_amount',$old_input['total']);
+                })
+                ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_exchange_orders.oms_order_status',$old_input['order_status_id']);
+                });
+            $data = $data->orderByRaw("(CASE WHEN oms_exchange_orders.order_id > 0 THEN oms_exchange_orders.updated_at ELSE oms_exchange_orders.created_at END) DESC")
+                ->paginate(20);
         // dd($data->toArray());
         $searchFormAction = "exchange";
-        $orderStatus = ExchangeOrderStatusModel::all();
+        $orderStatus = OmsOrderStatusModel::all();
         return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus'));
     }
     public function pickingListAwaiting(){
         $old_input = RequestFacad::all();
-        $data = DB::table("oms_exchange_orders AS eord")
-        ->rightjoin(DB::raw("(SELECT * FROM
-                    ( SELECT exchange_order_id,order_id,1 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_BAOPENCART_DATABASE.oc_exchange_order
-                    UNION
-                    SELECT exchange_order_id,order_id,2 AS oms_store,order_status_id,firstname,lastname,telephone,email,total,payment_code,shipping_address_1,shipping_address_2,shipping_area,shipping_zone,payment_address_1,payment_address_2,payment_area,shipping_city,date_added,date_modified FROM $this->DB_DFOPENCART_DATABASE.oc_exchange_order
-                    )
-                    AS exchanges) AS exchanges"),function($join){
-                    $join->on('exchanges.order_id','=','eord.order_id');
-                    $join->on('exchanges.oms_store','=','eord.store');
+        if (isset($old_input['o_id'])){
+            return $this->generatePickingList($old_input['o_id']);
+        }
+        $data = OmsPlaceExchangeModel::with(['exchangeProducts.product','omsExchange','omsStore'])
+        ->whereHas('omsExchange',function($q) use($old_input){
+            $q->where('oms_order_status',0);
         })
-        ->select(DB::raw("exchanges.*,eord.oms_order_status,0 AS payment_status"))
-        ->where('eord.oms_order_status',0)
         ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-            return $query->where("order_id",$old_input['order_id']);
-        })
-        ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-            return $query->where("order_status_id",$old_input['order_status_id']);
-        })->orderByRaw("date_modified DESC")
-        ->paginate(20);
-        // dd($data->toArray());
-        //
-        $data = $this->getOrdersWithImage($data);
+            return $query->where('order_id',$old_input["order_id"]);
+        });
+        if( @$old_input['search_by_print'] != "" ){
+            $data = $data->whereHas('omsOrder',function($query) use($old_input){
+                if( $old_input['search_by_print'] == 1 ){
+                    return $query->where('picklist_print',$old_input['search_by_print']);
+                }else if( $old_input['search_by_print'] == 0 ){
+                    return $query->whereNull('picklist_print');
+                }
+            });
+        }
+        // $data = $data->orderByRaw("omsOrder.updated_at DESC");
+        $data = $data->paginate(10);
         // dd($data->toArray());
         $searchFormAction = "exchange";
-        $orderStatus = ExchangeOrderStatusModel::all();
+        $orderStatus = OmsOrderStatusModel::all();
         return view(self::VIEW_DIR.".pick_list_view",compact('data','searchFormAction','orderStatus'));
+    }
+    protected function generatePickingList($orderIds = []){
+        $orders = OmsPlaceExchangeModel::with(['exchangeProducts.product','omsStore'])
+                ->whereIn("order_id",$orderIds)
+                ->get();
+        // dd($orders->toArray());
+        if (sizeof($orders) > 0)
+        {
+            // Update the print picklist status to 1 in oms table
+            foreach ($orders as $key => $order)
+            {
+                if(isset($order->reseller_id)) {
+                    $reseller = OmsUserModel::with('detail')->where('user_id', $order->reseller_id)->first();
+                    // dd($reseller->detail->brand_logo);
+                    $order['reseller_name'] = $reseller->firstname;
+                    $order['reseller_logo'] = $reseller->detail->brand_logo ? Storage::url($reseller->detail->brand_logo) : "";
+                }
+
+                // $omsUpdateStatus = OmsOrdersModel::where(OmsOrdersModel::FIELD_ORDER_ID, $order[OmsOrdersModel::FIELD_ORDER_ID]);
+                // $omsUpdateStatus->update([OmsOrdersModel::FIELD_PICKLIST_PRINT => 1]);
+                $omsUpdateStatus = OmsExchangeOrdersModel::where('order_id', $order->order_id)->where('store',$order->store);
+                $print_status = $omsUpdateStatus->update(['picklist_print' => 1]);
+            }
+        }
+        // dd($orders);
+        // $orders = $this->getOrdersWithImage($orders);
+        // dd($orders);
+        return view(self::VIEW_DIR . ".print_pick_list", ["orders" => $orders, "pagination" => '']);
+    }
+    public function pack(){
+        $old_input = RequestFacad::all();
+        return view(self::VIEW_DIR.".pack_order",compact('old_input'));
+    }
+    public function getPack(){
+        $old_input = RequestFacad::all();
+        if(count($old_input) > 0){
+            $order_id = $old_input['order_id'];
+
+            $order = OmsPlaceExchangeModel::with(['exchangeProducts.product','exchangeProducts.productOption','omsStore'])
+            ->whereHas('omsExchange',function($query){
+                $query->where('oms_order_status', 0)->where('picklist_print', 1);
+            })
+            ->where('order_id', $order_id)
+            ->first();
+        }
+        return view(self::VIEW_DIR.'.pack_order_search',compact('order'));
+    }
+    public function updatePack(){
+        // die("testing update_pack_order func");
+        $old_input = RequestFacad::all();
+        // dd($old_input);
+        if(count($old_input) > 0 && $old_input['submit'] == 'update_picked'){
+            $order_id = $old_input['order_id'];
+            $order_id = str_replace("-1","",$order_id);
+            $store    = $old_input['store'];
+            // $exists = OmsOrdersModel::select('*')
+            // ->where('order_id', $order_id)
+            // ->where('oms_order_status', OmsOrderStatusInterface::OMS_ORDER_STATUS_IN_QUEUE_PICKING_LIST)
+            // ->where('store',$store)
+            // ->where('picklist_print', 1)
+            // ->exists();
+
+            $order = OmsPlaceExchangeModel::with(['orderProducts.product','orderProducts.productOption','omsStore'])
+            ->whereHas('omsExchange',function($query){
+                $query->where('oms_order_status', 0)->where('picklist_print', 1);
+            })
+            ->where('store',$store)
+            ->where('order_id', $order_id)
+            ->first();
+            // dd($order->toArray());
+            // echo "<pre>"; print_r(mixed:value, bool:return=false); die;
+            // dd(Input::get('packed'));
+            if($order){
+                foreach ($order->orderProducts as $key => $orderProduct) {
+                    //entry in packed quantity table
+                    $quantity         = $orderProduct->quantity;
+                    $product_id       = $orderProduct->product_id;
+                    $option_id        = $orderProduct->productOption->option_id;
+                    $option_value_id  = $orderProduct->productOption->option_value_id;
+                    $OmsInventoryPackedQuantityModel = new OmsInventoryPackedQuantityModel();
+                    $OmsInventoryPackedQuantityModel->order_id = $order->order_id."-1";
+                    $OmsInventoryPackedQuantityModel->product_id = $product_id;
+                    $OmsInventoryPackedQuantityModel->oms_product_id = $product_id;
+                    $OmsInventoryPackedQuantityModel->option_id = $orderProduct->productOption->option_id;
+                    $OmsInventoryPackedQuantityModel->option_value_id = $orderProduct->productOption->option_value_id;
+                    $OmsInventoryPackedQuantityModel->quantity =  $quantity;
+                    $OmsInventoryPackedQuantityModel->store = $store;
+                    $OmsInventoryPackedQuantityModel->save();
+
+                    $decrement_query = 'IF (onhold_quantity-'. $quantity . ' <= 0, 0, onhold_quantity-'. $quantity . ')';
+                    OmsInventoryProductOptionModel::where('product_id', $product_id)->where('option_id', $option_id)->where('option_value_id', $option_value_id)->update(array('onhold_quantity' => DB::Raw($decrement_query), 'pack_quantity' => DB::Raw('pack_quantity+'.$quantity) ));
+                }
+
+                    //UPDATE OMS ORDER STATUS
+                $omsOrder = OmsOrdersModel::where('order_id', $order_id)->where('store', $store)->first();
+                $omsOrder->oms_order_status = 1;
+                $omsOrder->updated_at = \Carbon\Carbon::now();
+                $omsOrder->save();
+                OmsActivityLogModel::newLog($order_id,3,$store); //3 is for pack order
+                //create airwaybill
+                // $awb_response = app(\App\Http\Controllers\Orders\OrdersAjaxController::class)->forwardForShipping();
+                Session::flash('message', 'Order product packed successfully.');
+                Session::flash('alert-class', 'alert-success');
+                return redirect('/orders/pack/order')->with('packed_order_id',$order_id);
+            }else{
+                Session::flash('message', "Order product packed in 'Picklist' status only.");
+                Session::flash('alert-class', 'alert-warning');
+                return redirect('/orders/pack/order');
+            }
+        }else{
+            Session::flash('message', 'Something went wrong, please try again!');
+            Session::flash('alert-class', 'alert-warning');
+            return redirect('/orders/pack/order');
+        }
     }
     protected function getOrdersWithImage($orders){
         foreach ($orders as $key => $order) {
@@ -140,10 +273,31 @@ class ExchangeOrdersController extends Controller
             }
         }
         $store_data = storeModel::where('id',$store_id)->first();
-        return view("placeExchange.index",compact('data','store_data'));
+        return view("placeExchange.index",compact('data','store_data','order_id'));
     }
-    public function placeExchange(){
+    public function delete(Request $request){
         // dd($request->all());
-        die("placeExchange");
-    }
+        $order_id = $request->order_id;
+        $store    = $request->oms_store;
+        $dash_order_id = $order_id."-1";
+        DB::beginTransaction();
+        try{
+            OmsPlaceExchangeModel::where('order_id',$order_id)->where('store',$store)->delete();
+            OmsExchangeOrdersModel::where('order_id',$order_id)->where('store',$store)->delete();
+            OmsExchangeProductModel::where('order_id',$order_id)->where('store_id',$store)->delete();
+            OmsExchangeTotalModel::where('order_id',$order_id)->where('store_id',$store)->delete();
+            OmsExchangeOrderAttachment::where('order_id',$order_id)->where('store_id',$store)->delete();
+            OmsExchangeReturnProductModel::where('order_id',$order_id)->where('store_id',$store)->delete();
+            //with dashed order id
+            OmsInventoryOnholdQuantityModel::where('order_id',$dash_order_id)->where('store',$store)->delete();
+            OmsInventoryPackedQuantityModel::where('order_id',$dash_order_id)->where('store',$store)->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            // something went wrong
+            // return response()->json(['status'=>false,"data"=>'','msg'=>$e->getMessage()]);
+            echo $e->getMessage();
+        }
+        redirect('exchange');
+     }
 }

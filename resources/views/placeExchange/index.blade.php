@@ -22,8 +22,9 @@
     @endphp
 @endif
     <input type="hidden" id="txtbox_store_id" value="{{ $store_data->id  }}">
+    <input type="hidden" id="order_id" value="{{ $order_id  }}">
     <div class="container-fluid relative animatedParent animateOnce my-3">
-        <h4>Place Order in {{ $store_data->name }} For Order no 200033</h4>
+        <h4>Place Exchange in {{ $store_data->name }} For Order {{ $order_id }}</h4>
         <div class="row row-eq-height my-3 mt-3">
             <div class="col-md-12 col-sm-12 place_order text-black">
                 <div class="card" style="border:1px dashed red">
@@ -32,6 +33,8 @@
                             These Products will be return from customer.
                         </div>
                         <div class="panel-body">
+                            <form method="post" id="exchange_return_form" action="{{ route('exchange.confirm') }}">
+                                @csrf
                             <div class="row">
                                 <div class="col-sm-8">
                                     <table class="table">
@@ -53,9 +56,9 @@
                                                         @endif
                                                         <strong>Color : </strong>{{ $product['product']['option_name'] }}</td>
                                                         <td>{{ $product['sku'] }}</td>
-                                                        <td><input type="number" value="{{ $product['quantity'] }}" id="exchange_product_quantity{{ $product['product_option_id'] }}" onkeyup="calculateExchangeTotal({{ $product['product_option_id'] }},{{ $product['price'] }})" onchange="calculateExchangeTotal({{ $product['product_option_id'] }},{{ $product['price'] }})" size="5" min="1" max="{{ $product['quantity'] }}" /></td>
+                                                        <td><input type="number" value="{{ $product['quantity'] }}" name="quantity[{{ $product['id'] }}]" id="exchange_product_quantity{{ $product['product_option_id'] }}" onkeyup="calculateExchangeTotal({{ $product['product_option_id'] }},{{ $product['price'] }})" onchange="calculateExchangeTotal({{ $product['product_option_id'] }},{{ $product['price'] }})" size="5" min="1" max="{{ $product['quantity'] }}" /></td>
                                                         <td>{{ $product['price'] }}</td>
-                                                        <td><input type="text" value="{{ $product['total'] }}" class="exchange_product_total" id="exchange_product_total{{ $product['product_option_id'] }}" size="7"  readonly /> </td>
+                                                        <td><input type="text" value="{{ $product['total'] }}" name="amount[{{ $product['id'] }}]" class="exchange_product_total" id="exchange_product_total{{ $product['product_option_id'] }}" size="7"  readonly /> </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -64,9 +67,11 @@
                                 </div>
                                 <div class="col-sm-4" style="text-align: center;">
                                     <h3>Total Customer Amount</h3>
-                                     <input type="text" id="tatal_exchange_amount" value="{{ $total_exchange_amount }}" style="text-align: center; height: 39px;" readonly>
+                                     <input type="text" id="tatal_exchange_amount" name="tatal_exchange_amount" value="{{ $total_exchange_amount }}" style="text-align: center; height: 39px;" readonly>
                                 </div>
                             </div>
+                            {{--  <input type="submit" value="abclfdjal">  --}}
+                            </form>
                         </div>
                     </div>
                 </div>

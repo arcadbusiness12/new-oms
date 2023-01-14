@@ -24,7 +24,14 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        <div class="panel-heading">Pick List</div>
+                        <div class="panel-heading">
+                            <div class="col-sm-10 col-grid">
+                                Pick List
+                            </div>
+                            <div class="col-sm-2 col-grid">
+                                <a href="javascrip:void()" onclick="$('#frm_print_pick_list').submit()" class="btn btn-success btn-sm active float-right">Print Picking list</a>
+                            </div>
+                        </div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
                           @if(session()->has('success'))
@@ -32,12 +39,15 @@
                             {{ session()->get('success') }}
                             </div>
                           @endif
-
+                          <form method="get" target="_blank" id="frm_print_pick_list">
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                             <table class="table" width="100%" style="font-size: 14px !important; color:black !important">
                              <thead>
                               <tr style="background-color: #3f51b5;color:white">
+                                <td>
+                                    {{--  <input name="o_id[]" type="checkbox" class="chk-col-green fwd-ordr-generate-awb-checkbox">  --}}
+                                </td>
                                 <th scope="col"><center>Order Id</center></th>
                                 <th scope="col"><center>Customer</center></th>
                                 <th scope="col"><center>Status</center></th>
@@ -52,45 +62,45 @@
                                 @if($data->count())
                                 @foreach($data as $key=>$order)
                                     <tr class="row_{{ $order->order_id }}">
+                                        <td class="col-sm-1"><input name="o_id[]" value="{{ $order->order_id }}" type="checkbox" id="md_checkbox_{{ $order->order_id }}" class="chk-col-green fwd-ordr-generate-awb-checkbox"></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}-1</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><span class="badge badge-warning blue darken-1">--</span></center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_added }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->date_modified }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->telephone }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->OmsExchange?->updated_at }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->email }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total_amount }} </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
-                                        <td>&nbsp;</td>
-                                        <td colspan="2"><strong>Address:</strong>{{ $order->payment_area }},{{ $order->payment_address_1 }},{{ $order->shipping_address_2 }}</td>
-                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city ? $order->shipping_city : $order->shipping_zone }}</td>
+                                        <td>@if( $order->omsExchange?->picklist_print == 1 )<span class="badge badge-success green darken-1"><strong>Printed<strong></span> @endif</td>
+                                        <td colspan="2"><strong>Address:</strong>{{ $order->shipping_city_area }},{{ $order->shipping_address_1 }},{{ $order->shipping_street_building }},{{ $order->shipping_villa_flat }}</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city }}</td>
                                         <td colspan="4" >
                                              <div class="normal-order-progress">
-                                                @include('orders.order_progress_bar')
+                                                @include('exchange.exchange_progress_bar')
                                               </div>
                                         </td>
                                     </tr>
-                                    @if( $order->orderd_products )
+                                    @if( $order->exchangeProducts )
                                         <tr class="row_{{ $order->order_id }}">
                                             <td colspan="8">
                                                 <center>
                                                 <table width="100%" style="font-size:12px;">
-                                                    @foreach ( $order->orderd_products as $ordered_product )
+                                                    @foreach ( $order->exchangeProducts as $ordered_product )
                                                         <tr>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
-                                                            <td>&nbsp;</td>
-                                                            <td><img src="{{ $ordered_product?->product_details?->image }}" /></td>
+                                                            <td><input type="checkbox" class="product_{{ $order->order_id }} check_product_for_exchange" name="ordered_product_ids[{{ $ordered_product->product_option_id }}]" order-id={{ $order->order_id }} value="{{ $ordered_product->product_id }}" style="display:none" /></td>
+                                                            <td style="width: 5%;"><img src="{{ URL::asset('uploads/inventory_products/'.$ordered_product?->product?->image) }}" /></td>
                                                             <td>{{ $ordered_product->name }}<br>
-                                                                @forelse ($ordered_product->order_options as $order_option )
-                                                                    <strong>{{ $order_option->name }} :</strong> {{ $order_option->value }}
-                                                                @empty
-                                                                @endforelse
-                                                            </td>
-                                                            <td>{{ $ordered_product->model }}</td>
+                                                                @if(  $ordered_product->product?->option_value > 0  )
+                                                                    <strong>{{ $ordered_product->option_name }}</strong> : {{ $ordered_product->option_value }} ,
+                                                                @endif
+                                                                <strong>Color : </strong>{{ $ordered_product->product?->option_name }}</td>
+                                                            <td>{{ $ordered_product->sku }}</td>
                                                             <td>{{ $ordered_product->quantity }}</td>
                                                             <td>{{ $ordered_product->price }}</td>
                                                             <td>{{ $ordered_product->total }}</td>
@@ -101,57 +111,13 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr  class="order-action" class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
-                                        <td colspan="11">
-                                                    <div class="row">
-                                                        <div class="col-1">
-                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->oms_store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
-                                                        </div>
-                                                        @if ( $order->oms_order_status < 2 )
-                                                             @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
-                                                                <div class="col-1">
-                                                                    <a  href="javascript:void(0)" class="waves-effect waves-blue active" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
-                                                                        <form action="{{ route('exchange.cancel.order') }}" id="cancel_order_form_{{ $order->order_id }}">
-                                                                            {{csrf_field()}}
-                                                                            <input type="hidden" name="order_id" value="{{ $order->order_id }}" />
-                                                                            <input type="hidden" name="exchange_order_id" value="{{ $order->exchange_order_id }}" />
-                                                                            <input type="hidden" name="oms_store" value="{{ $order->oms_store }}" />
-                                                                            <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm active cancel-order">
-                                                                                Cancel Order
-                                                                            </button>
-                                                                        </form>
-                                                                    </a>
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                        <div class="col-sm-7">
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
-                                                                <form action="{{ route('exchange.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
-                                                                    {{csrf_field()}}
-                                                                    <input type="hidden" name="order_id" value="{{$order->order_id}}" />
-                                                                    <input type="hidden" name="oms_store" value="{{$order->oms_store}}" />
-                                                                    @if(@$old_input['order_status_id']==1)
-                                                                        @if( session('user_group_id') == 1)
-                                                                        <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                            class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->telephone}})">
-                                                                            Forward to Picking</button>
-                                                                        @endif
-                                                                    @endif
-                                                                </form>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                        </td>
-                                     </tr>
                                 @endforeach
                                 @endif
                              </tbody>
                             </table>
                         {{  $data->appends(@$old_input)->render() }}
                     </div>
-
+                 </form>
                     </div>
                 </div>
             </div>

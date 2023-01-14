@@ -105,6 +105,10 @@ Route::prefix('exchange')->middleware('auth')->group(function(){
     Route::controller(ExchangeOrdersController::class)->group(function() {
         Route::get("/","index")->name('exchange');
         Route::post('/create', 'createExchange')->name('exchange.create');
+        Route::post('/delete', 'delete')->name('exchange.delete');
+        Route::get('/pack', 'pack')->name('exchange.pack');
+        Route::post('/get/pack', 'getPack')->name('exchange.get.pack');
+        Route::post('/update/pack', 'updatePack')->name('exchange.update.pack');
         Route::get('/picking/list/awaiting', 'pickingListAwaiting')->name('exchange.picking.list.awaiting');
     });
     Route::controller(ExchangeOrdersAjaxController::class)->group(function() {
@@ -114,7 +118,8 @@ Route::prefix('exchange')->middleware('auth')->group(function(){
         Route::post('/remove/cart', 'removeCart')->name('exchange.remove.cart');
         Route::post('/set/payment/method', 'setPaymentMethod')->name('exchange.set.payment.method');
         Route::post('/set/shipping/method', 'setShippingMethod')->name('exchange.set.shipping.method');
-        Route::post('/cancel/order', 'cancelOrder')->name('exchange.cancel.order');
+        Route::post('/cancel', 'cancel')->name('exchange.cancel');
+        Route::get('/shipping/payment', 'paymentShipping')->name('exchange.shipping.payment');
         Route::post('/confirm', 'confirm')->name('exchange.confirm');
 
         Route::get('/cancel/quantity', 'cancelQuantity')->name('exchange.cancel.quantity');
