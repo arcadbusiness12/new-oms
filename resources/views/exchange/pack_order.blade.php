@@ -40,8 +40,8 @@
 </div>
 @endsection
 @push('scripts')
-@if( session('packed_order_id') > 0 )
-<input type="hidden" value="{{ URL::to('orders/print/awb?submit=awb&order_id[]='.session('packed_order_id')) }}" id="popup_url">
+@if( session('packed_order_id') != "" )
+<input type="hidden" value="{{ URL::to('exchange/print/awb?submit=awb&order_id[]='.session('packed_order_id')) }}" id="popup_url">
 <script>
 var popup_url = $('#popup_url').val();
 //alert(popup_url);

@@ -97,15 +97,15 @@
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.pack') ) active @endif"><a href="{{ route('exchange.pack') }}">Pack</a>
                                         </li>
-                                        <li><a href="login-2.html">Generate & Print AWB</a>
+                                        <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
                                         </li>
-                                        <li><a href="login.html">Ship Orders</a>
+                                        <li><a href="login.html">Ship</a>
                                         </li>
-                                        <li><a href="login-2.html">Deliver Orders</a>
+                                        <li><a href="login-2.html">Deliver</a>
                                         </li>
-                                        <li><a href="login.html">Return Orders</a>
+                                        <li><a href="login.html">Return</a>
                                         </li>
-                                        <li><a href="login-2.html">Airway Bill History</a>
+                                        <li class="@if( Request::url() == route('exchange.awb.generated') ) active @endif"><a  href="{{ route('exchange.awb.generated') }}">Airway Bill History</a>
                                         </li>
                                     </ul>
                                 </li>
