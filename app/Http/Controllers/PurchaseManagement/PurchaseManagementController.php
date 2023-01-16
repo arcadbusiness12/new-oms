@@ -46,12 +46,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Session;
+use App\Models\Oms\OmsWithdrawRequestModel;
 use Illuminate\Support\Facades\Request AS Input;
 
 class PurchaseManagementController extends Controller
 {
     const VIEW_DIR = 'PurchaseManagement';
-    const PER_PAGE = 10;
+    const PER_PAGE = 20;
     private $opencart_image_url = '';
 	private $static_option_id = 0;
 	private $website_image_source_path =  '';
@@ -2739,5 +2740,192 @@ protected function addInventoryStock($order_id, $products){
 			$OmsPurchaseOrdersStatusHistoryModel->created_by = session('user_id');
 			$OmsPurchaseOrdersStatusHistoryModel->save();
     	}
+    }
+
+    public function accounts() {
+        $suppliers = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+        $whereClause = [];
+        if(count(Input::all()) > 0){
+            if (Input::get('date_from')){
+                $whereClause[] = ['created_at', '>=', Input::get('date_from')];
+            }
+            if (Input::get('date_to')){
+                $whereClause[] = ['created_at', '<=', Input::get('date_to')];
+            }
+            if (Input::get('supplier')){
+                $whereClause[] = ['supplier', Input::get('supplier')];
+            }
+        }
+        $orders = array();
+        $orders_array = array(
+            //'OVERALL' => '',
+            'PENDING' => [1],
+            'CONFIRMED' => [2,4],
+            'SHIPPED' => [5],
+            'DELIVERED' => [6],
+        );
+        foreach ($orders_array as $orders_array_key => $orders_array_value) {
+            $purchases[$orders_array_key] = OmsPurchaseOrdersModel::with(['orderProducts', 'orderProducts.orderProductBaseQuantities','orderHistories','orderProducts.orderProductBaseQuantities.productOptions']);
+            // dd($orders_array_key);
+            if($orders_array_value){
+                $purchases[$orders_array_key] = $purchases[$orders_array_key]->whereIn('order_status_id', $orders_array_value);
+            }
+            $purchases[$orders_array_key] = $purchases[$orders_array_key]->where($whereClause)->orderBy('order_id', 'DESC')->paginate(self::PER_PAGE)->appends(Input::all());
+
+            $orders = $purchases;
+            // dd($orders[$orders_array_key]);
+            foreach($orders[$orders_array_key] as $order) {
+                $order['order_totals'] = OmsPurchaseOrdersTotalModel::select('*')->where('order_id', $order['order_id'])->orderBy('sort_order', 'ASC')->get()->toArray();
+                foreach($order['orderProducts'] as $key => $product) {
+                    $product_total = 0;
+                    $product['image'] = $this->omsProductImage($product['product_id'], 300, 300, $product['type']);
+                    
+                    foreach($product['orderProductBaseQuantities'] as $key => $quantity) {
+                        
+                        $product_total = $product_total + $quantity['total'];
+                    }
+                    $product['product_total'] = $product_total;
+                    // dd($product);
+                }
+
+            }
+            $orders[$orders_array_key]['pagination'] = $purchases[$orders_array_key]->render();
+            $orders[$orders_array_key]['total_count'] = $purchases[$orders_array_key]->total();
+        }
+        foreach ($orders_array as $key => $value) {
+            $orders[$key]['total_amount'] = OmsPurchaseOrdersModel::select(DB::Raw('SUM(total) as total_amount'))->where($whereClause)->whereIn('order_status_id', $value)->orderBy('order_id', 'DESC')->first()->total_amount;
+        }
+
+        return view(self::VIEW_DIR . '.accounts', ['orders' => $orders, "tabs" => $orders_array, "old_input" => Input::all(), "suppliers" => $suppliers]);
+           
+    }
+
+    public function accountSummaryReport() {
+        $data = array();
+        $users = OmsUserModel::where('user_group_id', 2)->get();
+        $data['users'] = array();
+        foreach ($users as $user) {
+            $data['users'][] = array(
+                'user_id'   =>  $user->user_id,
+                'name'      =>  $user->firstname . " " . $user->lastname,
+            );
+        }
+        
+        return view(self::VIEW_DIR . '.accountSummaryReport', $data);
+    }
+
+    public function accountSummaryReportAjax(Request $request) {
+        // dd($request->all());
+        $data = array();
+        if($request->all() > 0) {
+            $data['transactions'] = array();
+            $data['pagination'] = '';
+            $account_summary = OmsAccountSummaryModel::where('user_id', $request->supplier)->first();
+            if($account_summary) {
+                $data['balance'] = $account_summary->balance;
+                $transactions = OmsAccountTransactionModel::where(OmsAccountSummaryModel::FIELD_ACCOUNT_ID, $account_summary->account_id);
+                if(Input::get('order_id')){
+                    $transactions->where('order_id', Input::get('order_id'));
+                }
+                $transactions = $transactions->orderBy('transaction_id', 'DESC')->paginate(self::PER_PAGE)->appends(Input::all());
+
+                $data['transactions'] = $transactions;
+                $data['pagination'] = $data['transactions']->render();
+
+            }
+        }
+        return view(self::VIEW_DIR . '.accountSummaryReportAjax', $data);
+    }
+
+    public function withdrawRequests() {
+        $requests = OmsWithdrawRequestModel::with('user')->paginate(self::PER_PAGE)->appends(Input::all());
+        $requests['suppliers'] = OmsUserModel::select('user_id','username','firstname','lastname')->where('user_group_id', 2)->get()->toArray();
+      
+        return view(self::VIEW_DIR . '.withdraw_request')->with(compact('requests'));
+    }
+
+    public function withdrawPayment(Request $request) {
+        // dd($request->all());
+        $json = array();
+        if($request->all() > 0){
+            $user = OmsAccountSummaryModel::select('*')->where(OmsAccountSummaryModel::FIELD_USER_ID, $request->supplier)->first();
+            if(!$user){
+                $json['error'] = 'Supplier wallet not created!';
+            }
+            if(empty($json['error'])) {
+                $fileName = '';
+                if($request->hasFile('receipt')) {
+                    $file = $request->file('receipt');
+                    $destinationPath = 'public/uploads/payment-receipts';
+                    $fileName = "receipt-" . date('Y-m-d') . "-" . rand(0,100000) . "." . $file->getClientOriginalExtension();
+                    $file->move($destinationPath, $fileName);
+                }
+                $transaction = new OmsAccountTransactionModel();
+                $transaction->{OmsAccountTransactionModel::FIELD_ACCOUNT_ID} = $user->account_id;
+                $transaction->{OmsAccountTransactionModel::FIELD_ORDER_ID} = '';
+                $transaction->{OmsAccountTransactionModel::FIELD_DESCRIPTION} = "Payment from admin";
+                $transaction->{OmsAccountTransactionModel::FIELD_RECEIPT} = $fileName;
+                $transaction->{OmsAccountTransactionModel::FIELD_PAYMENT_DATE} = $request->date;
+                $transaction->{OmsAccountTransactionModel::FIELD_CREDIT} = 0;
+                $transaction->{OmsAccountTransactionModel::FIELD_DEBIT} = $request->amount;
+                $transaction->{OmsAccountTransactionModel::FIELD_BALANCE} = ($user->balance - $request->amount);
+                $transaction->save();
+                OmsAccountSummaryModel::where(OmsAccountSummaryModel::FIELD_USER_ID, $request->supplier)->update(array(OmsAccountSummaryModel::FIELD_BALANCE => ($user->balance - $request->amount)));
+    
+                $json['success'] = 'Your payment send successfully.';
+            }
+        }
+        return response()->json($json);
+    }
+
+    public function withdrawMoney(Request $request) {
+        if($request->isMethod('post')) {
+            $accountBlance = OmsAccountSummaryModel::select('balance')->where('user_id', session('user_id'))->first();
+            $withDrawRequest = new OmsWithdrawRequestModel();
+            $withDrawRequest->user_id = session('user_id');
+            $withDrawRequest->amount = $request->amount;
+            $withDrawRequest->status = 0;
+            $withDrawRequest->save();
+            return redirect('/PurchaseManagement/withdraw/money')->with('message','WIthdraw request sent to admin.');
+        }
+        $balance = OmsAccountSummaryModel::select('balance')->where(OmsAccountSummaryModel::FIELD_USER_ID, session('user_id'))->first();
+        return view(self::VIEW_DIR. '.withdrawMoney')->with(compact('balance'));
+    }
+
+    public function accountSummary() {
+        $data = [];
+        $accountSummary = OmsAccountSummaryModel::where('user_id', session('user_id'))->first();
+        $data['balance'] = 0;
+        $data['transactions'] = [];
+        $data['pagination'] = '';
+        if($accountSummary) {
+            $data['balance'] = $accountSummary->balance;
+            $data['transactions'] = OmsAccountTransactionModel::where('account_id', $accountSummary->account_id)->orderBy('transaction_id', 'DESC')->paginate(self::PER_PAGE)->appends(Input::all());
+            $data['pagination'] = $data['transactions']->render();
+        }
+        return view(self::VIEW_DIR. '.supplierAccountSummary', $data);
+    }
+
+    public function updateWithdrawRequestStatus(Request $request) {
+        // dd($request->all());
+        $accountSummary = OmsAccountSummaryModel::where('user_id', $request->user_id)->first();
+        if($request->submit == 'approve') {
+            $balance = $accountSummary->balance - $request->amount;
+            $transaction = new OmsAccountTransactionModel();
+            $transaction->{OmsAccountTransactionModel::FIELD_ACCOUNT_ID} = $accountSummary->account_id;
+            $transaction->{OmsAccountTransactionModel::FIELD_ORDER_ID} = '';
+            $transaction->{OmsAccountTransactionModel::FIELD_DESCRIPTION} = 'Withdraw request approved';
+            $transaction->{OmsAccountTransactionModel::FIELD_CREDIT} = 0;
+            $transaction->{OmsAccountTransactionModel::FIELD_DEBIT} = $request->amount;
+            $transaction->{OmsAccountTransactionModel::FIELD_BALANCE} = $balance;
+            if($transaction->save()) {
+                $accountSummary->balance = $balance;
+                OmsWithdrawRequestModel::where('request_id', $request->request_id)->update(['status' => 1]);
+            }
+        }
+        if($request->submit == 'reject') {
+            OmsWithdrawRequestModel::where('request_id', $request->request_id)->update(array('status' => 2));
+        }
+        return redirect('/PurchaseManagement/withdraw/requests')->with('message','Status changed successfully.');
     }
 }

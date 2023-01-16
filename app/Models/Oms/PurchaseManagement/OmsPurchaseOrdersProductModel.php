@@ -25,4 +25,8 @@ class OmsPurchaseOrdersProductModel extends Model
         return $this->hasMany(OmsPurchaseOrdersProductQuantityModel::class, 'order_id', 'order_id');
     }
 
+    public function orderProductBaseQuantities() {
+        return $this->hasMany(OmsPurchaseOrdersProductQuantityModel::class, 'order_product_id', 'order_product_id');
+    }
+
 }
