@@ -68,7 +68,7 @@
                             <td colspan="6">
                                 <div class="row_update_picked">
                                     <div class="col-xs-12 col-sm-6 col-grid text-center">
-                                        <button type="submit" name="submit" id="submit" class="btn btn-success active" value="update_picked" data-value="<?php echo 'PICK'.$order['order_id'] ?>" style="margin-top: 45px;">Shipment Picked</button>
+                                        <button type="submit" name="submit" id="submit" class="btn btn-success active" value="update_picked" data-value="<?php echo 'PICK'.$order['order_id'] ?>" style="margin-top: 45px;">Click To Pack</button>
                                     </div>
                                     <div class="col-xs-12 col-sm-6 col-grid text-center">
                                         <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="PICK_ORDER" jsbarcode-textmargin="0" jsbarcode-fontoptions="bold" jsbarcode-height="100" jsbarcode-displayValue="false"></svg>

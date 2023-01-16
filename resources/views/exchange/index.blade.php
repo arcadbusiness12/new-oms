@@ -142,16 +142,18 @@
                                                         <div class="col-sm-7">
                                                         </div>
                                                         <div class="col-sm-2">
-                                                            <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
-                                                                <form action="{{ route('exchange.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
-                                                                    {{csrf_field()}}
-                                                                    <input type="hidden" name="order_id" value="{{$order->order_id}}" />
-                                                                    <input type="hidden" name="oms_store" value="{{ $order->store }}" />
-                                                                    <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                            class="btn btn-success btn-sm forward_order_to_oms active float-right">
-                                                                            Forward to Picking</button>
-                                                                </form>
-                                                            </a>
+                                                            @if( !$order->omsExchange )
+                                                                <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
+                                                                    <form action="{{ route('exchange.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
+                                                                        {{csrf_field()}}
+                                                                        <input type="hidden" name="order_id" value="{{$order->order_id}}" />
+                                                                        <input type="hidden" name="oms_store" value="{{ $order->store }}" />
+                                                                        <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
+                                                                                class="btn btn-success btn-sm forward_order_to_oms active float-right">
+                                                                                Forward to Picking</button>
+                                                                    </form>
+                                                                </a>
+                                                            @endif
                                                         </div>
                                                     </div>
                                         </td>

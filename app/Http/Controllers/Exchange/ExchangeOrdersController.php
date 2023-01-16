@@ -3,8 +3,13 @@ namespace App\Http\Controllers\Exchange;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\DressFairOpenCart\ExchangeOrders\ExchangeOrdersModel;
+use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
+use App\Models\Oms\OmsActivityLogModel;
+use App\Models\Oms\OmsActivityModel;
 use App\Models\Oms\OmsExchangeOrderAttachment;
 use App\Models\Oms\OmsExchangeOrdersModel;
 use App\Models\Oms\OmsExchangeProductModel;
@@ -15,6 +20,7 @@ use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\OmsOrderStatusModel;
 use App\Models\Oms\OmsPlaceExchangeModel;
 use App\Models\Oms\OmsUserModel;
+use App\Models\Oms\ShippingProvidersModel;
 use DB;
 use Illuminate\Support\Facades\URL;
 use App\Models\Oms\storeModel;
@@ -173,7 +179,7 @@ class ExchangeOrdersController extends Controller
             // ->where('picklist_print', 1)
             // ->exists();
 
-            $order = OmsPlaceExchangeModel::with(['orderProducts.product','orderProducts.productOption','omsStore'])
+            $order = OmsPlaceExchangeModel::with(['exchangeProducts.product','exchangeProducts.productOption','omsStore'])
             ->whereHas('omsExchange',function($query){
                 $query->where('oms_order_status', 0)->where('picklist_print', 1);
             })
@@ -184,7 +190,7 @@ class ExchangeOrdersController extends Controller
             // echo "<pre>"; print_r(mixed:value, bool:return=false); die;
             // dd(Input::get('packed'));
             if($order){
-                foreach ($order->orderProducts as $key => $orderProduct) {
+                foreach ($order->exchangeProducts as $key => $orderProduct) {
                     //entry in packed quantity table
                     $quantity         = $orderProduct->quantity;
                     $product_id       = $orderProduct->product_id;
@@ -205,26 +211,88 @@ class ExchangeOrdersController extends Controller
                 }
 
                     //UPDATE OMS ORDER STATUS
-                $omsOrder = OmsOrdersModel::where('order_id', $order_id)->where('store', $store)->first();
-                $omsOrder->oms_order_status = 1;
+
+                $omsOrder = OmsExchangeOrdersModel::where('order_id', $order_id)->where('store', $store)->first();
+                $omsOrder->oms_order_status = 1; //1 for packed exchange
                 $omsOrder->updated_at = \Carbon\Carbon::now();
                 $omsOrder->save();
-                OmsActivityLogModel::newLog($order_id,3,$store); //3 is for pack order
+                OmsActivityLogModel::newLog($order_id,13,$store); //13 is for pack exchange
                 //create airwaybill
-                // $awb_response = app(\App\Http\Controllers\Orders\OrdersAjaxController::class)->forwardForShipping();
-                Session::flash('message', 'Order product packed successfully.');
+                // $awb_response = app(\App\Http\Controllers\Orders\ExchangeOrdersAjaxController::class)->forwardForShipping();
+                Session::flash('message', 'Exchange product packed successfully.');
                 Session::flash('alert-class', 'alert-success');
-                return redirect('/orders/pack/order')->with('packed_order_id',$order_id);
+                return redirect('/exchange/pack')->with('packed_order_id',$order_id);
             }else{
                 Session::flash('message', "Order product packed in 'Picklist' status only.");
                 Session::flash('alert-class', 'alert-warning');
-                return redirect('/orders/pack/order');
+                return redirect('/exchange/pack');
             }
         }else{
             Session::flash('message', 'Something went wrong, please try again!');
             Session::flash('alert-class', 'alert-warning');
-            return redirect('/orders/pack/order');
+            return redirect('/exchange/pack');
         }
+    }
+    public function awbGenerated(){
+        $orders = array();
+        if( session('user_group_id') == 5 || session('user_group_id') == 6 ){
+            $ordersStatus = OmsOrderStatusModel::whereIn('order_status_id',[3,15,25])->get();
+            if( !RequestFacad::all() ){
+                RequestFacad::merge(['order_status_id' => 3]);
+            }
+        }else{
+            $ordersStatus = OmsOrderStatusModel::get();
+        }
+
+        $omsOrders = OmsExchangeOrdersModel::with(['airway_bills','shipping_provider'])
+        ->orderBy(OmsExchangeOrdersModel::UPDATED_AT, 'DESC')
+        ->groupBy('oms_exchange_orders.order_id');
+        if(RequestFacad::get('order_id')){
+            $omsOrders = $omsOrders->where('oms_orders.order_id', RequestFacad::get('order_id'));
+        }
+        if(RequestFacad::get('order_status_id')){
+            $omsOrders = $omsOrders->where('oc_order.order_status_id', RequestFacad::get('order_status_id'));
+        }
+        if (RequestFacad::get('shipping_provider_id')){
+            $omsOrders = $omsOrders->where('oms_orders.'.OmsOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER, RequestFacad::get('shipping_provider_id'));
+        }
+        if (RequestFacad::get('date_from') && RequestFacad::get('date_to')){
+            $date_from = Carbon::createFromFormat("Y-m-d", RequestFacad::get('date_from'))->toDateString();
+            $date_to = Carbon::createFromFormat("Y-m-d",RequestFacad::get('date_to'))->toDateString();
+
+            $omsOrders = $omsOrders->whereDate('awb.'.ExchangeAirwayBillTrackingModel::CREATED_AT, '>=', $date_from)
+            ->whereDate('awb.'.ExchangeAirwayBillTrackingModel::CREATED_AT, '<=', $date_to);
+        }
+        if (RequestFacad::get('awb_number')){
+            $omsOrders = $omsOrders->where('awb.'.ExchangeAirwayBillTrackingModel::FIELD_AIRWAY_BILL_NUMBER, RequestFacad::get('awb_number'));
+        }
+        if( RequestFacad::get('date_modified') != "" ){
+          $omsOrders = $omsOrders->whereDate('oms_orders.updated_at',RequestFacad::get('date_modified'));
+        }
+        $omsOrders = $omsOrders->paginate(20)->appends(RequestFacad::all());
+        // dd($omsOrders->toArray());
+        $shippingProviders = ShippingProvidersModel::orderBy('is_active', 'DESC')->get();
+        $ordersStatus      = OmsOrderStatusModel::all();
+
+        return view(self::VIEW_DIR . ".airway_bill_generated_orders",compact('omsOrders','shippingProviders','ordersStatus'));
+    }
+    public function generateAwb(){
+        $ordersStatus = OmsOrderStatusModel::all();
+        $shippingProviders = ShippingProvidersModel::where('is_active', 1)->get();
+        return view(self::VIEW_DIR . ".generate_awb", ["orderStatus" => $ordersStatus, "shippingProviders" => $shippingProviders]);
+    }
+    public function awb(){
+        $orderIds = Session::get('orderIdsForAWBGenerate')[0];
+        Session::put('orderIdsForAWBGenerate', array());
+        $orders = collect();
+        $orders = OmsPlaceExchangeModel::with(['exchangeProducts.product'])->whereIn('order_id',$orderIds)->get();
+        //// Need enhancement
+        $order_tracking = ExchangeAirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
+        // dd($order_tracking->toArray());
+        $order_tracking_ids = $order_tracking->pluck(ExchangeAirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
+        $shipping_providers = ShippingProvidersModel::whereIn('shipping_provider_id', $order_tracking_ids)->get();
+
+        return view(self::VIEW_DIR . ".awb", ['orders' => $orders, 'order_tracking' => $order_tracking, 'shipping_providers' => $shipping_providers]);
     }
     protected function getOrdersWithImage($orders){
         foreach ($orders as $key => $order) {

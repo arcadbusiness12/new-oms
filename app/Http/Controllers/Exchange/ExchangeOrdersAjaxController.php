@@ -7,6 +7,7 @@ use App\Models\Oms\OmsExchangeProductModel;
 use App\Models\Oms\OmsExchangeTotalModel;
 use App\Models\Oms\OmsPlaceExchangeModel;
 use App\Models\Oms\Customer;
+use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOptionModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
@@ -22,8 +23,12 @@ use App\Models\Oms\OmsOrderStatusInterface;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\PaymentMethodModel;
 use App\Models\Oms\ShippingMethodModel;
+use App\Models\Oms\ShippingProvidersModel;
+use App\Platform\Golem\OrderGolem;
+use App\Platform\ShippingProviders\ShippingProvidersInterface;
 use Illuminate\Support\Facades\Request AS Input;
 use DB;
+use Session;
 class ExchangeOrdersAjaxController extends Controller
 {
     const VIEW_DIR = 'exchange';
@@ -137,6 +142,264 @@ class ExchangeOrdersAjaxController extends Controller
             return array('success' => false, 'data' => array(), 'error' => array('message' => $e->getMessage()));
         }
     }
+    public function getExchangeDetail($orderId = '', $amount = 0) {
+		try
+		{
+			$orderId = (Input::get('orderId')) ? Input::get('orderId') : $orderId; // if ajax post or same controller call ref: line# 542
+            $orderId = str_replace("-1","",$orderId);
+			$order = [];
+
+			$omsOrder = OmsExchangeOrdersModel::where("order_id", $orderId)->get();
+            $shipping_name = "";
+            if ( $omsOrder->count() > 0 ) {
+                $store = $omsOrder[0]->store;
+                if( $omsOrder[0]->oms_order_status == 5 ){
+                    return "<script>alert('$orderId is cancelled.')</script>";
+                }
+                // else if( $omsOrder[0]->picklist_print != 1 ){
+                //     return "<script>alert('Change picklist print for $orderId on packing Box.')</script>";
+                // }
+                $order = OmsPlaceExchangeModel::with(['exchangeProducts.product'])->where("order_id",$orderId)->where('store',$store)->first();
+                // $order->oms_order_store = $omsOrder[0]->store;
+				// $order->orderd_products = $this->getOrderProductWithImage($order->orderd_products,$store);
+
+				// $omsOrderStatusMap = $omsOrder->mapWithKeys(function ($item) {
+				// 	return [$item[OmsOrdersModel::FIELD_ORDER_ID] => $item[OmsOrdersModel::FIELD_OMS_ORDER_STATUS]];
+				// });
+				// $omsOrderStatus = $omsOrderStatusMap->all();
+                //courier details
+                $shipping_name = "";
+                // $shipping_name =  OmsOrdersModel::shippingName($orderId,$store);
+                // if( $shipping_name != "" ){
+                //     $shipping_name = "<i><small>GNRT</small></i> - ".$shipping_name;
+                // }else{
+                //     $shipping_name = ShippingProvidersModel::select('name')->where("shipping_provider_id",$omsOrder[0]->picklist_courier)->first();
+                //     if($shipping_name){
+                //         $shipping_name = "<i><small>ASGN</small></i> - ".$shipping_name->name;
+                //     }
+                // }
+			}
+            // dd($order->toArray());
+			return view(self::VIEW_DIR . ".exchange_detail_for_ship", ["order" => $order, "file_amount" => $amount,'shipping_name'=>$shipping_name]);
+		} catch (\Exception $e) {
+			return $e;
+		}
+	}
+    public function forwardForShipping() {
+        // dd( RequestFacad::all() );
+        $orderIDs         = ( Input::get('orderIDs') && count(Input::get('orderIDs')) > 0 ) ? Input::get('orderIDs') : [Input::get('order_id')];
+        $order_id  = Input::has('order_id') ? Input::get('order_id') : '';
+        $orderIDs = array_unique($orderIDs);
+        $awb_from_packing = 0;
+        if( $order_id != "" && $order_id > 0 ){
+        $awb_from_packing = 1;
+
+        $get_courier_data = OmsExchangeOrdersModel::where("order_id", $order_id)->first();
+        // dd( $get_courier_data->toArray() );
+        if($get_courier_data){
+            $shippingProviders =  $get_courier_data->assignedCourier->name; // Shipping provider Name // GetGive , MaraXpress etc
+            $shippingProviderID = $get_courier_data->assignedCourier->shipping_provider_id;  // Shipping Provider ID
+        }
+
+        }else{
+            $shippingProviderInput = explode('_', Input::get('shipping_providers'));
+            $shippingProviders = $shippingProviderInput[1]; // Shipping provider Name // GetGive , MaraXpress etc
+            $shippingProviderID = $shippingProviderInput[0]; // Shipping Provider ID
+        }
+
+        $assigned_courier_data = OmsExchangeOrdersModel::whereIn("order_id", $orderIDs)->get();
+            //echo "<pre>"; print_r($orderIDs);
+        // echo "<pre>"; print_r($assigned_courier_data);
+        // if( $assigned_courier_data->count() > 0 ){
+        //     $courier_msg = "";
+        //     foreach( $assigned_courier_data as $key => $cvalue ){
+        //         $courier_msg .= $cvalue->order_id." is Assigned to ".@$cvalue->assigned_courier->name.", can't generate to $shippingProviders<br>";
+        //     }
+        //     return response()->json(array(
+        //                 'success' => false,
+        //                 'data' => "<div class=\"alert bg-red\">{$courier_msg}</div>",
+        //             ));
+        // }
+        //further processing
+		Session::push('orderIdsForAWBGenerate', $orderIDs);
+		// try
+		// {
+			// Value from Ajax form
+			if (empty($shippingProviders)) {
+				throw new \Exception("Please select Shipping Provider");
+			}
+			if (empty($orderIDs)) {
+				throw new \Exception("Please select an Order to Generate AWB");
+			}
+
+			// echo "<pre>"; print_r($shippingProviderInput); die;
+
+			if ( !empty($shippingProviders) ) {
+
+
+			    $orders = OmsExchangeOrdersModel::select('oms_exchange_order_id','oms_order_status','last_shipped_with_provider',"order_id","store")->whereIn("order_id",$orderIDs)->get();
+
+
+				$ordersGolemArray = [];
+                $omsOrderIDs = [];
+				foreach ($orders as $omsOrder) {
+					// echo "<pre>"; print_r($order->toArray()); die;
+					// $omsOrder = OmsOrdersModel::select('oms_order_status','last_shipped_with_provider',"order_id")->where(OmsOrdersModel::FIELD_ORDER_ID, $order->order_id)->first();
+					if($omsOrder->oms_order_status != OmsOrderStatusInterface::OMS_ORDER_STATUS_PACKED){
+						throw new \Exception("AWB only Generate in 'Packed' Status, $omsOrder->order_id");
+					}
+
+                    if( $omsOrder->last_shipped_with_provider == $shippingProviderID ){
+                      throw new \Exception("AWB already Generated for order # $omsOrder->order_id");
+                    }
+
+					$shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $shippingProviders;
+					if (!class_exists($shippingCompanyClass)) {
+						throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
+					}
+                    $omsOrderIDs[$omsOrder->order_id] = $omsOrder->oms_exchange_order_id;
+                    $store = $omsOrder->store;
+
+                    $order = OmsPlaceExchangeModel::with(['exchangeProducts.product'])->where('order_id',$omsOrder->order_id)->first();
+
+					$shipping = new $shippingCompanyClass();
+
+					// Initialize Order Golem to make a unified order object representation in order to send data to all shipping providers
+					$orderGolem = new OrderGolem();
+					// $orderGolem->setOrderID($order->{OrdersModel::FIELD_ORDER_ID});
+					if ($shippingProviders === 'ShamilExpress') {
+						if ($order->invoice_no != 0) {
+							$orderGolem->setInvoiceNumber($order->{'invoice_prefix'} . $order->{'invoice_no'} . '-BA');
+						} else {
+							$data = file_get_contents($this->APP_OPENCART_URL . 'index.php?route=account/order/createinvoiceno&order_id=' . $order->order_id . '&type=order');
+							$invoice_no = json_decode($data, true);
+							$orderGolem->setInvoiceNumber($invoice_no['invoice_no'] . '-BA');
+						}
+						$orderGolem->setOrderDate($order->{'date_added'});
+					} else if ($shippingProviders === 'LeopardsExpress') {
+						$orderGolem->setCustomerCoutry($order->{'payment_country'});
+						$orderGolem->setToCompany($order->{'payment_company'});
+					} else if ($shippingProviders === 'FetchrExpress') {
+						$orderGolem->setCustomerCoutry($order->{'payment_country'});
+					} else if ($shippingProviders === 'Jeebly') {
+						$orderGolem->setcustomerPincode($order->{'shipping_postcode'});
+					}
+					$orderGolem->setOrderID($order->order_id);
+					$name = $order->firstname . " " . $order->lastname;
+					$orderGolem->setCustomerName($name);
+
+					$orderGolem->setCustomerMobileNumber($order->mobile);
+					$orderGolem->setOrderTotalAmount($order->total_amount);
+
+					$shppingAddress = $order->shipping_address_1 . " " .
+					$order->shipping_address_2;
+
+					$orderGolem->setCustomerAddress($shppingAddress);
+					$orderGolem->setCustomerCity($order->shipping_city);
+					$orderGolem->setPaymentMethod($order->payment_method_id);
+					$orderGolem->setCashOnDeliveryAmount($order->total_amount);
+					$orderGolem->setSpecialInstructions($order->comment);
+					$orderGolem->setCustomerEmail($order->email);
+					$orderGolem->setCustomerArea($order->shipping_city_area);
+					$orderGolem->setCustomerAlternateNumber($order->alternate_number);
+					$productDesc = "";
+					$qty = 0;
+					foreach ($order->exchangeProducts as $product) {
+						$productDesc .= "[" . $product->model;
+						$productDesc .= " (QTY:{ $product->quantity })";
+                        if( $product->product?->option_value > 0  ){
+                            $productDesc .= " (" . $product->option_name . ":" . $product->option_value . ")";
+                        }
+                        $productDesc .= " (Color :" . $product->product->option_name . ")";
+
+						$productDesc .= "] ";
+						$qty = $qty + $product->quantity;
+					}
+					// echo $shippingProviders; die;
+
+					$orderGolem->setTotalItemsQuantity($qty);
+					$orderGolem->setGoodsDescription($productDesc);
+					$orderGolem->setStore($store);
+					$ordersGolemArray[] = $orderGolem;
+				}
+				// echo "<pre>"; print_r($orderGolem); die("on main page");
+				$response = $shipping->forwardOrder($ordersGolemArray);
+				// echo "<pre>"; print_r($omsOrderIDs); die("on main page");
+				$shippingProviderResposne = [];
+				foreach ($response as $orderID => $airwayBillNumber) {
+					if (!empty($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER])) {
+						$omsUpdateStatus = OmsExchangeOrdersModel::find($omsOrderIDs[$orderID]);
+
+						$awbTracking = new ExchangeAirwayBillTrackingModel();
+						// Store Oms ID
+						$awbTracking->{ExchangeAirwayBillTrackingModel::FIELD_OMS_ORDER_ID} = $omsOrderIDs[$orderID];
+						// Store Opencart Order IDs
+						$awbTracking->{ExchangeAirwayBillTrackingModel::FIELD_ORDER_ID} = $orderID;
+						// Store Shipping Provider ID
+						$awbTracking->{ExchangeAirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID} = $shippingProviderID;
+						$awbTracking->{ExchangeAirwayBillTrackingModel::FIELD_AIRWAY_BILL_NUMBER} = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+						$awbTracking->{ExchangeAirwayBillTrackingModel::FIELD_AIRWAY_BILL_CREATION_ATTEMPT} = 1;
+                        if( isset( $airwayBillNumber['pdf_print_link'] ) ){
+                                    $awbTracking->pdf_print_link = $airwayBillNumber['pdf_print_link'];
+                        }
+                        if( isset( $airwayBillNumber['sortingCode'] ) ){
+                                    $awbTracking->sortingCode = $airwayBillNumber['sortingCode'];
+                        }
+						$awbTracking->store = $omsUpdateStatus->store;
+						$awbTracking->save(); // save the tracking information in table
+						// Change the OMS Order STATUS TO AIRWAY_BILL_GENERATED
+						$omsUpdateStatus->{OmsExchangeOrdersModel::FIELD_OMS_ORDER_STATUS} = OmsOrderStatusInterface::OMS_ORDER_STATUS_AIRWAY_BILL_GENERATED;
+						$omsUpdateStatus->{OmsExchangeOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = $shippingProviderID;
+						$omsUpdateStatus->save();
+
+						OmsActivityLogModel::newLog($orderID,15,$omsUpdateStatus->store); //15 is for Exchange Generate Airwaybill order
+						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+					} else {
+						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::MESSAGE_FROM_PROVIDER];
+					}
+				}
+			} else {
+				throw new \Exception("Please select the status to update after airwaybill Generation");
+			}
+		// } catch (\Exception $ex) {
+		// 	return response()->json(array(
+		// 		'success' => false,
+		// 		'data' => "<div class=\"alert bg-red\">{$ex->getMessage()}</div>",
+		// 	));
+		// }
+		// dd($shippingProviderResposne);
+
+		return response()->json(array(
+			'success' => true,
+			'data' => view(self::VIEW_DIR . ".shipping_providers_response", ["response" => $shippingProviderResposne])->render(),
+		));
+	}
+    public function printAwb() {
+        // dd(RequestFacad::all());
+		if(Input::get('submit') == 'awb' && Input::get('order_id')){
+			$orderIds = Input::get('order_id');
+            $orders = collect();
+            if( is_array($orderIds) && count($orderIds) > 0 ){
+                foreach( $orderIds as $order_id ){
+                    $order = OmsPlaceExchangeModel::with(['exchangeProducts.product'])->where("order_id",$order_id)->first();
+                    $orders->push($order);
+                }
+            }
+			// $order_data = OrdersModel::with(['status', 'orderd_products'])
+			// ->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
+			// ->get();
+			// echo "<pre>"; print_r($order_data->toArray());
+
+			$order_tracking = ExchangeAirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
+			$order_tracking_ids = $order_tracking->pluck(ExchangeAirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
+			// echo "<pre>"; print_r($order_tracking_ids->toArray()); die;
+			$shipping_providers = ShippingProvidersModel::whereIn('shipping_provider_id', $order_tracking_ids)->get();
+
+			return view(self::VIEW_DIR . ".awb_print", compact('orders','order_tracking','shipping_providers'));
+		}
+
+		return redirect('/');
+	}
     public function cancelQuantity(){
         $this->availableInventoryQuantity(1115552,1);
     }
