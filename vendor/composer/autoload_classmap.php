@@ -209,6 +209,7 @@ return array(
     'App\\Models\\Oms\\ProductModelingPostingModel' => $baseDir . '/app/Models/Oms/ProductModelingPostingModel.php',
     'App\\Models\\Oms\\ProductPhotographyModel' => $baseDir . '/app/Models/Oms/ProductPhotographyModel.php',
     'App\\Models\\Oms\\ProductPhotographyPostingModel' => $baseDir . '/app/Models/Oms/ProductPhotographyPostingModel.php',
+    'App\\Models\\Oms\\PromotionProductPaidPostModel' => $baseDir . '/app/Models/Oms/PromotionProductPaidPostModel.php',
     'App\\Models\\Oms\\PromotionProductPostModel' => $baseDir . '/app/Models/Oms/PromotionProductPostModel.php',
     'App\\Models\\Oms\\PromotionPromoCategoryVideosPostModel' => $baseDir . '/app/Models/Oms/PromotionPromoCategoryVideosPostModel.php',
     'App\\Models\\Oms\\PromotionScheduleSettingMainModel' => $baseDir . '/app/Models/Oms/PromotionScheduleSettingMainModel.php',

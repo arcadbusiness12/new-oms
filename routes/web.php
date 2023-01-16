@@ -250,7 +250,7 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::post('/withdraw/payment', 'withdrawPayment')->name('withdraw.payment');
         Route::get('/update/withdraw/request/status', 'updateWithdrawRequestStatus')->name('update.withdraw.request.status');
         Route::any('/withdraw/money', 'withdrawMoney')->name('withdraw.money');
-        Route::get('/account/summary', 'accountSummary')->name('account.summary');
+        Route::get('/supplier/account/summary', 'accountSummary')->name('account.summary');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');

@@ -764,6 +764,7 @@ class ComposerStaticInit832141bf3196b9d98a8c922257cdaea2
         'App\\Models\\Oms\\ProductModelingPostingModel' => __DIR__ . '/../..' . '/app/Models/Oms/ProductModelingPostingModel.php',
         'App\\Models\\Oms\\ProductPhotographyModel' => __DIR__ . '/../..' . '/app/Models/Oms/ProductPhotographyModel.php',
         'App\\Models\\Oms\\ProductPhotographyPostingModel' => __DIR__ . '/../..' . '/app/Models/Oms/ProductPhotographyPostingModel.php',
+        'App\\Models\\Oms\\PromotionProductPaidPostModel' => __DIR__ . '/../..' . '/app/Models/Oms/PromotionProductPaidPostModel.php',
         'App\\Models\\Oms\\PromotionProductPostModel' => __DIR__ . '/../..' . '/app/Models/Oms/PromotionProductPostModel.php',
         'App\\Models\\Oms\\PromotionPromoCategoryVideosPostModel' => __DIR__ . '/../..' . '/app/Models/Oms/PromotionPromoCategoryVideosPostModel.php',
         'App\\Models\\Oms\\PromotionScheduleSettingMainModel' => __DIR__ . '/../..' . '/app/Models/Oms/PromotionScheduleSettingMainModel.php',
