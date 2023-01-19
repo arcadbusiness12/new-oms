@@ -9,6 +9,7 @@
 .sidebar .menu .sidebar-menu li.active>:first-child {
     /* color: #2196f3; */
     color: #25bd1f;
+    font-weight: 600;
 }
 
 .treeview ul li {

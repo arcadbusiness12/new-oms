@@ -157,7 +157,7 @@
                             </ul>
                         </li>
 
-                        <li class="treeview @if( str_contains(Request::url(), 'PurchaseManagement/') && strpos(Request::url(), 'withdraw/money') === false && strpos(Request::url(), 'account/summary') === false)  active @endif">
+                        <li class="treeview @if( str_contains(Request::url(), 'PurchaseManagement/') && strpos(Request::url(), 'withdraw/money') === false && strpos(Request::url(), '/supplier/account/summary') === false)  active @endif">
                             <a href="#">
                                 <i class="icon icon icon-shopping-bag s-24"></i>
                                 Purchase Management
@@ -223,7 +223,7 @@
                             </ul>
                         </li>
 
-                        <li class="treeview @if(str_contains(Request::url(), 'PurchaseManagement/withdraw/money') || str_contains(Request::url(), 'PurchaseManagement/account/summary')) active @endif">
+                        <li class="treeview @if(str_contains(Request::url(), 'PurchaseManagement/withdraw/money') || str_contains(Request::url(), 'PurchaseManagement/supplier/account/summary')) active @endif">
                             <a href="javascript:void(0)" class="menu-toggle waves-effect waves-block">
                                <i class="icon icon icon-payment s-24"></i>
                                <span>Payments</span>
@@ -233,7 +233,7 @@
                              <li class="@if(strpos(Request::url(), 'PurchaseManagement/withdraw/money') !== false) active @endif">
                                  <a href="{{route('withdraw.money')}}"><i class="icon icon-money"></i>Withdraw</a>
                              </li>
-                             <li class="@if(strpos(Request::url(), 'PurchaseManagement/account/summary') !== false) active @endif">
+                             <li class="@if(strpos(Request::url(), 'PurchaseManagement/supplier/account/summary') !== false) active @endif">
                                 <a href="{{route('account.summary')}}"><i class="icon icon-money"></i>Balance</a>
                             </li>
                          </ul>
@@ -342,6 +342,134 @@
                                 </li>
                             </ul>
                         </li>
+
+
+
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
+                                <i class=" icon-angle-left  pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="panel-page-users.html"><i class="icon icon-store_mall_directory"></i>Stock</a>
+                                </li>
+                                <li><a href="#"><i class="icon icon-add_shopping_cart"></i>Sales<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Today Sale</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Report</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Sale Report</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Courier Report</a>
+                                        </li>
+
+                                    </ul>
+                                </li>
+
+                                <li><a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Daily Work</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Assigned Custom Duties</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Custom Duties Report</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">New Product Image</a>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                <li><a href="#"><i class="icon icon-document-code2"></i>IT Team<i
+                                    class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        
+                                        <li><a href="#"><i class="icon icon-document-code"></i>Web Developer<i
+                                            class=" icon-angle-left  pull-right"></i></a>
+                                        <ul class="treeview-menu">
+                                            <li><a href="panel-page-users.html">Assigned Custom Duties</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html">Smart Look</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html">R&D</a>
+                                            </li>
+
+                                        </ul>
+                                    </li>
+                                    <li><a href="#"><i class="icon icon-document-code"></i>App Developer<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                        <ul class="treeview-menu">
+                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Assigned Custom Duties</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Smart Look</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>R&D</a>
+                                            </li>
+
+                                        </ul>
+                                    </li>
+                                    </ul>
+                                </li>
+
+                                <li><a href="#"><i class="icon icon-joomla"></i>Marketting<i
+                                    class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Save Ads Chat</a>
+                                        </li>
+                                        <li><a href="#">Regular Duties<i
+                                            class=" icon-angle-left  pull-right"></i></a>
+                                            <ul class="treeview-menu">
+                                                <li><a href="panel-page-users.html">Update & Design</a>
+                                                </li>
+
+                                            </ul>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Smart Look</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Product Listing</a>
+                                        </li>
+                                        <li><a href="#">Ads Updates<i
+                                            class=" icon-angle-left  pull-right"></i></a>
+                                        <ul class="treeview-menu">
+                                            <li><a href="panel-page-users.html">Conversion Funnel</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html">Conversion Funnel 2</a>
+                                            </li>
+                                        </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                <li><a href="#"><i class="icon icon-file-photo-o"></i>Photography<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Product Shoot</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Setting</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                
+                                <li><a href="#"><i class="icon icon-settings_input_svideo"></i>Duties Setting<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Duties</a>
+                                        </li>
+                                        <li><a href="panel-page-users.html">Activity</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><a href="panel-page-users.html"><i class="icon icon-newspaper"></i>Salary Report</a>
+                                </li>
+                                <li><a href="panel-page-users.html"><i class="icon icon-newspaper"></i>Work Report</a>
+                                </li>
+                                <li><a href="panel-page-users.html"><i class="icon icon-group_work"></i>Irregular Custom Duties</a>
+                                </li>
+                            </ul>
+                        </li>
+
                         <li class="treeview"><a href="#"><i class="icon icon-all_out s-24"></i>Leavs<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
