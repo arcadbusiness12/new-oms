@@ -99,11 +99,10 @@
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
                                         </li>
-                                        <li><a href="login.html">Ship</a>
+                                        <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
                                         </li>
-                                        <li><a href="login-2.html">Deliver</a>
                                         </li>
-                                        <li><a href="login.html">Return</a>
+                                        <li class="@if( Request::url() == route('exchange.return') ) active @endif"><a href="{{ route('exchange.return') }}">Return</a>
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.awb.generated') ) active @endif"><a  href="{{ route('exchange.awb.generated') }}">Airway Bill History</a>
                                         </li>
@@ -112,11 +111,11 @@
                                 <li><a href="#"><i class="icon icon-undo"></i>Return<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-invoice.html">All Orders</a>
+                                        <li class="@if( Request::url() == route('return') ) active @endif"><a href="{{ route('return') }}">All Orders</a>
                                         </li>
-                                        <li><a href="panel-page-no-posts.html">Returns Deliver Orders</a>
+                                        <li class="@if( Request::url() == route('return') ) active @endif"><a href="panel-page-no-posts.html">Returns Deliver</a>
                                         </li>
-                                        <li><a href="panel-page-no-posts.html">Airway Bill History</a>
+                                        <li class="@if( Request::url() == route('return.awb.generated') ) active @endif"><a href="{{ route('return.awb.generated') }}">Airway Bills</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -214,7 +213,7 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/accounts') !== false) active @endif">
                                     <a href="{{route('accounts')}}"><i class="icon icon-account_balance"></i>Accounts</a>
                                 </li>
-                                
+
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/account/summary/report') !== false) active @endif">
                                     <a href="{{route('account.summary.report')}}"><i class="icon icon-report"></i>Account Summary Report</a>
                                 </li>

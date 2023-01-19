@@ -19,9 +19,13 @@ use App\Models\Oms\OmsExchangeOrderAttachment;
 use App\Models\Oms\OmsExchangeOrdersModel;
 use App\Models\Oms\OmsExchangeReturnProductModel;
 use App\Models\Oms\OmsOrderProductModel;
+use App\Models\Oms\OmsOrdersModel;
 use App\Models\Oms\OmsOrderStatusInterface;
+use App\Models\Oms\OmsPlaceOrderModel;
+use App\Models\Oms\OmsReturnOrdersModel;
 use App\Models\Oms\OmsSettingsModel;
 use App\Models\Oms\PaymentMethodModel;
+use App\Models\Oms\ReturnAirwayBillTrackingModel;
 use App\Models\Oms\ShippingMethodModel;
 use App\Models\Oms\ShippingProvidersModel;
 use App\Platform\Golem\OrderGolem;
@@ -29,6 +33,7 @@ use App\Platform\ShippingProviders\ShippingProvidersInterface;
 use Illuminate\Support\Facades\Request AS Input;
 use DB;
 use Session;
+use Carbon\Carbon;
 class ExchangeOrdersAjaxController extends Controller
 {
     const VIEW_DIR = 'exchange';
@@ -189,6 +194,7 @@ class ExchangeOrdersAjaxController extends Controller
         // dd( RequestFacad::all() );
         $orderIDs         = ( Input::get('orderIDs') && count(Input::get('orderIDs')) > 0 ) ? Input::get('orderIDs') : [Input::get('order_id')];
         $order_id  = Input::has('order_id') ? Input::get('order_id') : '';
+        $this->generateReturnCollection(20000034); die("after return collection");
         $orderIDs = array_unique($orderIDs);
         $awb_from_packing = 0;
         if( $order_id != "" && $order_id > 0 ){
@@ -284,7 +290,7 @@ class ExchangeOrdersAjaxController extends Controller
 					} else if ($shippingProviders === 'Jeebly') {
 						$orderGolem->setcustomerPincode($order->{'shipping_postcode'});
 					}
-					$orderGolem->setOrderID($order->order_id);
+					$orderGolem->setOrderID($order->order_id."-1");
 					$name = $order->firstname . " " . $order->lastname;
 					$orderGolem->setCustomerName($name);
 
@@ -327,6 +333,7 @@ class ExchangeOrdersAjaxController extends Controller
 				// echo "<pre>"; print_r($omsOrderIDs); die("on main page");
 				$shippingProviderResposne = [];
 				foreach ($response as $orderID => $airwayBillNumber) {
+                    $orderID = str_replace("-1", "", $orderID);
 					if (!empty($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER])) {
 						$omsUpdateStatus = OmsExchangeOrdersModel::find($omsOrderIDs[$orderID]);
 
@@ -374,6 +381,107 @@ class ExchangeOrdersAjaxController extends Controller
 			'data' => view(self::VIEW_DIR . ".shipping_providers_response", ["response" => $shippingProviderResposne])->render(),
 		));
 	}
+    public function generateReturnCollection($order_id){
+             $order_id = str_replace("-1","",$order_id);
+        // try
+        // {
+              if ( $order_id == "" ) {
+                throw new \Exception("Order id is empty.");
+              }
+              $order = OmsPlaceOrderModel::with(['omsOrder'])->where("order_id", $order_id)->first();
+              $store_id = $order->store;
+                $shippingProviderInput = explode('_', Input::get('shipping_providers'));
+                $shippingProviders = $shippingProviderInput[1]; // Shipping provider Name // GetGive , MaraXpress etc
+                $shippingProviderID = $shippingProviderInput[0]; // Shipping Provider ID
+
+              $shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $shippingProviders;
+              if (!class_exists($shippingCompanyClass)) {
+                throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
+              }
+
+              $shipping = new $shippingCompanyClass();
+
+              // Initialize Order Golem to make a unified order object representation in order to send data to all shipping providers
+              $orderGolem = new OrderGolem();
+              $orderGolem->setOrderID($order->order_id."-2");
+              $name = $order->firstname . " " . $order->lastname;
+              $orderGolem->setCustomerName($name);
+
+              $orderGolem->setCustomerMobileNumber($order->mobile);
+              $orderGolem->setOrderTotalAmount(0);
+
+              $shppingAddress = $order->shipping_address_1 . " " .
+					$order->shipping_address_2;
+
+              $orderGolem->setCustomerAddress($shppingAddress);
+              $orderGolem->setCustomerCity($order->shipping_city);
+              $orderGolem->setPaymentMethod($order->payment_method_id);
+              $orderGolem->setCashOnDeliveryAmount(0);
+              $orderGolem->setSpecialInstructions($order->comment);
+              $orderGolem->setCustomerEmail($order->email);
+              $orderGolem->setCustomerArea($order->shipping_city_area);
+              $productDesc = "";
+              $qty = 0;
+
+              $return_products = OmsExchangeReturnProductModel::with(['product','productOption'])->where('order_id',$order->order_id)->where('store_id',$store_id)->get();
+              foreach ($return_products as $product){
+
+                  $productDesc .= "[";
+                  $productDesc .= $product->sku;
+                  $productDesc .= " (QTY:{$product->quantity})";
+                 $productDesc .= "(".$product->option_name.":".$product->option_value .")";
+                  $productDesc .= "] ";
+                  $qty = $qty + $product->quantity;
+              }
+              // echo $shippingProviders; die;
+
+              $orderGolem->setTotalItemsQuantity($qty);
+              $orderGolem->setGoodsDescription($productDesc);
+              $orderGolem->setStore($this->store);
+              $ordersGolemArray[] = $orderGolem;
+             //   echo "<pre>"; print_r($ordersGolemArray);die;
+            $response = $shipping->forwardOrder($ordersGolemArray);
+            //   echo "<pre>"; print_r($response); die("on main page");
+            $shippingProviderResposne = [];
+            foreach ($response as $orderID => $airwayBillNumber) {
+              $orderID = str_replace("-2", "", $orderID);
+              if (!empty($airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER])) {
+                $awbTracking = new ReturnAirwayBillTrackingModel();
+                // Store Oms ID
+                $awbTracking->oms_order_id = $order->omsOrder->oms_order_id;
+                // Store Opencart Order IDs
+                $awbTracking->order_id = $orderID;
+                // Store Shipping Provider ID
+                $awbTracking->shipping_provider_id = $shippingProviderID;
+                $awbTracking->airway_bill_number = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+                $awbTracking->airway_bill_creation_attempt = 1;
+                $awbTracking->store = $order->store;
+                $awbTracking->save(); // save the tracking information in table
+                OmsActivityLogModel::newLog($order_id,14,$this->store); //14 for Generate AWB For Return
+                //entry in oms_return_order table
+
+                if(!OmsReturnOrdersModel::where('order_id',$orderID)->where("store",$store_id)->exists()){
+                  $omsUpdateStatus = new OmsReturnOrdersModel();
+                  $omsUpdateStatus->{OmsReturnOrdersModel::FIELD_ORDER_ID} = $orderID;
+                  $omsUpdateStatus->{OmsReturnOrdersModel::FIELD_OMS_ORDER_STATUS} = 2; //2 for airway bill generated
+                  $omsUpdateStatus->{OmsReturnOrdersModel::FIELD_LAST_SHIPPED_WITH_PROVIDER} = $shippingProviderID;
+                  $omsUpdateStatus->{OmsReturnOrdersModel::FIELD_CREATED_AT} = Carbon::now();
+                  $omsUpdateStatus->{OmsReturnOrdersModel::FIELD_UPDATED_AT} = Carbon::now();
+                  $omsUpdateStatus->store = $store_id;
+                  $omsUpdateStatus->save();
+                }
+                $shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::AIRWAYBILL_NUMBER];
+              } else {
+                $shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::MESSAGE_FROM_PROVIDER];
+              }
+            }
+        // } catch (\Exception $ex) {
+        //   // return response()->json(array(
+        //   //   'success' => false,
+        //   //   'data' => "<div class=\"alert bg-red\">{$ex->getMessage()}</div>",
+        //   // ));
+        // }
+      }
     public function printAwb() {
         // dd(RequestFacad::all());
 		if(Input::get('submit') == 'awb' && Input::get('order_id')){
@@ -400,6 +508,24 @@ class ExchangeOrdersAjaxController extends Controller
 
 		return redirect('/');
 	}
+    public function getExchangeIdFromAirwayBill(Request $request){
+        $airwaybill_number = $request->airwaybillno;
+
+        $data = ExchangeAirwayBillTrackingModel::with('shipping_provider')->where("airway_bill_number",$airwaybill_number)->orderBy("tracking_id","DESC")->first();
+        // dd($data->toArray());
+        if( $data ){
+          $pickup_start_time = ($data->shipping_provider) ? $data->shipping_provider->pickup_start_time : "";
+          $pickup_end_time   = ($data->shipping_provider) ? $data->shipping_provider->pickup_end_time : "";
+          $courier_name   = ($data->shipping_provider) ? $data->shipping_provider->name : "";
+          if( time() < strtotime($pickup_start_time) && time() < strtotime($pickup_end_time) ){
+            $formatted_from = date('h:i A',strtotime($pickup_start_time));
+            $formatted_to = date('h:i A',strtotime($pickup_end_time));
+            return "<script>alert('$courier_name pickup time is from  $formatted_from to $formatted_to.')</script>";
+          }else{
+            return $this->getExchangeDetail($data->order_id);
+          }
+        }
+    }
     public function cancelQuantity(){
         $this->availableInventoryQuantity(1115552,1);
     }

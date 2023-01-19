@@ -536,21 +536,10 @@ class OrdersAjaxController extends Controller {
             $orders = collect();
             if( is_array($orderIds) && count($orderIds) > 0 ){
                 foreach( $orderIds as $order_id ){
-                    $data = OmsOrdersModel::where("order_id",$order_id )->first();
-                    if( $data->store == 1 ){
-                        $order = OrdersModel::with(['status', 'orderd_products'])
-                        ->where("order_id", $order_id)->first();
-                    }else if( $data->store == 2 ){
-                        $order = DFOrdersModel::with(['status', 'orderd_products'])
-                        ->where("order_id", $order_id)->first();
-                    }
+                    $order = OmsPlaceOrderModel::with(['orderProducts.product'])->where("order_id",$order_id)->first();
                     $orders->push($order);
                 }
             }
-			// $order_data = OrdersModel::with(['status', 'orderd_products'])
-			// ->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
-			// ->get();
-			// echo "<pre>"; print_r($order_data->toArray());
 			$order_tracking = AirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
 			$order_tracking_ids = $order_tracking->pluck(AirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
 			// echo "<pre>"; print_r($order_tracking_ids->toArray()); die;

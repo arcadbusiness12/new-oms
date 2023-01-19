@@ -29,4 +29,10 @@ class OmsPlaceOrderModel extends Model
     public function omsStore(){
         return $this->BelongsTo(storeModel::class,'store');
     }
+    public function returnOrder(){
+        return $this->hasOne(OmsReturnOrdersModel::class,"order_id","order_id");
+    }
+    public function returnProducts(){
+        return $this->hasMany(OmsExchangeReturnProductModel::class,'order_id','order_id');
+    }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Catalog\AttributeController;
 use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
 use App\Http\Controllers\Exchange\ExchangeOrdersController;
+use App\Http\Controllers\Exchange\ReturnOrdersController;
 use App\Http\Controllers\PlaceOrder\DressFairPlaceOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\omsSetting\categorySettingController;
@@ -112,6 +113,12 @@ Route::prefix('exchange')->middleware('auth')->group(function(){
         Route::get('/generate/awb', 'generateAwb')->name('exchange.generate.awb');
         Route::get('/awb', 'awb')->name('exchange.awb');
         Route::get('/awb/generated', 'awbGenerated')->name('exchange.awb.generated');
+        Route::get('/ship', 'shipExchangeToCourier')->name('exchange.ship.to.courier');
+        Route::post('/ship/to/courier', 'shipExchange')->name('exchange.ship');
+        Route::get('/return', 'return')->name('exchange.return');
+        Route::post('/get/return', 'getReturn')->name('exchange.get.return');
+        Route::post('/update/return', 'updateReturn')->name('exchange.update.return');
+        Route::get('/print/label/{id}', 'printLabel')->name('exchange.print.label');
         Route::get('/picking/list/awaiting', 'pickingListAwaiting')->name('exchange.picking.list.awaiting');
     });
     Route::controller(ExchangeOrdersAjaxController::class)->group(function() {
@@ -125,11 +132,20 @@ Route::prefix('exchange')->middleware('auth')->group(function(){
         Route::get('/shipping/payment', 'paymentShipping')->name('exchange.shipping.payment');
         Route::post('/get/exchange/detail', 'getExchangeDetail')->name('exchange.get.exchange.detail');
         Route::post('/confirm', 'confirm')->name('exchange.confirm');
+        Route::post('/get/id/from/airwaybill', 'getExchangeIdFromAirwayBill')->name('exchange.get.order.id.from.airwaybill');
 
         Route::get('/cancel/quantity', 'cancelQuantity')->name('exchange.cancel.quantity');
         Route::post('/forword/for/awb/generation', 'forwardOrderToQueueForAirwayBillGeneration')->name('exchange.forword.for.awb.generation');
         Route::any('/print/awb', 'printAwb')->name('exchange.print.awb');
         Route::post('/forward/for/shipping', 'forwardForShipping')->name('exchange.forward.for.shipping');
+    });
+});
+//Return routes
+Route::prefix('return')->middleware('auth')->group(function(){
+    Route::controller(ReturnOrdersController::class)->group(function(){
+        Route::get("/","index")->name('return');
+        Route::get('/awb/generated', 'awbGenerated')->name('return.awb.generated');
+        Route::any('/print/awb', 'printAwb')->name('return.print.awb');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

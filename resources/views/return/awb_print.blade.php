@@ -80,7 +80,7 @@
           <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-height="20" jsbarcode-textmargin="0"
           jsbarcode-value="{{ $order->order_id }}"></svg>
           @else
-          {{ $order->order_id }}-1
+          {{ $order->order_id }}-2
           @endif
         </td>
       </tr>
@@ -134,7 +134,7 @@
           @php
           $totalProducts =0;
           @endphp
-          @foreach ($order->exchangeProducts as $product )
+          @foreach ($order->returnProducts as $product )
             @php
             $totalProducts += $product->quantity;
             @endphp
@@ -144,7 +144,7 @@
           $totalProducts = 0;
           @endphp
           [
-          @foreach ( $order->exchangeProducts as $product )
+          @foreach ( $order->returnProducts as $product )
           {{ $product->sku }}
           (QTY:{{$product->quantity}})
             @if(  $product->product?->option_value > 0  )
