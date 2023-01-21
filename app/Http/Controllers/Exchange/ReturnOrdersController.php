@@ -66,12 +66,8 @@ class ReturnOrdersController extends Controller
 
     public function index(){
         $old_input = RequestFacad::all();
-        $data = OmsPlaceOrderModel::select('oms_place_order.*')
-                ->with(['returnProducts.product','omsStore'])
-                ->join("oms_orders",function($join){
-                    $join->on('oms_return_orders.order_id', '=', 'oms_place_order.order_id');
-                    $join->on('oms_return_orders.store', '=', 'oms_place_order.store');
-                })
+
+        $data = OmsReturnOrdersModel::with(['placeOrder','returnProducts.product','omsStore'])
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_place_order.order_id',$old_input['order_id']);
                 })
@@ -92,8 +88,9 @@ class ReturnOrdersController extends Controller
                 })
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_return_orders.oms_order_status',$old_input['order_status_id']);
-                });
-            $data = $data->orderByRaw("(CASE WHEN oms_return_orders.order_id > 0 THEN oms_return_orders.updated_at ELSE oms_return_orders.created_at END) DESC")
+                })
+                ->orderBy("oms_return_orders.updated_at",'DESC')
+                //  $data = $data->orderByRaw("(CASE WHEN oms_return_orders.order_id > 0 THEN oms_return_orders.updated_at ELSE oms_return_orders.created_at END) DESC")
                 ->paginate(20);
             // $data = $data->paginate(20);
             // $data = $this->getOrdersWithImage($data);

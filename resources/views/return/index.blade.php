@@ -15,7 +15,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="card-header white">
-                            @include('orders.order_search_section')
+                            @include('return.return_search_section')
                         </div>
                     </div>
                 </div>
@@ -24,15 +24,7 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        <div class="row action_button_row" style="display:none">
-                            <div class="col-sm-2 exchange_action" style="display:none">
-                                <button class="btn btn-info active" id="btn_exchange">Exchange</button>
-                            </div>
-                            <div class="col-sm-2 reship_action" style="display:none">
-                                <button class="btn btn-warning active" id="btn_reship">Reship</button>
-                            </div>
-                        </div>
-                        <div class="panel-heading">All Orders</div>
+                        <div class="panel-heading">All Return Orders</div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
                           @if(session()->has('success'))
@@ -63,34 +55,30 @@
                                     <tr class="row_{{ $order->order_id }}">
                                         <td class="col-sm-1"><input type="checkbox" class="order_checkbox" order-status="{{ $order->omsOrder?->oms_order_status }}" value="{{ $order->order_id }}" /></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->firstname }} {{ $order->placeOrder?->lastname }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->updated_at  }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->email }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total_amount }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->updated_at  }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->mobile }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->email }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center> - </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
                                         <td>&nbsp;</td>
-                                        <td colspan="2"><strong>Address:</strong>{{ $order->shipping_city_area }},{{ $order->shipping_address_1 }},{{ $order->shipping_street_building }},{{ $order->shipping_villa_flat }}</td>
-                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city }}</td>
-                                        <td colspan="4" >
+                                        <td colspan="2"><strong>Address:</strong>{{ $order->placeOrder?->shipping_city_area }},{{ $order->placeOrder?->shipping_address_1 }},{{ $order->placeOrder?->shipping_street_building }},{{ $order->placeOrder?->shipping_villa_flat }}</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->placeOrder?->shipping_city }}</td>
+                                        <td colspan="3" >
                                              <div class="normal-order-progress">
-                                                @include('orders.order_progress_bar')
+                                                @include('return.return_progress_bar')
                                               </div>
                                         </td>
                                     </tr>
-                                    @if( $order->orderProducts )
+                                    @if( $order->returnProducts )
                                         <tr class="row_{{ $order->order_id }}">
                                             <td colspan="8">
                                                 <center>
-                                                <form method="post" action="{{ route('exchange.create') }}" id="frm_{{ $order->order_id }}">
-                                                    <input type="hidden" name="order_id_for_exchange" value="{{ $order->order_id }}" />
-                                                    <input type="hidden" name="store_id_for_exchange" value="{{ $order->store }}" />
-                                                @csrf
                                                 <table width="100%" style="font-size:12px;">
-                                                    @foreach ( $order->orderProducts as $ordered_product )
+                                                    @foreach ( $order->returnProducts as $ordered_product )
                                                         <tr>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
@@ -113,65 +101,17 @@
                                                         <td colspan="11"><input type="submit" id="create_exchange_{{ $order->order_id }}" class="float-right btn btn-sm btn-success active" value="Create Exchange" style="display:none"></td>
                                                     </tr>
                                                 </table>
-                                                </form>
                                                 </center>
                                             </td>
                                         </tr>
                                     @endif
                                     <tr  class="order-action row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
                                         <td colspan="11">
-                                                    <div class="row">
-                                                        <div class="col-1">
-                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
-                                                        </div>
-                                                        @if ( $order->omsOrder?->oms_order_status < 2 )
-                                                             @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
-                                                                <div class="col-1">
-                                                                    <a  href="javascript:void(0)" class="waves-effect waves-blue active" data-toggle="tooltip" data-placement="top" data-original-title="Cancel Order">
-                                                                        <form action="{{URL::to('orders/cancel-order')}}" id="cancel_order_form_{{ $order->order_id }}">
-                                                                            {{csrf_field()}}
-                                                                            <input type="hidden" name="order_id" value="{{ $order->order_id }}" />
-                                                                            <input type="hidden" name="store" value="{{ $order->store }}" />
-                                                                            <button order_id="{{ $order->order_id }}" type="button" class="btn btn-danger btn-sm active cancel-order">
-                                                                                Cancel Order
-                                                                            </button>
-                                                                        </form>
-                                                                    </a>
-                                                                </div>
-                                                                <div class="col-1">
-                                                                    <a data-orderid={{ $order->order_id }} data-store={{ $order->store }} data-toggle="modal" data-target="#addressModal"
-                                                                    class="btn btn-info btn-sm active btn-edit-customer-adress">Edit Details</a>
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                        @if ( $order->oms_order_status ==3 )
-                                                            <div class="col-1">
-                                                                @if( $order->reship == "-1" )
-                                                                    <span class="badge badge-warning orange darken-1">Reship Request</span>
-                                                                @else
-                                                                    <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary active btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
-                                                                @endif
-                                                            </div>
-                                                        @endif
-                                                        <div class="col-sm-7">
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            @if( !$order->omsOrder )
-                                                                <a  href="javascript:void(0)" class="waves-effect active waves-blue" data-toggle="tooltip" data-placement="top" data-original-title="Forward Order for Airwabill Generation">
-                                                                    <form action="{{ route('orders.forword.for.awb.generation') }}" id="forward_to_queue_form_{{$order->order_id}}">
-                                                                        {{csrf_field()}}
-                                                                        <input type="hidden" name="order_id" value="{{$order->order_id}}" />
-                                                                        <input type="hidden" name="oms_store" value="{{$order->store}}" />
-                                                                            @if( session('user_group_id') == 1 || array_key_exists('orders/frwd-to-q-fr-awb-generation', json_decode(session('access'),true)) )
-                                                                            <button  order_id="{{$order->order_id}}" data-shipping="{{ isset($order->shipping_type) ? $order->shipping_type : 'all'}}" type="button"
-                                                                                class="btn btn-success btn-sm btn-forward-pick-list active float-right" data-toggle="modal" data-target="#courierModal" onclick="$('.popup_btn_forword').attr('order_id',{{$order->order_id}}); getOrderHistory({{$order->mobile}})">
-                                                                                Forward to Picking</button>
-                                                                            @endif
-                                                                    </form>
-                                                                </a>
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                            <div class="row">
+                                                <div class="col-1">
+                                                    <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
+                                                </div>
+                                            </div>
                                         </td>
                                      </tr>
                                 @endforeach
@@ -189,12 +129,12 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-@include('orders.edit_customer_popup')
+{{--  @include('orders.edit_customer_popup')
 @include('orders.popup_forwordpicklist_courier')
 @include('orders.popup_courier_tracking')
 @include('orders.popup_order_details')
+@include('orders.ccvaneue_details')  --}}
 @include('orders.popup_order_activity_log')
-@include('orders.ccvaneue_details')
 
 <style>
 .table td {

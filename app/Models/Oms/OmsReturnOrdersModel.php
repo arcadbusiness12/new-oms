@@ -26,4 +26,14 @@ class OmsReturnOrdersModel extends Model
                     ->orderBy(Model::CREATED_AT, 'DESC')
                     ->with(['shipping_provider']);
     }
+    public function returnProducts(){
+        return $this->hasMany(OmsExchangeReturnProductModel::class,'order_id','order_id');
+    }
+    public function omsStore(){
+        return $this->BelongsTo(storeModel::class,'store');
+    }
+    public function placeOrder(){
+
+        return $this->hasOne(OmsPlaceOrderModel::class, "order_id", "order_id");
+    }
 }
