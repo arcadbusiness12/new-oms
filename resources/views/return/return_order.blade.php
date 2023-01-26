@@ -7,7 +7,7 @@
             <div class="card p-3 text-black">
                 <div class="row">
                     <div class="col-sm-8">
-                        <form name="form_return_order" id="form_return_order" action="{{ route('exchange.get.return') }}">
+                        <form name="form_return_order" id="form_return_order" action="{{ route('return.get') }}">
                             {{ csrf_field() }}
                             <div class="form-group">
                                 <div class="form-line">

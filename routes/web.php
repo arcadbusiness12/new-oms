@@ -147,8 +147,8 @@ Route::prefix('return')->middleware('auth')->group(function(){
         Route::get('/awb/generated', 'awbGenerated')->name('return.awb.generated');
         Route::any('/print/awb', 'printAwb')->name('return.print.awb');
         Route::get('/search', 'return')->name('return.search');
-        Route::post('/get/return', 'getReturn')->name('return.get.return');
-        Route::post('/update/return', 'updateReturn')->name('return.update.return');
+        Route::post('/get/return', 'getReturn')->name('return.get');
+        Route::post('/update', 'updateReturn')->name('return.update');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

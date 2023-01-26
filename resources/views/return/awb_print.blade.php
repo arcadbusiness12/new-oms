@@ -111,7 +111,7 @@
         <tr>
           <td><strong> <span class="total_amount">
             @if( $order->payment_method_id == 1 )
-                {{(number_format($order->total_amount, 2))}}
+                0
             @else
             0
             @endif

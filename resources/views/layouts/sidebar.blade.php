@@ -55,7 +55,7 @@
                                 </ul>
                         </li>
 
-                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) || ( str_contains(Request::url(), '/return') ) ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -108,7 +108,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-undo"></i>Return<i
+                                <li class="@if( str_contains(Request::url(), '/return') ) active @endif"><a href="#"><i class="icon icon-undo"></i>Return<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('return') ) active @endif"><a href="{{ route('return') }}">All Orders</a>

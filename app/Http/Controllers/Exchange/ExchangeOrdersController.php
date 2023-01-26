@@ -88,7 +88,7 @@ class ExchangeOrdersController extends Controller
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_exchange_orders.oms_order_status',$old_input['order_status_id']);
                 });
-            $data = $data->orderByRaw("(CASE WHEN oms_exchange_orders.order_id > 0 THEN oms_exchange_orders.updated_at ELSE oms_exchange_orders.created_at END) DESC")
+            $data = $data->orderByRaw("(CASE WHEN oms_exchange_orders.order_id > 0 THEN oms_exchange_orders.updated_at ELSE oms_place_exchanges.created_at END) DESC")
                 ->paginate(20);
         // dd($data->toArray());
         $searchFormAction = "exchange";

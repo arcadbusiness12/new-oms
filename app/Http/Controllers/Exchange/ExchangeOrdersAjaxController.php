@@ -194,7 +194,6 @@ class ExchangeOrdersAjaxController extends Controller
         // dd( RequestFacad::all() );
         $orderIDs         = ( Input::get('orderIDs') && count(Input::get('orderIDs')) > 0 ) ? Input::get('orderIDs') : [Input::get('order_id')];
         $order_id  = Input::has('order_id') ? Input::get('order_id') : '';
-        $this->generateReturnCollection(20000034); die("after return collection");
         $orderIDs = array_unique($orderIDs);
         $awb_from_packing = 0;
         if( $order_id != "" && $order_id > 0 ){
@@ -364,6 +363,7 @@ class ExchangeOrdersAjaxController extends Controller
 					} else {
 						$shippingProviderResposne[$orderID] = $airwayBillNumber[ShippingProvidersInterface::MESSAGE_FROM_PROVIDER];
 					}
+                    $this->generateReturnCollection($orderID);
 				}
 			} else {
 				throw new \Exception("Please select the status to update after airwaybill Generation");
