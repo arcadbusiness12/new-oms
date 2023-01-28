@@ -15,7 +15,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="card-header white">
-                            @include('return.return_search_section')
+                            @include('orders.order_search_section')
                         </div>
                     </div>
                 </div>
@@ -24,7 +24,15 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        <div class="panel-heading">All Return Orders</div>
+                        <div class="row action_button_row" style="display:none">
+                            <div class="col-sm-2 exchange_action" style="display:none">
+                                <button class="btn btn-info active" id="btn_exchange">Exchange</button>
+                            </div>
+                            {{--  <div class="col-sm-2 reship_action" style="display:none">
+                                <button class="btn btn-warning active" id="btn_reship">Reship</button>
+                            </div>  --}}
+                        </div>
+                        <div class="panel-heading">Ready For Return Orders</div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}
                           @if(session()->has('success'))
@@ -38,7 +46,7 @@
                             <table class="table" width="100%" style="font-size: 14px !important; color:black !important">
                              <thead>
                               <tr style="background-color: #3f51b5;color:white">
-                                <th scope="col">&nbsp;</th>
+                                {{--  <th scope="col">&nbsp;</th>  --}}
                                 <th scope="col"><center>Order Id</center></th>
                                 <th scope="col"><center>Customer</center></th>
                                 <th scope="col"><center>Store</center></th>
@@ -52,33 +60,48 @@
                              <tbody>
                                 @if($data->count())
                                 @foreach($data as $key=>$order)
+                                    @php
+                                        if( $order->OmsOrder?->generatedCourier?->name != ""  ){
+                                            $courier = $order->OmsOrder?->generatedCourier?->name;
+                                            $courier_link = '<a href="javascript:void(0)" onclick="trackOrderCourier('.$order->order_id.','.$courier.')" data-toggle="modal" data-target="#courierTrackingModal"><span class="badge badge-warning blue darken-1">'.$courier.'</span></a>';
+                                        }else{
+                                            $courier_link =  $order->OmsOrder?->assignedCourier?->name;
+                                        }
+                                    @endphp
                                     <tr class="row_{{ $order->order_id }}">
-                                        <td class="col-sm-1"><input type="checkbox" class="order_checkbox" order-status="{{ $order->omsOrder?->oms_order_status }}" value="{{ $order->order_id }}" /></td>
-                                        <td class="col-sm-1"><center>{{ $order->order_id }}-2</center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->firstname }} {{ $order->placeOrder?->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        {{--  <td class="col-sm-1"><input type="checkbox" class="order_checkbox" order-status="{{ $order->omsOrder?->oms_order_status }}" value="{{ $order->order_id }}" /></td>  --}}
+                                        <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
+                                        @if( $order->OmsOrder?->generatedCourier?->name != ""  )
+                                            @php
+                                                $courier = $order->OmsOrder?->generatedCourier?->name;
+                                            @endphp
+                                            <td class="column col-sm-1 td-valign"><center><a href='javascript:void(0)' onclick='trackOrderCourier({{ $order->order_id }},{{ $order->store }},"{{ $courier }}",0)'  data-toggle='modal' data-target='#courierTrackingModal'><span class='badge badge-warning blue darken-1'>{{ $courier }}</span></a><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @else
+                                            <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->assignedCourier?->name }}<span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @endif
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->updated_at  }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->mobile }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{{ $order->placeOrder?->email }} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center> - </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->updated_at  }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->email }} </center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{{ $order->total_amount }} </center></td>
                                     </tr>
                                     <tr class="row_{{ $order->order_id }}">
                                         <td>&nbsp;</td>
-                                        <td colspan="2"><strong>Address:</strong>{{ $order->placeOrder?->shipping_city_area }},{{ $order->placeOrder?->shipping_address_1 }},{{ $order->placeOrder?->shipping_street_building }},{{ $order->placeOrder?->shipping_villa_flat }}</td>
-                                        <td colspan="2"><strong>City:</strong>{{ $order->placeOrder?->shipping_city }}</td>
-                                        <td colspan="3" >
+                                        <td colspan="2"><strong>Address:</strong>{{ $order->shipping_city_area }},{{ $order->shipping_address_1 }},{{ $order->shipping_street_building }},{{ $order->shipping_villa_flat }}</td>
+                                        <td colspan="2"><strong>City:</strong>{{ $order->shipping_city }}</td>
+                                        <td colspan="4" >
                                              <div class="normal-order-progress">
-                                                @include('return.return_progress_bar')
+                                                @include('orders.order_progress_bar')
                                               </div>
                                         </td>
                                     </tr>
-                                    @if( $order->returnProducts )
+                                    @if( $order->orderProducts )
                                         <tr class="row_{{ $order->order_id }}">
-                                            <td colspan="8">
+                                            <td colspan="11">
                                                 <center>
                                                 <table width="100%" style="font-size:12px;">
-                                                    @foreach ( $order->returnProducts as $ordered_product )
+                                                    @foreach ( $order->orderProducts as $ordered_product )
                                                         <tr>
                                                             <td>&nbsp;</td>
                                                             <td>&nbsp;</td>
@@ -97,9 +120,6 @@
                                                             <td>{{ $ordered_product->total }}</td>
                                                         </tr>
                                                     @endforeach
-                                                    <tr>
-                                                        <td colspan="11"><input type="submit" id="create_exchange_{{ $order->order_id }}" class="float-right btn btn-sm btn-success active" value="Create Exchange" style="display:none"></td>
-                                                    </tr>
                                                 </table>
                                                 </center>
                                             </td>
@@ -109,7 +129,26 @@
                                         <td colspan="11">
                                             <div class="row">
                                                 <div class="col-1">
-                                                    <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
+                                                    <button class="btn btn-info btn-sm active" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
+                                                </div>
+                                                    <div class="col-1">
+                                                        @if( $order->omsOrder?->reship == "-1" )
+                                                            <span class="badge badge-success green darken-1">Reship Request sent.</span>
+                                                        @else
+                                                            <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary active btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
+                                                        @endif
+                                                    </div>
+                                                <div class="col-sm-7">
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <form action="{{ route('orders.ready.for.return') }}" method="POST" >
+                                                        {{csrf_field()}}
+                                                        <input type="hidden" name="order_id_for_return" value="{{ $order->order_id }}" />
+                                                        <input type="hidden" name="store_id" value="{{ $order->store }}" />
+                                                        <input type="hidden" name="admin_comment" id="admin_approve_comment_{{ $order->order_id }}"  />
+                                                        <button  type="submit" class="btn btn-success" name="approve_return_button" id="approve_return_button_{{ $order->order_id }}" value="approve_return_button" style="display:none">Approve Return</button>
+                                                        <a href="javascript:void()" class="btn btn-success btn-sm active float-right" onclick="approveComments({{ $order->order_id }})">Approve Return</a>
+                                                      </form>
                                                 </div>
                                             </div>
                                         </td>
@@ -129,12 +168,12 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-{{--  @include('orders.edit_customer_popup')
-@include('orders.popup_forwordpicklist_courier')
+{{--  @include('orders.edit_customer_popup')  --}}
+{{--  @include('orders.popup_forwordpicklist_courier')  --}}
 @include('orders.popup_courier_tracking')
 @include('orders.popup_order_details')
-@include('orders.ccvaneue_details')  --}}
 @include('orders.popup_order_activity_log')
+{{--  @include('orders.ccvaneue_details')  --}}
 
 <style>
 .table td {
@@ -148,91 +187,40 @@ thead, tbody, tfoot, tr, td, th {
 
 @push('scripts')
 <script>
-    $(document).on('change','.order_checkbox',function(){
-        var $this = $(this);
-        var order_id  = $this.val();
-        //alert( $this.attr('order-status') );
-        if( $this.is(':checked') && $this.attr('order-status') == 3 ){
-            $('.action_button_row, .exchange_action, .reship_action').show();
-            //$('.exchange_action').show();
-            //$('.reship_action').show();
-        }else{
-            $('.action_button_row, .exchange_action, .reship_action').hide();
-        }
-
-    });
-    $(document).on('click','#btn_exchange',function(){
-        var checked_order_id = $('.order_checkbox:checked').val();
-        //alert(checked_order_id);
-        $('.product_'+checked_order_id).show();
-    });
-    $(document).on('change','.check_product_for_exchange',function(){
-        var $this = $(this);
-        var order_id = $this.attr('order-id');
-        //alert(order_id);
-        if( $('.product_'+order_id).is(':checked') ){
-            $('#create_exchange_'+order_id).show();
-        }else{
-            $('#create_exchange_'+order_id).hide();
-        }
-    });
-    //------------
-    $(".cancel-order").on('click', function() {
-        var order_id = $(this).attr("order_id");
-        var id_to_remove = ".row_" + order_id;
+    function approveComments(order_id){
         swal({
-                title: "Are you sure?",
-                text: "You want to cancel this order?",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: '#DD6B55',
-                confirmButtonText: 'Yes, I am sure!',
-                cancelButtonText: "No, I don't want!",
-                closeOnConfirm: false,
-                closeOnCancel: false
-            },
-            function(isConfirm) {
-                if (isConfirm) {
-                    swal({ title: "<h2>Please Wait canceling order...</h3>", html: true, text: loader, showConfirmButton: false });
-                    $.ajax({
-                        method: "POST",
-                        url: $("#cancel_order_form_" + order_id).attr("action"),
-                        data: $("#cancel_order_form_" + order_id).serialize()
-                    }).done(function(response) {
-                        if (response.success == false) {
-                            swal({ title: "<h2>Error!</h3>", html: true, text: response.error.message, type: "error" });
-                            //$('[data-toggle="tooltip"]').tooltip('destroy');
-                        } else {
-                            //$('[data-toggle="tooltip"]').tooltip('destroy');
-                            $(id_to_remove).remove();
-                            swal("Success!", "Order Canceled", "success");
-                            setTimeout(function() {
-                                swal.close();
-                            }, 1500);
-                        }
-                    }); // End of Ajax
-
-                } else {
-                    swal.close();
-                    //swal("Cancelled", "Your process is canceled", "error");
-                }
-            });
-    });
-    {{--  cancel order end  --}}
+          title: "Enter details for this action.",
+          text: " ",
+          type: "input",
+          showCancelButton: true,
+          cancelButtonColor: "#DD6B55",
+          closeOnConfirm: true,
+          animation: "slide-from-top",
+          inputPlaceholder: "Write comment."
+        },
+        function(inputValue){
+          //alert(inputValue);
+          $('#admin_approve_comment_'+order_id).val(inputValue);
+           if ( inputValue === false) {
+           }else{
+              $('#approve_return_button_'+order_id).click();
+           }
+        });
+      }
     {{--  reship code start  ------------------------------}}
   $(document).on('click', '#btn-reship-checkbox', function(event) {
     var order_id = $(this).attr('data-orderid');
     var store = $(this).attr('data-store');
-   swal({
-      title: "Are you sure?",
-      text: "If you want to send Reship request for this order then type reason in below box. ",
-      type: "input",
-      showCancelButton: true,
-      closeOnConfirm: true,
-      animation: "slide-from-top",
-      inputPlaceholder: "Write comment."
-    },
-    function(inputValue){
+    swal({
+        title: "Are you sure?",
+        text: "If you want to send Reship request for this order then type reason in below box. ",
+        type: "input",
+        showCancelButton: true,
+        closeOnConfirm: true,
+        animation: "slide-from-top",
+        inputPlaceholder: "Write comment."
+        },
+        function(inputValue){
       console.log(inputValue);
       if (inputValue === false || inputValue === ""){
           console.log("first if");
@@ -262,8 +250,8 @@ thead, tbody, tfoot, tr, td, th {
           }
           $('#btn-reship-checkbox').text(orignal_text).prop('disabled',false);
         }); // End of Ajax
-  }
-});
+     } //End of if (inputValue === false || inputValue === "")
+}); //end of swal
 
 });
 {{--  reship code end  --}}
@@ -291,49 +279,5 @@ function getOrderHistory(phone) {
           $('.history-order-tab').html(html);
       })
   }
-  $(".forward_order_to_oms").on('click', function() {
-    console.log("Ok");
-    var id_to_remove = ".row_" + $(this).attr("order_id");
-    var order_id = $(this).attr("order_id");
-    swal({ title: "<h2>Please Wait forwarding order...</h3>", html: true, text: loader, showConfirmButton: false });
-    var courier_id = 0;
-    if ($('#courier_id').length) {
-        var courier_id = $('#courier_id').val();
-    }
-    $.ajax({
-        method: "POST",
-        url: $("#forward_to_queue_form_" + order_id).attr("action"),
-        data: $("#forward_to_queue_form_" + order_id).serialize() + "&courier_id=" + courier_id
-    }).done(function(response) {
-        if(response.status == false && response.courier == 'no') {
-            $('.worning-message').text('Please select courier.');
-            $('.worning-message').css('color', 'red');
-            $('.worning-message').css('font-size', '18px');
-            swal.close();
-            setTimeout(() => {
-                $('.worning-message').text('');
-            },5000);
-            return false;
-        }
-        if (response !== "") {
-            swal({ title: "<h2>Error!</h3>", html: true, text: response, type: "error" });
-            //$('[data-toggle="tooltip"]').tooltip('destroy');
-            $('.popup_btn_forword').addClass('d-none');
-            $('#courierModal').modal('hide');
-        } else {
-            //$('[data-toggle="tooltip"]').tooltip('destroy');
-            $(id_to_remove).remove();
-            swal("Success!", "Order Forwarded", "success");
-            setTimeout(function() {
-                swal.close();
-            }, 1500);
-            $('.popup_btn_forword').addClass('d-none');
-            $('#courierModal').modal('hide');
-        }
-
-    }); // End of Ajax
-
-
-}); // forward_order_to_oms click
 </script>
 @endpush

@@ -47,11 +47,19 @@
                              <tbody>
                                 @if($data->count())
                                 @foreach($data as $key=>$order)
+                                @php
+                                    if( $order->OmsOrder?->generatedCourier?->name != ""  ){
+                                        $courier = $order->OmsOrder?->generatedCourier?->name;
+                                        $courier_link = '<a href="javascript:void(0)" onclick="trackOrderCourier('.$order->order_id.','.$courier.')" data-toggle="modal" data-target="#courierTrackingModal"><span class="badge badge-warning blue darken-1">'.$courier.'</span></a>';
+                                    }else{
+                                        $courier_link =  $order->OmsOrder?->assignedCourier?->name;
+                                    }
+                                @endphp
                                     <tr class="row_{{ $order->order_id }}">
                                         <td class="col-sm-1"><input name="o_id[]" value="{{ $order->order_id }}" type="checkbox" id="md_checkbox_{{ $order->order_id }}" class="chk-col-green fwd-ordr-generate-awb-checkbox"></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{!! $courier_link !!}<span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->omsOrder->updated_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>

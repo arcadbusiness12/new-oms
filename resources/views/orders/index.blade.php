@@ -28,9 +28,9 @@
                             <div class="col-sm-2 exchange_action" style="display:none">
                                 <button class="btn btn-info active" id="btn_exchange">Exchange</button>
                             </div>
-                            <div class="col-sm-2 reship_action" style="display:none">
+                            {{--  <div class="col-sm-2 reship_action" style="display:none">
                                 <button class="btn btn-warning active" id="btn_reship">Reship</button>
-                            </div>
+                            </div>  --}}
                         </div>
                         <div class="panel-heading">All Orders</div>
 
@@ -64,7 +64,16 @@
                                         <td class="col-sm-1"><input type="checkbox" class="order_checkbox" order-status="{{ $order->omsOrder?->oms_order_status }}" value="{{ $order->order_id }}" /></td>
                                         <td class="col-sm-1"><center>{{ $order->order_id }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @if( $order->OmsOrder?->generatedCourier?->name != ""  )
+                                            @php
+                                                $courier = $order->OmsOrder?->generatedCourier?->name;
+                                            @endphp
+
+                                            <td class="column col-sm-1 td-valign"><center><a href='javascript:void(0)' onclick='trackOrderCourier({{ $order->order_id }},{{ $order->store }},"{{ $courier }}",0)'  data-toggle='modal' data-target='#courierTrackingModal'><span class='badge badge-warning blue darken-1'>{{ $courier }}</span></a><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+
+                                        @else
+                                            <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->assignedCourier?->name }}<span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @endif
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->OmsOrder?->updated_at  }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
@@ -122,7 +131,7 @@
                                         <td colspan="11">
                                                     <div class="row">
                                                         <div class="col-1">
-                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
+                                                            <button class="btn btn-info btn-sm active" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
                                                         </div>
                                                         @if ( $order->omsOrder?->oms_order_status < 2 )
                                                              @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')
@@ -144,10 +153,10 @@
                                                                 </div>
                                                             @endif
                                                         @endif
-                                                        @if ( $order->oms_order_status ==3 )
+                                                        @if ( $order->omsOrder?->oms_order_status ==3 )
                                                             <div class="col-1">
-                                                                @if( $order->reship == "-1" )
-                                                                    <span class="badge badge-warning orange darken-1">Reship Request</span>
+                                                                @if( $order->omsOrder?->reship == "-1" )
+                                                                    <span class="badge badge-success green darken-1">Reship Request sent.</span>
                                                                 @else
                                                                     <button data-orderid={{ $order->order_id }} data-store={{ $order->store }} class="btn btn-primary active btn-reship-checkbox btn-sm" id="btn-reship-checkbox" style="display: block;">Reship</button>
                                                                 @endif

@@ -57,7 +57,15 @@
                                     <tr class="row_{{ $order->order_id }}">
                                         <td class="col-sm-1"><center>{{ $order->order_id }}-1</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->firstname }} {{ $order->lastname }}</center></td>
-                                        <td class="column col-sm-1 td-valign"><center><span class="badge badge-warning blue darken-1">{{ $order->courier_name }}</span><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @if( $order->OmsExchange?->generatedCourier?->name != ""  )
+                                            @php
+                                                $courier = $order->OmsExchange?->generatedCourier?->name;
+                                            @endphp
+                                            <td class="column col-sm-1 td-valign"><center><a href='javascript:void(0)' onclick='trackOrderCourier({{ $order->order_id }},{{ $order->store }},"{{ $courier }}",1)'  data-toggle='modal' data-target='#courierTrackingModal'><span class='badge badge-warning blue darken-1'>{{ $courier }}</span></a><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+
+                                        @else
+                                            <td class="column col-sm-1 td-valign"><center><span class="badge orange darken-1"><strong>{{  $order->omsStore->name  }}</strong></span></center></td>
+                                        @endif
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->created_at }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->OmsExchange?->updated_at  }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $order->mobile }} </center></td>
@@ -174,6 +182,7 @@
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
 @include('orders.popup_order_activity_log')
+@include('orders.popup_courier_tracking')
 <style>
 .table td {
     border-top: none !important;

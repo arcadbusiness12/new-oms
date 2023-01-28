@@ -61,7 +61,7 @@
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Normal<i
+                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 && Request::url() != route('orders.online') && Request::url() != route('orders.reship-orders') && Request::url() != route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Normal<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">All Orders </a></li>
@@ -108,7 +108,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="@if( str_contains(Request::url(), '/return') ) active @endif"><a href="#"><i class="icon icon-undo"></i>Return<i
+                                <li class="@if( str_contains(Request::url(), '/return') && Request::url() != route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-undo"></i>Return<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('return') ) active @endif"><a href="{{ route('return') }}">All Orders</a>
@@ -120,15 +120,14 @@
                                     </ul>
                                 </li>
                                 <!--  order opertaion menu start  -->
-                                <li><a href="#"><i class="icon icon-developer_board"></i>Operation<i
+                                <li class="@if( Request::url() == route('orders.online') || Request::url() == route('orders.reship-orders') || Request::url() == route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-developer_board"></i>Operation<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}">Online Orders </a></li>
                                         <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Reshipment Approval</a>
                                         </li>
-                                        <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Exchange Approval</a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>
+                                        <li class="@if( Request::url() == route('orders.ready.for.return') ) active @endif"><a href="{{ route('orders.ready.for.return') }}">Ready For Returns </a></li>
                                         <li class="@if( Request::url() == route('orders.awb.generated') ) active @endif"><a href="{{ route('orders.awb.generated') }}">Airway Bill History  </a>
                                         </li>
                                     </ul>

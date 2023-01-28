@@ -8,6 +8,7 @@ use App\Models\Oms\ExchangeAirwayBillTrackingModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryDeliveredQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryOnholdQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryPackedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryProductOptionModel;
@@ -60,9 +61,8 @@ class ExchangeOrdersController extends Controller
     public function index(){
         $old_input = RequestFacad::all();
         $old_input = RequestFacad::all();
-
         $data = OmsPlaceExchangeModel::select('oms_place_exchanges.*')
-                ->with(['exchangeProducts.product','omsExchange','omsStore'])
+                ->with(['exchangeProducts.product','omsExchange.generatedCourier','omsStore'])
                 ->leftjoin("oms_exchange_orders",function($join){
                     $join->on('oms_exchange_orders.order_id', '=', 'oms_place_exchanges.order_id');
                     $join->on('oms_exchange_orders.store', '=', 'oms_place_exchanges.store');
@@ -543,18 +543,70 @@ class ExchangeOrdersController extends Controller
         }
         return $orders;
     }
-    protected function orderedProducts($order){
-        if( $order->oms_store == 1 ){
-            $data = ExchangeOrderProductModel::with(['product_details'=>function($query){
-                $query->select('product_id','image');
-            }])->where('exchange_order_id',$order->exchange_order_id)->get();
-        }else if( $order->oms_store == 2 ){
-            $data = DFExchangeOrderProductModel::with(['product_details'=>function($query){
-                $query->select('product_id','image');
-            }])->where('exchange_order_id',$order->exchange_order_id)->get();
+    public function deliverSingleOrder($order_id,$store_id){
+        $order_id = str_replace("-1","",$order_id);
+        try{
+
+            $omsOrder = OmsExchangeOrdersModel::where("order_id", $order_id)->where('store',$store_id)->first();
+
+            if( $omsOrder->oms_order_status == 3 ){
+                //delivered quantity in oms_inventory_delivered_quantity and oms_inventory_product_option tables
+                $order_products = OmsExchangeProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+                // dd($order_products->toArray());
+                if( $order_products ){
+                    $order_quantity = 0;
+                    foreach( $order_products as $key => $order_product ){
+                        $order_quantity = $order_product->quantity;
+                        $product_id      = $order_product->product_id;
+                        $option_id       = $order_product->productOption->option_id;
+                        $option_value_id = $order_product->productOption->option_value_id;
+                        $check_exist = OmsInventoryDeliveredQuantityModel::where("order_id",$order_id."-1")->where('product_id',$product_id)
+                        ->where('option_id',$option_id)->where('option_value_id',$option_value_id)->where('store',$order_product->store_id)->first();
+                        if( !$check_exist ){
+                            $new_deliver = new OmsInventoryDeliveredQuantityModel();
+                            $new_deliver->order_id        = $order_product->order_id."-1";
+                            $new_deliver->product_id      = $product_id;
+                            $new_deliver->option_id       = $option_id;
+                            $new_deliver->option_value_id = $option_value_id;
+                            $new_deliver->quantity        = $order_quantity;
+                            $new_deliver->store           = $order_product->store_id;
+                            if( $new_deliver->save() ){
+                                $decrement_query     = 'IF (shipped_quantity-' . $order_quantity . ' <= 0, 0, shipped_quantity-' . $order_quantity . ')';
+                                $deliver_query = OmsInventoryProductOptionModel::where(["product_id"=>$product_id,"product_option_id"=>$order_product->product_option_id])
+                                ->update(['shipped_quantity'=>DB::raw($decrement_query),'delivered_quantity'=>DB::raw("delivered_quantity + $order_quantity")]);
+                            }
+                        }
+                    }
+                }
+                // UPDATE OMS ORDER STATUS
+                $omsOrder->oms_order_status = 4;
+                $omsOrder->updated_at = \Carbon\Carbon::now();
+                $qry = $omsOrder->save();
+                //oms activity log
+                $check_activity = OmsActivityLogModel::where("ref_id",$order_id)->where('store',$store_id)->where("activity_id",17)->first();
+                if( !$check_activity ){
+                    $activity_ins_obj = new OmsActivityLogModel();
+                    $activity_ins_obj->activity_id = 17; //17 is for deliver exchange
+                    $activity_ins_obj->ref_id = $order_id;
+                    $activity_ins_obj->store = $store_id;
+                    $activity_ins_obj->created_by_courier = $omsOrder->last_shipped_with_provider;
+                    $activity_ins_obj->created_by = 0;
+                    $activity_ins_obj->created_at = date('Y-m-d H:i:s');
+                    $activity_ins_obj->save();
+                }
+                if($qry){
+                    ExchangeAirwayBillTrackingModel::where(['order_id'=>$order_id,"shipping_provider_id"=>$omsOrder->last_shipped_with_provider,'store'=>$store_id])->update(["courier_delivered"=>1]);
+                }
+            }else{
+                throw new \Exception("Order can be Delivered in 'Shipped' status only.");
+            }
+        }catch (\Exception $e){
+          // dd($e);die;
+            // Session::flash('message', $e->getMessage());
+            // Session::flash('alert-class', 'alert-danger');
+            // return redirect('/orders/deliver-orders');
         }
-        return $data;
-    }
+}
     public function createExchange(Request $request){
         $order_id            = $request->order_id_for_exchange;
         $store_id            = $request->store_id_for_exchange;

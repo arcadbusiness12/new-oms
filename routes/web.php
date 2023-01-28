@@ -73,6 +73,7 @@ Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersController::class)->group(function() {
         Route::get("/","index")->name('orders');
         Route::get("/online","online")->name('orders.online');
+        Route::post("/online/approve","onlineApprove")->name('orders.online.approve');
         Route::any("/update-customer-details","updateCustomerDetails")->name('orders.update-customer-details');
         Route::any('/reship-orders', 'approveReshipment')->name('orders.reship-orders');
         Route::get('/picking-list-awaiting', 'pickingListAwaiting')->name('orders.picking-list-awaiting');
@@ -84,6 +85,7 @@ Route::prefix('orders')->middleware('auth')->group(function(){
         Route::get('/awb/generated', 'awbGenerated')->name('orders.awb.generated');
         Route::get('/ship/order', 'shipOrdersToCourier')->name('orders.ship.order');
         Route::post('/ship/orders/to/courier', 'shipOrders')->name('orders.ship.orders.to.courier');
+        Route::any('/ready/for/return', 'readyForReturn')->name('orders.ready.for.return');
         Route::get('/return/order', 'returnOrder')->name('orders.return.order');
         Route::post('/get/return/order', 'getReturnOrder')->name('orders.get.return.order');
         Route::get('/print/label/{id}', 'printLabel')->name('orders.print.label');
@@ -92,6 +94,7 @@ Route::prefix('orders')->middleware('auth')->group(function(){
     Route::controller(OrdersAjaxController::class)->group(function() {
         Route::post('/cancel-order','cancelOrder')->name('orders.cancel-order');
         Route::post('/reship', 'reship')->name('orders.reship');
+        Route::post('/track/courier', 'trackOrderCourier')->name('orders.track.courier');
         Route::any('/activity-details', 'activityDetails')->name('orders.activity-details');
         Route::post('/get/order/detail', 'getOrderDetail')->name('orders.get.order.detail');
         Route::post('/forward/for/shipping', 'forwardForShipping')->name('orders.forward.for.shipping');
@@ -149,6 +152,21 @@ Route::prefix('return')->middleware('auth')->group(function(){
         Route::get('/search', 'return')->name('return.search');
         Route::post('/get/return', 'getReturn')->name('return.get');
         Route::post('/update', 'updateReturn')->name('return.update');
+    });
+});
+// =======================  Accounts routes start ===========================
+Route::prefix('accounts')->middleware('auth')->group(function() {
+    Route::controller(ReceiptController::class)->group(function(){
+        Route::any('/accounts/receipts', 'ReceiptController@index')->name('accounts.receipts');
+        // Route::get('/accounts/pending-receipts', 'pendingReciepts')->name('accounts.pending.receipts');
+        // Route::post('/accounts/save-pending-receipts', 'savePendingReciepts')->name('accounts.save.pending.receipts');
+        // Route::post('/accounts/receive-pending-receipts', 'receivePendingReciepts')->name('receive.pending.receipts');
+        // Route::post('/accounts/update-shipping-payment', 'updateShippingPayment')->name('accounts.update.payment');
+        // Route::any('/accounts/get-receipt-popup', 'getReceiptPopup')->name('accounts.getReceiptPopup');
+        // Route::post('/pending/receipt/process-ex-file', 'processPendingExReceiptFile')->name('orders.process-delivered-orders-file');
+    });
+    Route::controller(PaymentController::class)->group(function(){
+        Route::any('/accounts/payments', 'index')->name('accounts.payments');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

@@ -259,6 +259,35 @@ class OrdersAjaxController extends Controller {
 			}
 		}
 	}
+    public function trackOrderCourier(Request $request){
+        // dd($request->all())
+          $shippingProvider = $request->courier_name;
+          $order_id = $request->order_id;
+          $store_id = $request->store_id;
+          $shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $shippingProvider;
+          if (!class_exists($shippingCompanyClass)) {
+            throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
+          }
+          $shipping = new $shippingCompanyClass();
+          $airwaybill_table_name = 'airwaybill_tracking';
+          $awb_type = 0;
+          if( $request->has('order_type') && $request->order_type == 1 ){
+            $airwaybill_table_name = 'exchange_airwaybill_tracking';
+            $awb_type = 1;
+          }
+          if( $request->has('order_type') && $request->order_type == 2 ){
+            $airwaybill_table_name = 'return_airwaybill_tracking';
+            $awb_type = 2;
+          }
+          $airway_bill = DB::table($airwaybill_table_name)->where('order_id',$order_id)->where('store',$store_id)->orderBy('tracking_id','DESC')->first();
+          // echo "<pre>"; print_r($airway_bill); die;
+          if($airway_bill){
+            // die("in if");
+            $tracking_info = $shipping->getOrderTrackingHistory($airway_bill,$awb_type);
+            return response()->json(['data'=>$tracking_info]);
+          }
+          return response()->json(['data'=>null]);
+      }
     public function reship(Request $request){
 		// dd($request->all());
 		////return just history start

@@ -23,6 +23,10 @@ class OmsExchangeOrdersModel extends Model
                     ->orderBy(Model::CREATED_AT, 'desc')
                     ->with(['shipping_provider']);
     }
+    public function generatedCourier()
+    {
+        return $this->belongsTo(ShippingProvidersModel::class,"last_shipped_with_provider","shipping_provider_id");
+    }
     public static function shippingName($order_id){
       $data = self::with('shipping_provider')->where('order_id',$order_id)->where('last_shipped_with_provider','>',0)->first();
       if(!empty($data)){
