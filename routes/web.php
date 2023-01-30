@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Accounts\ReceiptController;
 use App\Http\Controllers\Catalog\AttributeController;
 use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
@@ -157,16 +158,16 @@ Route::prefix('return')->middleware('auth')->group(function(){
 // =======================  Accounts routes start ===========================
 Route::prefix('accounts')->middleware('auth')->group(function() {
     Route::controller(ReceiptController::class)->group(function(){
-        Route::any('/accounts/receipts', 'ReceiptController@index')->name('accounts.receipts');
-        // Route::get('/accounts/pending-receipts', 'pendingReciepts')->name('accounts.pending.receipts');
+        Route::any('/receipts', 'index')->name('accounts.receipts');
+        Route::any('/get/receipt/popup', 'getReceiptPopup')->name('accounts.get.receipt.popup');
+        Route::get('/pending/receipts', 'pendingReciepts')->name('accounts.pending.receipts');
         // Route::post('/accounts/save-pending-receipts', 'savePendingReciepts')->name('accounts.save.pending.receipts');
         // Route::post('/accounts/receive-pending-receipts', 'receivePendingReciepts')->name('receive.pending.receipts');
         // Route::post('/accounts/update-shipping-payment', 'updateShippingPayment')->name('accounts.update.payment');
-        // Route::any('/accounts/get-receipt-popup', 'getReceiptPopup')->name('accounts.getReceiptPopup');
         // Route::post('/pending/receipt/process-ex-file', 'processPendingExReceiptFile')->name('orders.process-delivered-orders-file');
     });
     Route::controller(PaymentController::class)->group(function(){
-        Route::any('/accounts/payments', 'index')->name('accounts.payments');
+        Route::any('/payments', 'index')->name('accounts.payments');
     });
 });
 Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], function() {

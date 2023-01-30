@@ -55,7 +55,7 @@
                                 </ul>
                         </li>
 
-                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) || ( str_contains(Request::url(), '/return') ) ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) || ( str_contains(Request::url(), '/return') ) || str_contains(Request::url(), '/accounts') ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -142,12 +142,12 @@
                                     </li>
                                 </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-documents3"></i>Vouchers<i
+                                <li class="@if( str_contains(Request::url(), '/accounts') ) active @endif"><a href="#"><i class="icon icon-documents3"></i>Vouchers<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">
-                                    <li><a href="panel-page-invoice.html">Receipts</a>
+                                    <li class="@if( Request::url() == route('accounts.receipts') ) active @endif"><a href="{{ route('accounts.receipts') }}">Receipts</a>
                                     </li>
-                                    <li><a href="panel-page-no-posts.html">Pending</a>
+                                    <li class="@if( Request::url() == route('accounts.pending.receipts') ) active @endif"><a href="{{ route('accounts.pending.receipts') }}?payment=0">Pending</a>
                                     </li>
                                     <li><a href="panel-page-no-posts.html">Payments</a>
                                     </li>
