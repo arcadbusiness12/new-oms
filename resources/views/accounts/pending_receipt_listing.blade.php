@@ -174,6 +174,17 @@
                     </div>
                 </div>
             </div>
+            <div class="block-header col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                {{-- <h4 class="text-center">Upload File</h4> --}}
+                <div class="form-group">
+                    <form name="deliverOrderFileUpload" id="deliverOrderFileUpload" enctype="multipart/form-data" >
+                        <div class="form-line">
+                            {{csrf_field()}}
+                            <input type="file" id="deliverd_orders_file" name="deliverd_orders_file" class="form-control" placeholder="">
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <div class="row">
                 <div class="col-md-12 col-sm-12">
@@ -186,7 +197,6 @@
                             {{ session()->get('success') }}
                             </div>
                           @endif
-
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                             <table class="table" width="100%" style="font-size: 14px !important; color:black !important">
@@ -232,7 +242,7 @@
 </div>
 
 <div class="toast-action" data-title="Hey, Bro!" data-message="Paper Panel has toast as well." data-type="success" data-position-class="toast-top-right"></div>
-@include('accounts.popup_receipt_details')
+@include('accounts.popup_excel_sheet_result')
 
 <style>
 .table td {
@@ -245,34 +255,6 @@ thead, tbody, tfoot, tr, td, th {
 @endsection
 
 @push('scripts')
-<script>
-    $(document).on('click','#order_history',function(event){
-        //console.log(event);
-        console.log($(this).attr('data-id'));
-        var order_id = $(this).attr('data-id');
-        $.ajax({
-            method: "POST",
-            url: APP_URL + "/accounts/get/receipt/popup",
-            data: {id:order_id},
-            //dataType: 'json',
-            cache: false,
-            headers:
-            {
-                'X-CSRF-Token': $('input[name="_token"]').val()
-            },
-        }).done(function (data)
-        {
-            //alert(data);
-            $('#receiptModal_content').html(data);
-        }); // End of Ajax
-    });
-    function printContent(el){
-        var restorepage = $('body').html();
-        var printcontent = $('#' + el).clone();
-        $('body').empty().html(printcontent).css('padding-top','0px');
-        window.print();
-        $('body').html(restorepage);
-        window.location.href=window.location.href;
-    }
-</script>
+    <script type="text/javascript" src="{{URL::asset('assets/js/accounts/receipt.js') }}?{{ time() }}"></script>
+
 @endpush

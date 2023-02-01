@@ -257,7 +257,7 @@ class ReceiptController extends Controller
 					'qty'       =>  0,
 					'amount'    =>  number_format($value->total_amount,2)
 				);
-        $ship_date = date("Y-m-d",strtotime($value->created_at));
+            $ship_date = date("Y-m-d",strtotime($value->created_at));
 			}
 			$total_orders = count($order_details);
       $record_limit = 16;
@@ -275,7 +275,7 @@ class ReceiptController extends Controller
 			return view("orders". $page, ['orders' => $order_details, 'total_orders' => $total_orders, 'shipper' => $shipper, 'ship_date' => $ship_date]);
     }
     public function savePendingReciepts(Request $request){
-      // dd($request->all());
+    //    dd($request->all());
         $shipment_id = $request->courier_id;
         $shipping_provider_data = ShippingProvidersModel::where("shipping_provider_id",$shipment_id)->first();
         $pending_orders_ids = $request->pending_order_ids;
@@ -284,6 +284,9 @@ class ReceiptController extends Controller
         $amounts    = $request->amount;
         $store_id   = $request->store_id;
         $order_type = $request->order_type;
+        //
+        $received_amount = $request->received_amount;
+        $balance_amount = $request->balance_amount;
         if( is_array($pending_orders_ids) && count($pending_orders_ids) > 0 ){
             $total_amount = 0;
             $ledgerObj = new OmsLedger();
@@ -300,7 +303,8 @@ class ReceiptController extends Controller
                 if( $check_payment ){
                   continue;
                 }
-                if( $payment_codes[$awb_number] == 'cod' OR $payment_codes[$awb_number] == 'cod_order_fee' OR $payment_codes[$awb_number] == ''){
+                $is_prepaid = 0;
+                if( $payment_codes[$awb_number] == 1){
                     $is_prepaid = 0;
                 }else{
                     $is_prepaid = 1;
@@ -326,11 +330,13 @@ class ReceiptController extends Controller
             $bill_no = $shipping_provider_data->short_code."-".$ledgerObj->id;
             $ledgerObj->total_amount = $total_amount;
             $ledgerObj->bill_no = $bill_no;
+            $ledgerObj->paid_amount =  $received_amount;
+            $ledgerObj->balance_amount =  $balance_amount;
             $ledgerObj->save();
 
             $data = OmsLedger::where("id",$ledgerObj->id)->with(['ledgerDetails','shippingProvider'])->first();
             // dd($data->toArray());
-            echo  view(self::VIEW_DIR .".print_deliver_report_shipping_provider_wise_all",compact('data'))->render(); die;
+            // echo  view(self::VIEW_DIR .".print_deliver_report_shipping_provider_wise_all",compact('data'))->render(); die;
         }
 
     }
@@ -393,119 +399,105 @@ class ReceiptController extends Controller
 
 				$fileName = 'deliverd-orders-file-' . Carbon::now('Asia/Muscat')->format('m-d-Y-H-i-s') . '.' . $request->deliverd_orders_file->getClientOriginalExtension();
 				$request->deliverd_orders_file->move(public_path('/uploads'), $fileName);
-        // error_reporting(E_ALL ^ E_WARNING);
-				Excel::selectSheetsByIndex(0)->load(public_path('/uploads/' . $fileName), function ($reader) {
-      //  Excel::load(public_path('/uploads/' . $fileName), function ($reader) {
-            // die("test test225");
-					$order_raw = $reader->get();
-          // dd($order_raw->toArray());
-          $exchange_data = [];
-          $normal_data = [];
-          $missing_data = [];
-          $count = 0;
-					foreach ($order_raw->toArray() as $order) {
-            // dd(is_numeric($order['order']));
-						if ($order['order'] != '') {
-              $o_number = strval($order['order']);
-              if(strpos($o_number, '-') !== false) {
-               //exchange qeury start
-               $number = explode("-", $o_number);
-               $awb = explode("-", $order['awb']);
-              //  dd($awb[0]);
-                  $data_exchange = DB::table("oms_exchange_orders AS ord")
-                  ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_exchange_order AS baord",function($join){
-                    $join->on("baord.order_id","=","ord.order_id");
-                    $join->on("ord.store","=",DB::raw("1"));
-                  })
-                  ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_exchange_order AS dford",function($join){
-                    $join->on("dford.order_id","=","ord.order_id");
-                    $join->on("ord.store","=",DB::raw("2"));
-                  })
-                ->join("exchange_airwaybill_tracking AS awbt",function($join){
-                  $join->on('awbt.order_id','=','ord.order_id');
-                  $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-                })
-                ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,awbt.tracking_id,awbt.shipping_provider_id,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                      (CASE WHEN ord.store = 1 THEN baord.total WHEN ord.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                      SUM((CASE WHEN ord.store = 1 THEN baord.total WHEN ord.store = 2 THEN dford.total ELSE 0 END)) OVER() AS total_amount,
-                      (CASE WHEN ord.store = 1 THEN baord.payment_code WHEN ord.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                      2 AS order_type
-                    "))
-                ->where('awbt.order_id',$number[0])
-                ->where('awbt.airway_bill_number',$order['awb'])
-                ->first();
-                if($data_exchange) {
-                  if($data_exchange->amount == $order['aed']) {
-                    $data_exchange->amount_match = 1;
-                  }else {
-                    $data_exchange->amount_match = 0;
-                  }
-                  $data_exchange->ex_amount = number_format((float)$order['aed'], 2, '.', '');
-                  $data_exchange->exchange_or = 1;
-                  array_push($exchange_data,$data_exchange);
-                }else{
-                  array_push($missing_data,$order);
+                // error_reporting(E_ALL ^ E_WARNING);
+                $records = Excel::toArray([],public_path('/uploads/' . $fileName));
+                // echo "<pre>"; print_r($records); die;
+                if( is_array($records) ){
+                    $records = $records[0];
                 }
+                // echo "<pre>"; print_r($records);
+                // die("test");
+                $exchange_data = [];
+                $normal_data = [];
+                $missing_data = [];
+                $count = 0;
+                foreach ($records as $key => $order) {
+                    if( $key == 0 ) continue;
+                    $excel_orer_id     = $order[0];
+                    $excel_amount      = $order[1];
+                    $excel_airwaybill  = $order[2];
+                    // dd(is_numeric($order['order']));
+                    if ( $excel_orer_id != '') {
+                        if(strpos($excel_orer_id, '-') !== false) {
+                            //exchange qeury start
+                            $excel_orer_id = str_replace("-1","",$excel_orer_id);
+                            //  dd($awb[0]);
+                            $data_exchange = DB::table("oms_exchange_orders AS eord")
+                            ->leftjoin("oms_place_exchanges AS pord",function($join){
+                                $join->on("pord.order_id","=","eord.order_id");
+                                $join->on("pord.store","=","eord.store");
+                            })
+                            ->join("exchange_airwaybill_tracking AS awbt",function($join){
+                            $join->on('awbt.order_id','=','eord.order_id');
+                            $join->on('awbt.shipping_provider_id','=','eord.last_shipped_with_provider');
+                            })
+                            ->select(DB::raw("eord.order_id,eord.oms_order_status,eord.store,awbt.tracking_id,awbt.shipping_provider_id,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
+                                (pord.total_amount) AS amount,
+                                pord.payment_method_id,
+                                SUM(pord.total_amount) OVER() AS total_amount,
+                                2 AS order_type
+                                "))
+                            ->where('awbt.order_id',$excel_orer_id)
+                            ->where('awbt.airway_bill_number',$excel_airwaybill)
+                            ->first();
+                            if($data_exchange) {
+                                if($data_exchange->amount == $excel_amount) {
+                                    $data_exchange->amount_match = 1;
+                                }else {
+                                    $data_exchange->amount_match = 0;
+                                }
+                                $data_exchange->ex_amount = number_format((float)$excel_amount, 2, '.', '');
+                                $data_exchange->exchange_or = 1;
+                                array_push($exchange_data,$data_exchange);
+                            }else{
+                                array_push($missing_data,$order);
+                            }
 
-              }else {
-                  $awb = explode("-", $order['awb']);
-                  $data = DB::table("oms_orders AS ord")
-                  ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                    $join->on("baord.order_id","=","ord.order_id");
-                    $join->on("ord.store","=",DB::raw("1"));
-                  })
-                  ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                    $join->on("dford.order_id","=","ord.order_id");
-                    $join->on("ord.store","=",DB::raw("2"));
-                  })
-                ->join("airwaybill_tracking AS awbt",function($join){
-                  $join->on('awbt.order_id','=','ord.order_id');
-                  $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-                })
-                ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,awbt.tracking_id,awbt.shipping_provider_id,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                      (CASE WHEN ord.store = 1 THEN baord.total WHEN ord.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                      SUM((CASE WHEN ord.store = 1 THEN baord.total WHEN ord.store = 2 THEN dford.total ELSE 0 END)) OVER() AS total_amount,
-                      (CASE WHEN ord.store = 1 THEN baord.payment_code WHEN ord.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                      1 AS order_type
-                    "))
-                    ->where('awbt.order_id',$o_number)
-                    ->where('awbt.airway_bill_number',$order['awb'])
-                    ->first();
-                    // dd($data);
-                    if($data) {
-                      if($data->amount == $order['aed']) {
-                        $data->amount_match = 1;
-                      }else {
-                        $data->amount_match = 0;
-                      }
-                      $data->ex_amount = number_format((float)$order['aed'], 2, '.', '');
-                      $data->exchange_or = 0;
-                      array_push($normal_data,$data);
-                    }else{
-                      array_push($missing_data,$order);
+                        }else {
+                            $data = DB::table("oms_orders AS ord")
+                            ->leftjoin("oms_place_order AS pord",function($join){
+                                $join->on("pord.order_id","=","ord.order_id");
+                                $join->on("pord.store","=","ord.store");
+                            })
+                            ->join("airwaybill_tracking AS awbt",function($join){
+                                $join->on('awbt.order_id','=','ord.order_id');
+                                $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
+                            })
+                            ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,awbt.tracking_id,awbt.shipping_provider_id,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
+                                (pord.total_amount) AS amount,
+                                pord.payment_method_id,
+                                SUM(pord.total_amount) OVER() AS total_amount,
+                                1 AS order_type
+                            "))
+                            ->where('awbt.order_id',$excel_orer_id)
+                            ->where('awbt.airway_bill_number',$excel_airwaybill)
+                            ->first();
+                            // dd($data);
+                            if($data) {
+                                if($data->amount == $excel_amount) {
+                                $data->amount_match = 1;
+                                }else {
+                                $data->amount_match = 0;
+                                }
+                                $data->ex_amount = number_format((float)$excel_amount, 2, '.', '');
+                                $data->exchange_or = 0;
+                                array_push($normal_data,$data);
+                            }else{
+                                array_push($missing_data,$order);
+                            }
+                        }
+
                     }
-
-              }
-
-						}
-					}
-          // $all = [
-          //   'normal_orders' => $normal_data,
-          //   'exchange_orders' => $exchange_data
-          // ];
-          $all_orders = array_merge($normal_data,$exchange_data);
-          $this->returnSheetPendingOrders($all_orders,$missing_data);
-        });
-        // dd($all);
-        // return $all;
-				// unlink(public_path('/uploads/' . $fileName)); // remove this line if you want to keep backup
-
+                } //end foreach
+                $all_orders = array_merge($normal_data,$exchange_data);
+                // echo "<pre>"; print_r($all_orders);
+                $this->returnSheetPendingOrders($all_orders,$missing_data);
 			} catch (\Exception $e) {
-        // echo "<script>alert('".$e->getMessage()."')</script>";
+                // echo "<script>alert('".$e->getMessage()."')</script>";
 				return array('success' => false, 'data' => array(), 'error' => array('message' => $e->getMessage()));
 			}
 		} else {
-      // echo "<script>alert('".$validator->errors()->first()."')</script>";
+             // echo "<script>alert('".$validator->errors()->first()."')</script>";
 			return array('success' => false, 'data' => array(), 'error' => array('message' => $validator->errors()->first()));
 		}
   }
@@ -518,18 +510,19 @@ class ReceiptController extends Controller
         $missing_content .= "<tr style='color:red'><td>&nbsp;</td><td>".$missing_order['order']."</td><td>".$missing_order['awb']."</td><td>".$missing_order['aed']."</td></tr>";
       }
     }
-    $content = $missing_content;
     $form_data = "";
     $form = "";
     $ship_charges = ShippingProvidersModel::select('shipping_charges','name')->where('shipping_provider_id', $orders[0]->shipping_provider_id)->first();
     $chanrges = count($orders) * $ship_charges->shipping_charges;
-    $token = csrf_token();
-    $url = URL::to('/accounts/save-pending-receipts');
-    $form .= "<form  method='post' id='excel-form' action='$url'>";
-    $form .= "<input type='hidden' name='_token' value='$token'>";
+    // $token = csrf_token();
+    //$url = URL::to('/accounts/save/pending/receipts');
+    //$content  = "<form  method='post' id='excel-form' action='$url'>";
+    // $content .= "<input type='hidden' name='_token' value='$token'>";
+    $content = "";
+    $content .= $missing_content;
     $flag = true;
     $amount_total = 0;
-		foreach($orders as $key=>$order){
+	foreach($orders as $key=>$order){
       if( $order->oms_order_status == 3 ){
         $shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $ship_charges->name;
         $shipping = new $shippingCompanyClass();
@@ -544,16 +537,16 @@ class ReceiptController extends Controller
         $shipping->getOrderTrackingHistory($airway_bill_data,$awb_type);
       }
       $is_prepaid = '';
-      if( $order->payment_code != "cod" && $order->payment_code != "cod_order_fee" && $order->payment_code != ""){
-        $is_prepaid = "<b class='text-danger'>PP</b><br>";
-      }
+    //   if( $order->payment_code != "cod" && $order->payment_code != "cod_order_fee" && $order->payment_code != ""){
+    //     $is_prepaid = "<b class='text-danger'>PP</b><br>";
+    //   }
       if( $is_prepaid == "" ){
       $amount_total += $order->amount;
       }
       $am_class = '';
-      $co_deliver = ($order->courier_delivered == 1) ? '<i class="fa fa-check-circle fa-2x" style="color: #13a813; font-size:18px"></i>' : '<i class="fa fa-close fa-2x" style="color: red; font-size:15px"></i>';
-      $oms_order_status = ($order->oms_order_status == 4) ? '<i class="fa fa-check-circle fa-2x" style="color: #13a813; font-size:18px"></i>' : '<i class="fa fa-close fa-2x" style="color: red; font-size:15px"></i>';
-      $payment_status = ($order->payment_status == 1) ? '<i class="fa fa-check-circle fa-2x" style="color: #13a813; font-size:18px"></i>' : '<i class="fa fa-close fa-2x" style="color: red; font-size:15px"></i>';
+      $co_deliver = ($order->courier_delivered == 1) ? '<i style="color: #13a813; font-size:18px">Yes</i>' : '<i style="color: red; font-size:15px">No</i>';
+      $oms_order_status = ($order->oms_order_status == 4) ? '<i style="color: #13a813; font-size:18px">Yes</i>' : '<i style="color: red; font-size:15px">No</i>';
+      $payment_status = ($order->payment_status == 1) ? '<i style="color: #13a813; font-size:18px">Yes</i>' : '<i style="color: red; font-size:15px">No</i>';
       if($order->courier_delivered == 0 || $order->oms_order_status != 4 || $order->payment_status == 1) {
         $flag = false;
       }
@@ -561,44 +554,46 @@ class ReceiptController extends Controller
         $am_class = 'text-danger';
       }
       $display_orderId = ($order->exchange_or == 1) ? $order->order_id.'-1' : $order->order_id;
-      $form .= "<input type='hidden' name='pending_order_ids[]' value='$order->airway_bill_number'>
+      $content .= "<input type='hidden' name='pending_order_ids[]' value='$order->airway_bill_number'>
       <input type='hidden' name='order_ids[$order->airway_bill_number]' value='$order->order_id'>
       <input type='hidden' name='order_type[$order->airway_bill_number]' value='$order->order_type'>
       <input type='hidden' name='courier_id' value='$order->shipping_provider_id'>
       <input type='hidden' name='amount[$order->airway_bill_number]' value='$order->amount'>
-      <input type='hidden' name='payment_code[$order->airway_bill_number]' value='$order->payment_code'>
+      <input type='hidden' name='payment_code[$order->airway_bill_number]' value='$order->payment_method_id'>
       <input type='hidden' name='store_id[$order->airway_bill_number]' value='$order->store'>";
-			$content .= "<tr class='shipped-row'>
-				<td align='center'>".($key+1)."</td>
-				<td align='center'>".$display_orderId."</td>
-				<td align='center'>".$order->airway_bill_number."</td>
-				<td align='center' class='$am_class'>$is_prepaid".number_format((float)$order->amount, 2, '.', '').'<br>'.$order->ex_amount."</td>
-				<td align='center'>".$co_deliver."</td>
-				<td align='center'>".$oms_order_status."</td>
-				<td align='center'>".$payment_status."</td>
-			</tr>";
+        $content .= "<tr class='shipped-row' style='border-bottom: 1px solid lightgray !important;'>
+            <td align='center'>".($key+1)."</td>
+            <td align='center'>".$display_orderId."</td>
+            <td align='center'>".$order->airway_bill_number."</td>
+            <td align='center' class='$am_class'>$is_prepaid".number_format((float)$order->amount, 2, '.', '').'<br>'.$order->ex_amount."</td>
+            <td align='center'>".$co_deliver."</td>
+            <td align='center'>".$oms_order_status."</td>
+            <td align='center'>".$payment_status."</td>
+        </tr>";
     }
     $g_total = $amount_total-$chanrges;
     $content .= "<tr class='shipped-row'>
-    <td align='center' colspan='7' style='padding-right: 262px;'> <strong>Total Amount:</strong> ".$amount_total."</td>
+    <td align='right' colspan='6'> <strong>Total Amount:</strong></td>
+    <td>$amount_total</td>
     </tr>";
     $content .= "<tr class='shipped-row'>
-    <td align='center' colspan='7' style='padding-right: 262px;'> <strong>Charges:</strong> ".count($orders).'*'.$ship_charges->shipping_charges.' = '.$chanrges."</td>
+    <td align='right' colspan='6' align='right'> <strong>Courier Charges:".count($orders).'*'.$ship_charges->shipping_charges."</strong></td>
+    <td>".$chanrges."</td>
+    </tr>";
+    $content .= "<tr class='shipped-row' style='border-bottom: 1px solid lightgray !important;'>
+    <td align='right' colspan='6' align='right'> <strong>Grand Total:</strong></td>
+    <td>".$g_total."</td>
     </tr>";
     $content .= "<tr class='shipped-row'>
-    <td align='center' colspan='7' style='padding-right: 262px;'> <strong>Grand Total:</strong> ".$amount_total.' - '.$chanrges.' = '.$g_total."</td>
-    </tr>";
-    //if($flag) {
-      $onclick =
-      $form .= '<input type="submit" class="btn btn-lg btn-success pull-right save-courier-payment-popup" onclick="$(this).hide();" name="save-courier-payment" value="RECIEVE"></form>';
-    //}
-
-    // $form .= "</form>";
-    $content .= ','.$form;
-    // $form .= $content;
-    // $content .= "</form>";
-
-		echo $content;
-		// return $content;
+        <td colspan='6' align='right'><strong>Enter Amount You Received:</strong></td>
+        <td colspan='6' align='right'><input type='text' name='received_amount'></td>
+        </tr>";
+    $content .= "<tr class='shipped-row'>
+        <td colspan='6' align='right'><strong>Balance:</strong></td>
+        <td colspan='6' align='right'><input type='text' name='balance_amount' readonly></td>
+        </tr>";
+      $content .= '<input type="submit" class="btn btn-lg btn-success float-right save-courier-payment-popup active" name="save-courier-payment" value="RECEIVE">';
+    //   $content .= '</form>';
+      echo $content;
 	}
 }

@@ -161,10 +161,10 @@ Route::prefix('accounts')->middleware('auth')->group(function() {
         Route::any('/receipts', 'index')->name('accounts.receipts');
         Route::any('/get/receipt/popup', 'getReceiptPopup')->name('accounts.get.receipt.popup');
         Route::get('/pending/receipts', 'pendingReciepts')->name('accounts.pending.receipts');
-        // Route::post('/accounts/save-pending-receipts', 'savePendingReciepts')->name('accounts.save.pending.receipts');
+        Route::post('/save/pending/receipts', 'savePendingReciepts')->name('accounts.save.pending.receipts');
         // Route::post('/accounts/receive-pending-receipts', 'receivePendingReciepts')->name('receive.pending.receipts');
         // Route::post('/accounts/update-shipping-payment', 'updateShippingPayment')->name('accounts.update.payment');
-        // Route::post('/pending/receipt/process-ex-file', 'processPendingExReceiptFile')->name('orders.process-delivered-orders-file');
+        Route::post('/process/courier/excel/file', 'processPendingExReceiptFile')->name('accounts.process.courier.excel.file');
     });
     Route::controller(PaymentController::class)->group(function(){
         Route::any('/payments', 'index')->name('accounts.payments');
