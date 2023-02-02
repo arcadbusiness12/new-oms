@@ -111,11 +111,11 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr  class="order-action" class="row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
+                                    <tr class="order-action row_{{ $order->order_id }}" style="border-bottom: 7px solid #e9e9e9 !important">
                                         <td colspan="11">
                                                     <div class="row">
                                                         <div class="col-1">
-                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->oms_store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
+                                                            <button class="btn btn-sm active btn-warning" data-orderid="{{ $order->order_id }}" data-store="{{ $order->store  }}" id="order_history" data-toggle="modal" data-target="#historyModal">History</button>
                                                         </div>
                                                         @if ( $exchange_status < 2 )
                                                              @if( (!empty($created_by) && $created_by->user_id == session('user_id') ) ||  session('role')=='ADMIN')

@@ -221,7 +221,7 @@ thead, tbody, tfoot, tr, td, th {
         var $this = $(this);
         var order_id  = $this.val();
         //alert( $this.attr('order-status') );
-        if( $this.is(':checked') && $this.attr('order-status') == 3 ){
+        if( $this.is(':checked') && $this.attr('order-status') == 4 ){
             $('.action_button_row, .exchange_action, .reship_action').show();
             //$('.exchange_action').show();
             //$('.reship_action').show();

@@ -15,19 +15,19 @@
                                                 <td>{{ $data->shippingProvider->shipping_charges }}</td>
                                             </tr>
                                         </table>
-                                        {{-- <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="{{$order['order_id']}}" 
+                                        {{-- <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="{{$order['order_id']}}"
                                              jsbarcode-textmargin="0" jsbarcode-height="100"  ></svg> --}}
                                     </td>
                                 </tr>
 
-                            </table> 
+                            </table>
                             <center>
                             <table class="table" style="width:50%;">
                                 <thead>
                                     <tr>
-                                        <th>SNO</th>
-                                        <th>Order ID</th>
-                                        <th>Order Amount</th>
+                                        <th><strong><strong>SNO</strong></strong></th>
+                                        <th><strong><strong>Order ID</</strong></th>
+                                        <th><strong><strong>Amount</strong></strong></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -35,9 +35,12 @@
                                         $tot_prepaid = 0;
                                     @endphp
                                     @foreach ($data->ledgerDetails as $key => $order)
+                                        @php
+                                            $ref_id = ($order->is_exchange == 1) ? $order->ref_id."-1" : $order->ref_id;
+                                        @endphp
                                         <tr>
                                             <td>{{ ($key+1) }}</td>
-                                            <td>{{$order->ref_id}} <small>{{ ( $order->is_prepaid ) ? 'Prepaid' : '' }}</small></td>
+                                            <td>{{ $ref_id }} <small>{{ ( $order->is_prepaid ) ? 'Prepaid' : '' }}</small></td>
                                             <td>{{$order->amount}}</td>
                                         </tr>
                                         @php
@@ -78,7 +81,7 @@
                                         <td colspan="2" align="center"><b>Balance</b></td>
                                         <td><b>{{  $data->balance_amount }}</b></td>
                                     </tr>
-                                    
+
                                 </tfoot>
                             </table>
                             </center>
@@ -88,12 +91,12 @@
                                     <td align="right">Stock Manager_______________</td>
                                 </tr>
                             </table>
-                            
+
                         </div>
-                    
+
 @push('scripts')
 <script type="text/javascript">
-    
+
     /*$('#frm_shipping_provider').on('submit',function(e){
         e.preventDefault();
         var form_data = $(this).serialize();
@@ -111,7 +114,7 @@
             error: function(data){
                 console.log("error",data);
             }
-        }); 
+        });
     });*/
 </script>
 @endpush

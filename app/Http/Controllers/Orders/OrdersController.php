@@ -62,7 +62,7 @@ class OrdersController extends Controller
     public function index(){
         $old_input = RequestFacad::all();
         $data = OmsPlaceOrderModel::select('oms_place_order.*')
-                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore','omsOrder.lastAwb'])
                 ->leftjoin("oms_orders",function($join){
                     $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
                     $join->on('oms_orders.store', '=', 'oms_place_order.store');
@@ -96,6 +96,7 @@ class OrdersController extends Controller
             // $data = $this->getOrdersWithImage($data);
             // dd($data->toArray());
         ///
+        // dd($data->toArray());
         $searchFormAction = URL::to('orders');
         $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();

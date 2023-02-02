@@ -48,7 +48,8 @@ class ReceiptController extends Controller
       $data = $data->paginate()->appends(Input::all());
     //   dd($data->toArray());
       $shipping_data = ShippingProvidersModel::where("is_active",1)->get();
-      return view(self::VIEW_DIR . ".receipt_listing",compact('data','shipping_data'));
+      $old_input = Input::all();
+      return view(self::VIEW_DIR . ".receipt_listing",compact('data','shipping_data','old_input'));
     }
     public function pendingReciepts(Request $request){
         // $data = AirwayBillTrackingModel::with(['shipping_provider'])->where('payment_status',0)->orderBy("tracking_id","DESC");
@@ -72,6 +73,7 @@ class ReceiptController extends Controller
                ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
                     pord.total_amount,
                     SUM( pord.total_amount ) OVER() AS grand_total_amount,
+                    pord.payment_method_id,
                     pord.payment_method_name,
                     1 AS order_type,
                     pord.shipping_address_1,
@@ -101,6 +103,7 @@ class ReceiptController extends Controller
                ->select(DB::raw("ord.order_id,ord.oms_order_status,ord.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
                       peord.total_amount,
                       SUM( peord.total_amount ) OVER() AS grand_total_amount,
+                      peord.payment_method_id,
                       peord.payment_method_name,
                       2 AS order_type,
                       peord.shipping_address_1,
@@ -272,7 +275,7 @@ class ReceiptController extends Controller
       }
 			$order_details = array_chunk($order_details, $record_limit);
       $ship_date = date("Y-m-d");
-			return view("orders". $page, ['orders' => $order_details, 'total_orders' => $total_orders, 'shipper' => $shipper, 'ship_date' => $ship_date]);
+	  return view("orders". $page, ['orders' => $order_details, 'total_orders' => $total_orders, 'shipper' => $shipper, 'ship_date' => $ship_date]);
     }
     public function savePendingReciepts(Request $request){
     //    dd($request->all());
@@ -304,15 +307,15 @@ class ReceiptController extends Controller
                   continue;
                 }
                 $is_prepaid = 0;
-                if( $payment_codes[$awb_number] == 1){
-                    $is_prepaid = 0;
-                }else{
-                    $is_prepaid = 1;
-                }
+                // if( $payment_codes[$awb_number] == 1){
+                //     $is_prepaid = 0;
+                // }else{
+                //     $is_prepaid = 1;
+                // }
                 $ledger_detailObj = new OmsLedgerDetail();
                 $ledger_detailObj->ledger_id = $ledgerObj->id;
                 $ledger_detailObj->ref_id = $order_ids[$awb_number];
-                $ledger_detailObj->amount = $amounts[$awb_number];
+                $ledger_detailObj->amount = $amounts[$awb_number] ? $amounts[$awb_number] : 0;
                 $ledger_detailObj->is_prepaid = $is_prepaid;
                 $ledger_detailObj->store = $store_id[$awb_number];
                 $ledger_detailObj->airway_bill_number = $awb_number;
@@ -337,6 +340,7 @@ class ReceiptController extends Controller
             $data = OmsLedger::where("id",$ledgerObj->id)->with(['ledgerDetails','shippingProvider'])->first();
             // dd($data->toArray());
             // echo  view(self::VIEW_DIR .".print_deliver_report_shipping_provider_wise_all",compact('data'))->render(); die;
+            return redirect('accounts/receipts');
         }
 
     }

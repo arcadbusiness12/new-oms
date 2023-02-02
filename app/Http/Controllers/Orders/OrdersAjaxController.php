@@ -58,14 +58,14 @@ class OrdersAjaxController extends Controller {
 	private $df_website_image_source_url  =  '';
     //
 	function __construct(){
-        $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
-        $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
-        $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
-        $this->website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
-        //for df
-        $this->df_website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/dressfair.com/image/';
-		$this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
-        $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
+        // $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
+        // $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
+        // $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
+        // $this->website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
+        // //for df
+        // $this->df_website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/dressfair.com/image/';
+		// $this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
+        // $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
 	}
     public function index(){
 

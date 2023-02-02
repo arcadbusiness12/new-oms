@@ -71,23 +71,23 @@ class ReturnOrdersController extends Controller
 
         $data = OmsReturnOrdersModel::with(['placeOrder','returnProducts.product','omsStore'])
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.order_id',$old_input['order_id']);
+                    return $query->where('oms_return_orders.order_id',$old_input['order_id']);
                 })
                 ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.store',$old_input['by_store']);
+                    return $query->where('oms_return_orders.store',$old_input['by_store']);
                 })
-                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
-                })
-                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
-                })
-                ->when(@$old_input['email'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
-                })
-                ->when(@$old_input['total'] != "",function($query) use ($old_input){
-                    return $query->where('oms_place_order.total_amount',$old_input['total']);
-                })
+                // ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                //     return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
+                // })
+                // ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                //     return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
+                // })
+                // ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                //     return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
+                // })
+                // ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                //     return $query->where('oms_place_order.total_amount',$old_input['total']);
+                // })
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
                     return $query->where('oms_return_orders.oms_order_status',$old_input['order_status_id']);
                 })

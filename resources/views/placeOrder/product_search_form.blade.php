@@ -1,5 +1,5 @@
 <table class="table" style="border:1px solid #3f51b5">
-@if( $product )
+@if( $product && $product->productDescriptions->count() > 0 )
 <thead>
     <tr style="background-color: #3f51b5;color:white">
         <th><strong>Image</strong></th>

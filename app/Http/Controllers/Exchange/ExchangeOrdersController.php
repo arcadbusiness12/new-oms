@@ -62,7 +62,7 @@ class ExchangeOrdersController extends Controller
         $old_input = RequestFacad::all();
         $old_input = RequestFacad::all();
         $data = OmsPlaceExchangeModel::select('oms_place_exchanges.*')
-                ->with(['exchangeProducts.product','omsExchange.generatedCourier','omsStore'])
+                ->with(['exchangeProducts.product','omsExchange.generatedCourier','omsStore','omsExchange.lastAwb'])
                 ->leftjoin("oms_exchange_orders",function($join){
                     $join->on('oms_exchange_orders.order_id', '=', 'oms_place_exchanges.order_id');
                     $join->on('oms_exchange_orders.store', '=', 'oms_place_exchanges.store');
@@ -323,7 +323,7 @@ class ExchangeOrdersController extends Controller
 
                         // $awb_number = AirwayBillTrackingModel::select('airway_bill_number')->where('order_id', $orderId)->where('store',$omsOrder->store)->first();
 
-					    OmsActivityLogModel::newLog($orderId,5, $omsOrder->store); //16 is for Ship order
+					    OmsActivityLogModel::newLog($orderId,16, $omsOrder->store); //16 is for Ship exchange
 
                         // if($openCartOrder->reseller_id > 0) {
                         //     $this->manageResellerAccount($orderId ,$openCartOrder->reseller_id, 1);

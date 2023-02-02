@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Accounts\ReceiptController;
+use App\Http\Controllers\Accounts\PaymentController;
 use App\Http\Controllers\Catalog\AttributeController;
 use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;

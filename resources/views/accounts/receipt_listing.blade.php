@@ -15,7 +15,47 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="card-header white">
-                            <p>Filters</p>
+                            <form method="get" action="{{ URL::to('accounts/receipts') }}">
+                                <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <select class="form-control"  name="search_by_courier">
+                                                    <option value="">--Courier--</option>
+                                                    @forelse($shipping_data as $key => $val)
+                                                        <option value="{{ $val->shipping_provider_id }}" {{ (@$old_input['search_by_courier'] == $val->shipping_provider_id) ? "selected" : "" }} >{{ $val->name }}</option>
+                                                    @empty
+                                                    @endforelse
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="text" name="date_from" id="date_from" class="date-time-picker form-control" placeholder="Date From" data-options='{
+                                                    "timepicker":false,
+                                                    "format":"Y-m-d"
+                                                    }' value="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="text" name="date_to" id="date_to" class="date-time-picker form-control" data-options='{
+                                                    "timepicker":false,
+                                                    "format":"Y-m-d"
+                                                    }'  placeholder="Date To" value="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <button type="submit" id="search_filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> Filter</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -24,14 +64,6 @@
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
-                        <div class="row action_button_row" style="display:none">
-                            <div class="col-sm-2 exchange_action" style="display:none">
-                                <button class="btn btn-info active" id="btn_exchange">Exchange</button>
-                            </div>
-                            {{--  <div class="col-sm-2 reship_action" style="display:none">
-                                <button class="btn btn-warning active" id="btn_reship">Reship</button>
-                            </div>  --}}
-                        </div>
                         <div class="panel-heading">Reciept Vouchers</div>
 
                         {{--  <div class="panel-heading">Inventory Dashboard</div>  --}}

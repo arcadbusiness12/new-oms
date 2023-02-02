@@ -12,7 +12,7 @@ use App\Platform\Helpers\ToolImage;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request AS Input;
 use Illuminate\Support\Facades\URL;
 use Session;
 use Excel;
@@ -30,12 +30,6 @@ class PaymentController extends Controller
     private $opencart_image_url = '';
 
     function __construct(){
-        $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
-        $this->DB_BAOMS_DATABASE = env('DB_BAOMS_DATABASE');
-        $this->store = 'businessarcade';
-        $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
-        $this->website_image_source_url =  $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/';
-        $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
     }
 
     public function index(Request $request){
@@ -97,5 +91,5 @@ class PaymentController extends Controller
         session()->flash('mesg',"Payment saved Successfuly.");
       }
     }
- 
+
 }

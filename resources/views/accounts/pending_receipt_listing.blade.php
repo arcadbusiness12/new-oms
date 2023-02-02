@@ -174,18 +174,68 @@
                     </div>
                 </div>
             </div>
-            <div class="block-header col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                {{-- <h4 class="text-center">Upload File</h4> --}}
-                <div class="form-group">
-                    <form name="deliverOrderFileUpload" id="deliverOrderFileUpload" enctype="multipart/form-data" >
-                        <div class="form-line">
-                            {{csrf_field()}}
-                            <input type="file" id="deliverd_orders_file" name="deliverd_orders_file" class="form-control" placeholder="">
-                        </div>
-                    </form>
+            @if( session('user_group_id') == 1 )
+                <div class="block-header col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    {{-- <h4 class="text-center">Upload File</h4> --}}
+                    <div class="form-group">
+                        <form name="deliverOrderFileUpload" id="deliverOrderFileUpload" enctype="multipart/form-data" >
+                            <div class="form-line">
+                                {{csrf_field()}}
+                                <input type="file" id="deliverd_orders_file" name="deliverd_orders_file" class="form-control" placeholder="">
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-
+            @endif
+            <form method="post" action="{{ route('accounts.save.pending.receipts') }}">
+                <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
+                <div class="row p-2">
+                    {{-- @if( @$old_input['courier_delivered']==1 && @$old_input['search_by_courier'] > 0  ) --}}
+                    @if( @$old_input['courier_delivered']==1 && (@$old_input['search_by_courier']==4 || @$old_input['search_by_courier']==5 || @$old_input['search_by_courier']==14) )
+                        @php
+                            $total_amount = $data->sum(function($row){
+                            if($row->payment_status==0 && ( $row->payment_method_id == 1 || $row->payment_method_id == 0 ) ){
+                                return $row->total_amount;
+                            }
+                            });
+                        @endphp
+                        <div class="col-sm-2">
+                            @php
+                                $total_shipments = $data->count();
+                                $courier_charges = $total_shipments * $courier_info->shipping_charges;
+                                $remaining_amount = $total_amount - $courier_charges;
+                            @endphp
+                            <label>&nbsp;</label>
+                            <table style="color:black">
+                                <tr>
+                                    <td><strong>Total Amount:</strong></td>
+                                    <td>{{ ($data->count() > 0) ? number_format($total_amount,2) : 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Courier Charges:</strong></td>
+                                    <td>{{ $courier_charges }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Remaining:</strong></td>
+                                    <td>{{ $remaining_amount }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="text" name="received_amount" placeholder="Received Amount" autocomplete="off" required>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="text" name="balance_amount" placeholder="Balance" readonly>
+                        </div>
+                        <input type="hidden" name="courier_id" value="{{ @$old_input['search_by_courier'] }}">
+                        <div class="col-sm-1">
+                            <label>&nbsp;</label>
+                            @if( session('user_group_id') == 1 OR session('user_group_id') == 5 )
+                                <input type="submit" class="btn btn-sm btn-success float-right save-courier-payment active" name="save-courier-payment" value="RECEIVE">
+                            @endif
+                        </div>
+                    @endif
+                </div>
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
@@ -215,7 +265,18 @@
                              </thead>
                              <tbody>
                                 @if($data->count())
+                                    @php
+                                        if($pagination_flag){
+                                        $total = $data->perPage() * ($data->currentPage() - 1);
+                                        }
+                                    @endphp
                                 @foreach($data as $key=>$row)
+                                    <input type="hidden" name="pending_order_ids[]" value="{{ $row->airway_bill_number }}">
+                                    <input type="hidden" name="order_ids[{{ $row->airway_bill_number }}]" value="{{ $row->order_id }}">
+                                    <input type="hidden" name="store_id[{{ $row->airway_bill_number }}]" value="{{ $row->store }}">
+                                    <input type="hidden" name="order_type[{{ $row->airway_bill_number }}]" value="{{ $row->order_type }}">
+                                    <input type="hidden" name="payment_code[{{$row->airway_bill_number}}]" value="{{ $row->payment_method_id }}">
+                                    <input type="hidden" name="amount[{{ $row->airway_bill_number }}]" value="{{ $row->total_amount }}">
                                     <tr class="row_{{ $row->order_id }}" style="border-bottom: 1px solid lightgray !important">
                                         <td class="col-sm-1">{{ ($key+1) }}</td>
                                         <td class="col-sm-1">{{ $row->order_id }} {{ $row->order_type == 2 ? "-1" : "" }}</td>
@@ -223,7 +284,7 @@
                                         <td class="column col-sm-1 td-valign"><center>{{ $row->courier_name }} </center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ number_format($row->total_amount,2) }}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{!! $row->courier_delivered == 1 ? "<strong style='color:green'>Yes" : "<strong style='color:red'>No</strong>" !!} </center></td>
-                                        <td class="column col-sm-1 td-valign"><center>{!! $row->oms_order_status == 1 ? "<strong style='color:green'>Yes" : "<strong style='color:red'>No</strong>" !!}</center></td>
+                                        <td class="column col-sm-1 td-valign"><center>{!! $row->oms_order_status == 4 ? "<strong style='color:green'>Yes" : "<strong style='color:red'>No</strong>" !!}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{!! $row->payment_status == 1 ? "<strong style='color:green'>Yes" : "<strong style='color:red'>No</strong>" !!}</center></td>
                                         <td class="column col-sm-1 td-valign"><center>{{ $row->created_at }} </center></td>
                                     </tr>
@@ -231,7 +292,10 @@
                                 @endif
                              </tbody>
                             </table>
-                        {{  $data->appends(@$old_input)->render() }}
+                        </form>
+                        @if($pagination_flag)
+                            {{  $data->appends(@$old_input)->render() }}
+                        @endif
                     </div>
 
                     </div>

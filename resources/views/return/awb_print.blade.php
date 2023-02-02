@@ -70,10 +70,10 @@
       <tr>
         <td>
           <strong> From (Sender) </strong>
-          BusinessArcade.com<br />
-          DUBAI, UAE<br />
-          0565634477  <br />
-          <a href="mailto:info@businessarcade.com">info@businessarcade.com</a>
+          {{ $order->shipping_firstname }} {{ $order->shipping_lastname }}<br />
+          {{ $order->shipping_city_area }}, {{$order->shipping_address_1 }} {{  ($order->shipping_address_2) ?  ",".$order->shipping_address_2 : ""}} <br />
+          {{ $order->shipping_city }} <br />
+          <strong>Mobile:</strong> {{$order->mobile}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!! ($order->alternate_number != "") ? '<strong>Alternate:</strong> '.$order->alternate_number : "" !!}
         </td>
         <td style="padding:0px">
           @if($company_name != 'GetGive' && $company_name != 'ShafiExpress' && $company_name != 'NiazExpress')
@@ -91,10 +91,10 @@
       <tr>
         <td>
           <strong> To (Receiver) </strong> <br />
-          {{ $order->shipping_firstname }} {{ $order->shipping_lastname }}<br />
-          {{ $order->shipping_city_area }}, {{$order->shipping_address_1 }} {{  ($order->shipping_address_2) ?  ",".$order->shipping_address_2 : ""}} <br />
-          {{ $order->shipping_city }} <br />
-          <strong>Mobile:</strong> {{$order->mobile}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!! ($order->alternate_number != "") ? '<strong>Alternate:</strong> '.$order->alternate_number : "" !!}
+          BusinessArcade.com<br />
+          DUBAI, UAE<br />
+          0565634477  <br />
+          <a href="mailto:info@businessarcade.com">info@businessarcade.com</a>
         </td>
       </tr>
     </table>

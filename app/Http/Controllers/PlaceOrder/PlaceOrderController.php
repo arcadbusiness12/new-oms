@@ -94,7 +94,12 @@ class PlaceOrderController extends Controller
         },'productDescriptions'=>function($query) use ($store){
             $query->where("store_id",$store);
         },'productSpecials'=>function($query) use ($store){
-            $query->where("store_id",$store)->whereDate("date_start",'<=',date('Y-m-d'))->whereDate("date_end",'>=',date('Y-m-d'))->orderBy('sort_order');
+            // $query->where("store_id",$store)->whereDate("date_start",'<=',date('Y-m-d'))->whereDate("date_end",'>=',date('Y-m-d'))->orderBy('sort_order');
+            $query->where("store_id",$store)
+            ->orWhere(function($query){
+                $query->whereNull('date_start')->whereNull('date_end');
+            })
+            ->whereDate("date_start",'<=',date('Y-m-d'))->whereDate("date_end",'>=',date('Y-m-d'))->orderBy('sort_order');
         }])
         ->where('sku','LIKE',"%".$request->product_sku."%")->first();
         // echo $product->productSpecials->count();
@@ -308,7 +313,6 @@ class PlaceOrderController extends Controller
   public function paymentShipping(Request $request){
     // dd($request->all());
     $store   = $request->store_id;
-    $sub_dir = $store == 1 ? "ba" : "df";
     $shipping_methods = ShippingMethodModel::where("store_id",$store)->get();
     $payment_methods  = PaymentMethodModel::where('status',1)->get();
     $e_wallet_balance = 0;

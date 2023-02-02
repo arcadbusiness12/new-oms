@@ -149,7 +149,7 @@
                                     </li>
                                     <li class="@if( Request::url() == route('accounts.pending.receipts') ) active @endif"><a href="{{ route('accounts.pending.receipts') }}?payment=0">Pending</a>
                                     </li>
-                                    <li><a href="panel-page-no-posts.html">Payments</a>
+                                    <li class="@if( Request::url() == route('accounts.payments') ) active @endif"><a href="{{ route('accounts.payments') }}">Payments</a>
                                     </li>
                                 </ul>
                             </li>
