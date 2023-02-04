@@ -154,11 +154,30 @@
   </div>
 @endsection
 @push('scripts')
-<!-- Sweet alert css -->
-<link href="{{URL::asset('assets/plugins/sweetalert/sweetalert.css')}}" rel="stylesheet" />
-<!-- SweetAlert Plugin Js -->
-<script defer="defer" src="{{URL::asset('assets/plugins/sweetalert/sweetalert.min.js')}}"></script>
-<script type="text/javascript" src="{{URL::asset('assets/js/inventory_management.js') }}"></script>
-<link rel="stylesheet" href="{{URL::asset('assets/css/purchase.css') }}">
+<script>
+     var xhr = {};
+    $(document).delegate('#product_sku','keyup',function(){
+        // _this = $(this);
+        if(typeof xhr['get_product_sku_keyup'] != 'undefined' && xhr['get_product_sku_keyup'].readyState != 4){
+            xhr['get_product_sku_keyup'].abort();
+        }
+        xhr['get_product_sku_keyup'] = $.ajax({
+            method: "POST",
+            url: "{{route('inventory.get.product.sku')}}",
+            data: {
+                product_sku : $(this).val()
+            },
+            headers:{'X-CSRF-Token': $('input[name="_token"]').val()},
+        }).done(function (data){
+            html = '';
+            if(data.skus){
+                $.each(data.skus, function(k,v){
+                    html +='<option value="'+v+'">';
+                });
+                $('#product_skus').html(html);
+            }
+        });
+    });
+</script>
 
 @endpush

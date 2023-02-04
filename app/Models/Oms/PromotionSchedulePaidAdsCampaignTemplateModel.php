@@ -2,14 +2,17 @@
 
 namespace App\Models\Oms;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PromotionScheduleSettingModel extends Model
+class PromotionSchedulePaidAdsCampaignTemplateModel extends Model
 {
+    use HasFactory;
+
     public $timestamps = false;
-    protected $table = 'oms_promotion_schedule_setting';
+    protected $table = 'paid_ads_campaigns_templates';
     
-    protected $fillable = ['main_setting_id','user_id', 'posting_type', 'schedule_time','setting_name', 'range', 'budget', 'promotion_product_type_id', 'ad_set_name', 'creative_type_id', 'category_id', 'category', 'sub_category_id', 'sub_category', 'created_by','created_at', 'is_active'];
+    protected $fillable = ['campaign_id','main_setting_id','user_id','setting_name', 'range', 'budget', 'promotion_product_type_id', 'ad_set_name', 'creative_type_id', 'category_id', 'category', 'sub_category_id', 'sub_category', 'created_by','created_at', 'is_active','is_deleted','remark'];
 
 
     public function type() {
@@ -30,5 +33,4 @@ class PromotionScheduleSettingModel extends Model
     public function adResultHistories() {
         return $this->hasMany(DailyAdResult::class, 'setting_id');
     }
-
 }

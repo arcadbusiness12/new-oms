@@ -12,10 +12,14 @@
                             Add Inventory Product
                           </div>
                           @if(session()->has('success'))
-                            <div role="alert" class="alert alert-success">
+                            <div role="alert" class="alert alert-success font-weight-bold">
                             {{ session()->get('success') }}
                             </div>
                           @endif
+                          
+                          @if($errors->has('sku'))
+                            <div role="alert" class="error alert alert-danger font-weight-bold">{{ $errors->first('sku') }}</div>
+                        @endif
                         <div class="card-header white">
                             <form name="add_inventory_product" id="add_inventory_product" method="post" action="{{route('add.inventory.product')}}" enctype="multipart/form-data">
                                 {{csrf_field()}}
@@ -100,6 +104,14 @@
                                                          <option value="{{$options->id}}">{{$options->option_name}}</option>
                                                         @endforeach
                                                     </select>
+                                                </div>
+                                                <div id="newRow" style="width: 210%!important;"></div>
+                                                </div>
+
+                                                <div class="col-lg-4">
+                                                    <label for="">Sku Name</label>
+                                                <div class="input-group mb-3">
+                                                    <input class="form-control" name="sku_name" placeholder="Enter Sku Name" required>
                                                 </div>
                                                 <div id="newRow" style="width: 210%!important;"></div>
                                                 </div>

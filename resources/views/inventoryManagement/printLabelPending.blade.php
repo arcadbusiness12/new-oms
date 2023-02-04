@@ -190,6 +190,9 @@
         height: 35px;
         max-height: 35px;
     }
+    .barcode text {
+        font-size: 28px !important;
+    }
     
     /* Big Label */
     section.content.big{

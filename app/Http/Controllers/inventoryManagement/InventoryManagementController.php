@@ -48,6 +48,7 @@ use Carbon\Carbon;
     private $opencart_image_url = '';
     private $oms_inventory_product_image_source_path = '';
     private $oms_inventory_product_image_source_url = '';
+    const BA_DB_CONN_NAME = 'opencart';
 
     function __construct() {
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
@@ -84,16 +85,18 @@ use Carbon\Carbon;
     }
 
     public function add_inventory_product_add($id=null,Request $request){
-        // dd($request->all());
+        // dd($id);
         $placeholder = $this->opencart_image_url.'no_image.png';
         $option_detail = DB::table('oms_options')->get();
         $option_color =$request->input('option_color');
         $option_value_detail = DB::table('oms_options_details')
         ->join('oms_options', 'oms_options.id', '=', 'oms_options_details.options')
           // ->join('Colors', 'Colors.id', '=', 'oms_options.color_id') ,'oms_options.color_id','Colors.color_name'
-        ->select('oms_options_details.id', 'oms_options_details.value', 'oms_options.option_name')
+        ->select('oms_options_details.id', 'oms_options_details.value', 'oms_options_details.sort', 'oms_options.option_name')
         ->where(['oms_options_details.options' => $id])
+        ->orderBy('oms_options_details.sort', 'ASC')
         ->get();
+        // dd($option_value_detail);
         if($request->ajax()){
          $data['placeholder'] = $placeholder;
          $data['option_detail'] = $option_detail;
@@ -111,7 +114,8 @@ use Carbon\Carbon;
         $this->validate($request, [
             'sku'      => 'required | unique:oms_inventory_product,sku',
             'category' => 'required',
-            'options' => 'required'
+            'options'  => 'required',
+            'sku_name' => 'required'
         ]);
         $image = "";
         if($request->hasFile('image')) {
@@ -141,6 +145,7 @@ use Carbon\Carbon;
         $product = new OmsInventoryProductModel();
         $product->group_id = $group_id;
         $product->sku = $sku;
+        $product->sku_name = $request->sku_name;
         $product->image = $image;
         $product->option_name = $request->options;
         $product->option_value = $request->title;
@@ -516,18 +521,18 @@ use Carbon\Carbon;
 
           }
           //finally update color entry quantity and main product table quantity.
-          $OmsColorOptionId =OmsOptions::colorOptionId();
-          $OmsColorValueId = OmsDetails::colorId($request->color);
-          $baOptionData = OmsInventoryOptionValueModel::BaOptionsFromOms($OmsColorOptionId,$OmsColorValueId);
-          if( !empty($baOptionData) && !empty($baOptionData) && !empty($ba_product) ){
-            $color_entry_upd = ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            if($color_entry_upd){
-              ProductsModel::where('sku',$request->sku)->where("product_id",$ba_product->product_id)->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
-            }
-          }
+          // $OmsColorOptionId =OmsOptions::colorOptionId();
+          // $OmsColorValueId = OmsDetails::colorId($request->color);
+          // $baOptionData = OmsInventoryOptionValueModel::BaOptionsFromOms($OmsColorOptionId,$OmsColorValueId);
+          // if( !empty($baOptionData) && !empty($baOptionData) && !empty($ba_product) ){
+          //   $color_entry_upd = ProductOptionValueModel::where(["product_id"=>$ba_product->product_id,"option_id"=>$baOptionData->ba_option_id,"option_value_id"=>$baOptionData->ba_option_value_id])->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
+          //   if($color_entry_upd){
+          //     ProductsModel::where('sku',$request->sku)->where("product_id",$ba_product->product_id)->update(["quantity"=>DB::connection(self::BA_DB_CONN_NAME)->raw('quantity +'.$current_total)]);
+          //   }
+          // }
           // die("test twelve".$key);
           DB::commit();
-          updateSitesStock($request->sku); // helper function 
+          // updateSitesStock($request->sku); // helper function 
           Session::flash('message','Stock updated successfully.');
         } catch (\Exception $e) {
         DB::rollback();
@@ -562,18 +567,20 @@ use Carbon\Carbon;
             $label_details = $label_details->toArray();
             $color = "";
             foreach ($label_details as $option) {
-                $product = OmsInventoryProductModel::select('image', 'sku', 'print_label','option_name','option_value')->where(
+                $product = OmsInventoryProductModel::select('image', 'sku', 'sku_name', 'print_label','option_name','option_value')->where(
                     'product_id',
                     $option['product_id']
                 )->first();
                 if( $product &&  $product->option_value > 0 ){
-                  $size = OmsDetails::where('options',$product->option_value)->where('id',$option['option_value_id'])->first()->value;
+                  $size_va = OmsDetails::where('options',$product->option_value)->where('id',$option['option_value_id'])->first();
+                  $size = $size_va->value;
+                  $sku = $product->sku.'-'.$size_va->code;
                 }else{
                   $size = "";
+                  $sku = $product->sku;
                 }
                 $color  = $product->option_name;
-                $barcode = $option['product_id'];
-                $barcode .= $option['option_value_id'];
+                $barcode = $sku;
                 $option_array = array(
                   'color'=>$color,
                   'size'=>$size
@@ -585,14 +592,14 @@ use Carbon\Carbon;
                     if ($print_label === 'big') {
                         $label_array['big'][] = array(
                             'product_image' => $this->get_oms_product_image($product['image']),
-                            'product_sku' => $product['sku'],
+                            'product_sku' => $product['sku_name'],
                             'option' => $option_array,
                             'barcode' => $barcode,
                         );
                     } else {
                         $label_array['small'][] = array(
                             'product_image' => $this->get_oms_product_image($product['image']),
-                            'product_sku' => $product['sku'],
+                            'product_sku' => $product['sku_name'],
                             'option' => $option_array,
                             'barcode' => $barcode,
                         );

@@ -11,6 +11,7 @@ class OmsInventoryProductSpecialModel extends Model
     use HasFactory;
     public $timestamps = false;
     protected $table = 'oms_inventory_product_specials';
+    protected $fillable = ['store_id', 'product_id', 'price', 'date_start', 'date_end', 'sort_order'];
 
     public function inventoryProduct() {
         return $this->belongsTo(OmsInventoryProductModel::class, 'product_id');

@@ -48,7 +48,10 @@ class OmsUserModel extends Model
     public function userGroupName() {
        return $this->belongsTo('App\Models\Oms\OmsUserGroupModel', 'user_group_id')->select(array('id', 'name'));
     }
-
+    public function userGroup() {
+        return $this->belongsTo('App\Models\Oms\OmsUserGroupModel', 'user_group_id');
+     }
+ 
     public function activities() {
         return $this->belongsToMany(DutyListsModel::class,'duty_assigned_users', 'user_id', 'activity_id')->select('user_id','activity_id','point','quantity','duration','name','per_quantity_point', 'monthly_tasks','daily_compulsory');
     }

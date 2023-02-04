@@ -234,6 +234,7 @@
                         html += "<option value="+element.id+">"+element.name+"</option>"
                     });
                 }
+                console.log(html);
                 if( counter > -1 ){
                     $('.preset_category'+counter).html(html);
                 }else{
