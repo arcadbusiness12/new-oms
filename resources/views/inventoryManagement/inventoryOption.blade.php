@@ -185,13 +185,13 @@
         $(document).on('click',"#addNewRow",function () {
             var option = $('#option_name_id').val();
             var attr = '';
-            if(option != 19) {
-                attr = 'disabled';
-            }
+            // if(option != 19) {
+            //     attr = 'disabled';
+            // }
              console.log(option);
             var html = '';
             html += '<tr>';
-            html += '<td><input type="text" name="title[]" id="myInput" class="form-control m-input" placeholder="" autocomplete="off"></td><td><input type="text" name="code[]" value="" autocomplete="off" class="form-control" size="6px" '+attr+'></td><td><button id="removeNewRow" type="button" class="btn btn-danger "><i class="icon-close"></i></button></td>';
+            html += '<td><input type="text" name="title[]" id="myInput" class="form-control m-input" placeholder="" autocomplete="off"></td><td><input type="text" name="code[]" value="" autocomplete="off" class="form-control" size="6px" ></td><td><button id="removeNewRow" type="button" class="btn btn-danger "><i class="icon-close"></i></button></td>';
             
             html += '</tr>';
             $('.rowNew').append(html);
@@ -203,12 +203,12 @@
 
        function checkName(v) {
            console.log(v);
-           if(v) {
-               $('#btn-update').attr('disabled', false);
-           }
-           else {
-            $('#btn-update').attr('disabled', true);
-           }
+        //    if(v) {
+        //        $('#btn-update').attr('disabled', false);
+        //    }
+        //    else {
+        //     $('#btn-update').attr('disabled', true);
+        //    }
        }
 
        function destroyOptionValue(id) {

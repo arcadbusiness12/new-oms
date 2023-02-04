@@ -136,6 +136,7 @@
         });
         //
         function loadPresetCategory(counter = ''){
+            console.log("Called");
             $.ajax({
                 method: "POST",
                 url: "{{route('get.preset.category')}}",
@@ -149,6 +150,7 @@
                     });
                 }
                 //$('.preset_category_all').html(html);
+                console.log(html);
                 if( counter > 0 ){
                     $('.preset_category'+counter).html(html);
                 }else{

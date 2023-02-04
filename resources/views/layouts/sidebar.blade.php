@@ -264,7 +264,7 @@
                             </ul>
                         </li>
 
-                        <li class="treeview @if( (str_contains(Request::url(), '/Catalog') || str_contains(Request::url(), '/productgroup')) ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/Catalog') || str_contains(Request::url(), '/productgroup/attribute')) ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-tags s-24"></i> <span> Catalog</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -288,18 +288,23 @@
                             </ul>
                         </li>
 
-                        <li class="treeview">
+                        <li class="treeview @if(str_contains(Request::url(), '/productgroup')) active @endif" >
                             <a href="#">
                                 <i class="icon icon-flare s-24"></i> <span>Promotion</span>
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-pages"></i>Group Page</a>
+                                <li class="@if(strpos(Request::url(), '/product/group') !== false) active @endif">
+                                    <a href="{{route('promotion.product', 'group_page')}}">Group Page</a>
                                 </li>
-                                <li><a href="#"><i class="icon icon-shopping-cart"></i>Organic Post<i
-                                        class=" icon-angle-left  pull-right"></i></a>
+                                <li class="@if(strpos(Request::url(), '/promotion/organic/organicPost') !== false) active @endif">
+                                    <a href="#"><i class="icon icon-shopping-cart"></i>
+                                        Organic Post
+                                        <i class="icon-angle-left pull-right"></i>
+                                    </a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Product List</a>
+                                        <li class="@if(strpos(Request::url(), '/organic/organicPost') !== false) active @endif">
+                                            <a href="{{route('promotion.organic', 'organicPost')}}"><i class="icon icon-more"></i>Product List</a>
                                         </li>
                                         <li>
                                             <a href="panel-page-blank-tabs.html"><i class="icon icon-tasks"></i>BA Work <i
@@ -335,6 +340,19 @@
                                                 <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
                                                 </li>
                                             </ul>
+                                        </li>
+
+                                    </ul>
+                                </li>
+
+                                <li class="@if(strpos(Request::url(), '/promotion/paid/ads/template/settings') !== false) active @endif"><a href="#">
+                                    <i class="icon icon-buysellads"></i>Promotion Setting<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                        <li><a href="panel-page-users.html">Organic Setting</a>
+                                        </li>
+                                        <li class="@if(strpos(Request::url(), '/promotion/paid/ads/template/settings') !== false) active @endif">
+                                            <a href="{{route('promotion.paid.ads.template', 2)}}">Paid Ads Template</a>
                                         </li>
 
                                     </ul>
@@ -412,10 +430,12 @@
                                     </ul>
                                 </li>
 
-                                <li><a href="#"><i class="icon icon-joomla"></i>Marketting<i
-                                    class=" icon-angle-left  pull-right"></i></a>
+                                <li>
+                                    <a href="#">
+                                    <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
+                                    </a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html">Save Ads Chat</a>
+                                        <li><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
                                         </li>
                                         <li><a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>

@@ -81,6 +81,7 @@
         <div class="control-sidebar-bg shadow white fixed"></div>
     </div>
     <script src="{{ URL::asset('assets/js/jquery.main.js')}}"></script>
+    
     @stack('scripts')
 
 </body>

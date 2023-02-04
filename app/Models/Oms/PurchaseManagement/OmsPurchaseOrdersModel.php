@@ -37,4 +37,7 @@ class OmsPurchaseOrdersModel extends Model
     public function orderSupplier() {
         return $this->belongsTo(OmsUserModel::class, 'supplier');
     }
+    public function orderStatus() {
+        return $this->belongsTo(OmsPurchaseOrdersStatusModel::class, 'order_status_id');
+    }
 }

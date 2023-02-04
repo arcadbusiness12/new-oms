@@ -19,7 +19,8 @@
       @php $attr = ''; @endphp
       @if($details->id != 19)
         @php 
-          $attr = 'disabled';
+          // $attr = 'disabled';
+          $attr = '';
         @endphp
       @endif
       @foreach($option_values as $value)

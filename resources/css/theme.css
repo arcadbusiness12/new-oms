@@ -5540,17 +5540,20 @@ button.close {
     padding: 1rem;
     border-bottom: 1px solid #e9ecef;
     border-top-left-radius: .3rem;
-    border-top-right-radius: .3rem
+    border-top-right-radius: .3rem;
+    background-color: #3f51b5 !important; color:white!important; 
+
 }
 
 .modal-header .close {
     padding: 1rem;
-    margin: -1rem -1rem -1rem auto
+    margin: -1rem -1rem -1rem auto;
+    color: white;
 }
 
 .modal-title {
     margin-bottom: 0;
-    line-height: 1.5
+    line-height: 1.5;
 }
 
 .modal-body {
@@ -5563,7 +5566,7 @@ button.close {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 1rem;
+    padding: 0.5rem;
     border-top: 1px solid #e9ecef
 }
 

@@ -4,6 +4,7 @@ namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Oms\PromotionProductPaidPostSocialModel;
 
 class PromotionProductPaidPostModel extends Model
 {
@@ -38,5 +39,9 @@ class PromotionProductPaidPostModel extends Model
 
     public function campaign() {
     return $this->belongsTo(PaidAdsCampaign::class, 'campaign_id');
+    }
+
+    public function postSocials() {
+        return $this->hasMany(PromotionProductPaidPostSocialModel::class, 'paid_post_id');
     }
 }
