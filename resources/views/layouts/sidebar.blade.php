@@ -476,14 +476,12 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false
-                        || strpos(Request::url(), '/omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false
-                        || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
+                        <li class="treeview @if( str_contains(Request::url(), 'omsSetting') ) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-vcard"></i>Supplier</a>
+                                <li><a href=""><i class="icon icon-vcard"></i>Supplier</a>
                                 </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-user-circle-o"></i>Staff</a>
+                                <li  class="@if( Request::url() == route('setting.users') ) active  @endif"><a href="{{ route('setting.users') }}"><i class="icon icon-user-circle-o"></i>Staff</a>
                                 </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-phonelink_off"></i>Public Holiday </a>
                                 </li>

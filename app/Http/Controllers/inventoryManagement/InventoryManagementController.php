@@ -527,7 +527,7 @@ use Carbon\Carbon;
           }
           // die("test twelve".$key);
           DB::commit();
-          updateSitesStock($request->sku); // helper function 
+          updateSitesStock($request->sku); // helper function
           Session::flash('message','Stock updated successfully.');
         } catch (\Exception $e) {
         DB::rollback();
@@ -1047,6 +1047,10 @@ use Carbon\Carbon;
         }
     }
     return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
+  }
+  public function sizeOptionDetials(){
+    $data = OmsOptions::with('omsOptionsDetails')->get();
+    // dd($data->toArray());
   }
  }
 

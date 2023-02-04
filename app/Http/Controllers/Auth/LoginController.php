@@ -44,5 +44,5 @@ class LoginController extends Controller
         request()->merge([$this->username => $loginVia]);
         return property_exists($this, 'username') ? $this->username : 'email';
     }
-    
+
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Accounts\ReceiptController;
 use App\Http\Controllers\Accounts\PaymentController;
+use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Catalog\AttributeController;
 use App\Http\Controllers\Catalog\ProductListingController;
 use App\Http\Controllers\Exchange\ExchangeOrdersAjaxController;
@@ -178,6 +179,11 @@ Route::group(['namespace' => 'ShippingProvider', 'middleware' => ['auth']], func
     Route::get('/JT/invoice/{id}', [JTCourier::class,'invoice'])->name('jtexpress.invoice');
 });
 Route::prefix('omsSetting')->middleware('auth')->group(function () {
+    Route::controller(UserController::class)->group(function() {
+        Route::get('/users', 'getUsers')->name('setting.users');
+        Route::any('/users/add', 'addUser')->name('setting.users.add');
+        Route::any('/users/edit/{id}', 'editUser')->name('setting.users.edit');
+    });
     Route::controller(categorySettingController::class)->group(function() {
         route::get('/category/setting', 'categorySetting')->name('category.name');
         route::post('/save/group/main/category', 'saveMainCategory')->name('save.main.category');
@@ -358,6 +364,5 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::any('/attribute/templates', 'attributeTemplates')->name('attribute.templates');
     });
 });
-
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);
