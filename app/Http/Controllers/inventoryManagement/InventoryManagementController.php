@@ -544,7 +544,7 @@ use Carbon\Carbon;
       $product = $prod->product_id;
       $id = $prod->product_id;
     }
-    $user_update = OmsInventoryAddStockHistoryModel::select('comment','updated_at')->orderBy('history_id','DESC')->where('product_id',$id)->limit(15)->get();
+    $user_update = OmsInventoryAddStockHistoryModel::select('comment','updated_at','reason')->orderBy('history_id','DESC')->where('product_id',$id)->limit(15)->get();
     // echo "<pre>"; print_r($user_update->toArray()); die;
     return view(self::VIEW_DIR.".addStock", ["old_input" => $request->all()])->with(compact('stocks','user_update'));
   }

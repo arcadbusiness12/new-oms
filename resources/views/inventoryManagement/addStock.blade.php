@@ -131,12 +131,14 @@
                         <table class="table table-borderd pull-right"  style="width:50%">
                             <thead>
                                 <th>History</th>
+                                <th>Reason</th>
                                 <th>Update time</th>
                             </thead>
                             <tbody>
                                 @foreach($user_update as $usup)
                                 <tr>
                                     <td>{{ $usup->comment }}</td>
+                                    <td>{{ $usup->reason }}</td>
                                     <td>{{ $usup->updated_at }}</td>
                                 </tr>
                                 @endforeach
