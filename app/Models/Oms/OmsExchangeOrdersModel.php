@@ -23,6 +23,14 @@ class OmsExchangeOrdersModel extends Model
                     ->orderBy(Model::CREATED_AT, 'desc')
                     ->with(['shipping_provider']);
     }
+    public function lastAwb(){
+        return $this->hasOne(__NAMESPACE__ . '\ExchangeAirwayBillTrackingModel', self::FIELD_ORDER_ID, self::FIELD_ORDER_ID)
+        ->orderBy(Model::CREATED_AT, 'DESC');
+    }
+    public function generatedCourier()
+    {
+        return $this->belongsTo(ShippingProvidersModel::class,"last_shipped_with_provider","shipping_provider_id");
+    }
     public static function shippingName($order_id){
       $data = self::with('shipping_provider')->where('order_id',$order_id)->where('last_shipped_with_provider','>',0)->first();
       if(!empty($data)){

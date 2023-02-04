@@ -1,5 +1,6 @@
 @php
     $progress_status = $order->omsExchange?->oms_order_status;
+    $payment_status = $order->omsExchange?->lastAwb?->payment_status;
 @endphp
 @if( $progress_status != 5 )
 <div class="stepper sw-main sw-theme-circles"
@@ -23,7 +24,7 @@
       @if( $progress_status == 6 )
         <li class="active"><a  class="circle" style="background:red"></a><center>Return</center></li>
       @endif
-      <li class="@if( $progress_status == 1 ) active @endif"><a  class="circle"></a><center>Paid</center></li>
+      <li class="@if( $payment_status == 1 ) active @endif"><a  class="circle"></a><center>Paid</center></li>
    </ul>
 </div>
 @else

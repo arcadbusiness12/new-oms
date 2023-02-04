@@ -2,6 +2,7 @@
 namespace App\Models\Oms;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Oms\ReturnAirwayBillTrackingModel;
 
 class OmsReturnOrdersModel extends Model
 {
@@ -21,8 +22,18 @@ class OmsReturnOrdersModel extends Model
     }
 
     public function airway_bills(){
-        return $this->hasMany(__NAMESPACE__ . '\ExchangeAirwayBillTrackingModel', self::FIELD_ORDER_ID, self::FIELD_ORDER_ID)
-                    ->orderBy(Model::CREATED_AT, 'desc')
+        return $this->hasMany(ReturnAirwayBillTrackingModel::class, self::FIELD_ORDER_ID, self::FIELD_ORDER_ID)
+                    ->orderBy(Model::CREATED_AT, 'DESC')
                     ->with(['shipping_provider']);
+    }
+    public function returnProducts(){
+        return $this->hasMany(OmsExchangeReturnProductModel::class,'order_id','order_id');
+    }
+    public function omsStore(){
+        return $this->BelongsTo(storeModel::class,'store');
+    }
+    public function placeOrder(){
+
+        return $this->hasOne(OmsPlaceOrderModel::class, "order_id", "order_id");
     }
 }

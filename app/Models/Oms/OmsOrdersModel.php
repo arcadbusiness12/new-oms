@@ -42,6 +42,10 @@ class OmsOrdersModel extends Model
     ->orderBy(Model::CREATED_AT, 'desc')
     ->with(['shipping_provider']);
   }
+  public function lastAwb(){
+    return $this->hasOne(__NAMESPACE__ . '\AirwayBillTrackingModel', self::FIELD_ORDER_ID, self::FIELD_ORDER_ID)
+    ->orderBy(Model::CREATED_AT, 'DESC');
+  }
   public function isReship($order_id){
     return self::where('order_id',$order_id)->first()->reship;
   }

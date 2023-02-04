@@ -25,7 +25,7 @@ class Jeebly implements ShippingProvidersInterface {
 		$this->apiUrl = config('services.jeebly')['url'];
 		$this->apiKey = config('services.jeebly')['apiKey'];
 		$this->accountNumber = config('services.jeebly')['clientCode'];
-		$this->httpClient = \App::make('httpClient'); // Http Client
+		//$this->httpClient = \App::make('httpClient'); // Http Client
 
 		if (null == $this->accountNumber || null == $this->apiUrl || $this->apiKey == null) {
 			throw new \Exception("ApiKey, Client Code for Jeebly is required");
@@ -37,10 +37,10 @@ class Jeebly implements ShippingProvidersInterface {
 		foreach ($orders as $key => $order) {
 			if( trim($order->getPaymentMethod()) == 'cod' || trim($order->getPaymentMethod()) == 'cod_order_fee' || trim($order->getPaymentMethod()) == '' ){
 				$payment_method = "Cash";
-				$amount = $order->getOrderTotalAmount(); 
+				$amount = $order->getOrderTotalAmount();
 			}else{
 				$payment_method = "Prepaid";
-				$amount = "0"; 
+				$amount = "0";
 			}
       if($order->getStore()==2){
         $company_name = "DressFair";
@@ -179,7 +179,7 @@ class Jeebly implements ShippingProvidersInterface {
 		$response = curl_exec($curl);
 		$err = curl_error($curl);
 		curl_close($curl);
-		
+
 		if ($err) {
 			die($err);
 		} else {
@@ -189,7 +189,7 @@ class Jeebly implements ShippingProvidersInterface {
 	}
 
 	public function getAirwayBillUrl($awbNumber = null) {
-		return route('jeebly_invoice', $awbNumber);
+		// return route('jeebly_invoice', $awbNumber);
 	}
 
 	public function getOrderStatus() {

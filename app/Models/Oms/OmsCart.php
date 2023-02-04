@@ -30,7 +30,7 @@ class OmsCart extends Model
     public static function getCartTotalAmount($store_id){
         //return only product totals
         $server_session_id = session()->getId();
-        $data = self::select(DB::raw('SUM(product_price * product_quantity) AS total'))->where('session_id',$server_session_id)->where('is_exchange','!=',1)->where('store_id',$store_id)->first();
+        $data = self::select(DB::raw('SUM(product_price * product_quantity) AS total'))->where('session_id',$server_session_id)->whereNull('is_exchange')->where('store_id',$store_id)->first();
         $total = 0;
         if($data){
             $total = $data->total;

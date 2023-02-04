@@ -240,18 +240,10 @@ class TcsCourier implements ShippingProvidersInterface
               if( $val['status'] == "DELIVERED" ){
                 if( $awb_type == 0 ){
                   AirwayBillTrackingModel::where('airway_bill_number',$awbNumber)->where('order_id',$order_id)->where('store',$store_id)->update(['courier_delivered'=>1, 'courier_response' => $response]);
-                  if($store_id == 1) {
-                    $ba_class = app(\App\Http\Controllers\Orders\OrdersController::class)->deliverSingleOrder([$order_id]);
-                  }else if($store_id == 2){
-                    $ba_class = app(\App\Http\Controllers\DressFairOrders\DressFairOrdersController::class)->deliverSingleOrder([$order_id]);
-                  }
+                  $ba_class = app(\App\Http\Controllers\Orders\OrdersController::class)->deliverSingleOrder($order_id,$store_id);
                 }elseif( $awb_type == 1 ){
                   ExchangeAirwayBillTrackingModel::where('airway_bill_number',$awbNumber)->where('order_id',$order_id)->where('store',$store_id)->update(['courier_delivered'=>1, 'courier_response' => $response]);
-                  if($store_id == 1) {
-                    $ba_class = app(\App\Http\Controllers\Exchange\ExchangeOrdersController::class)->deliverSingleOrder([$order_id]);
-                  }else if($store_id == 2){
-                    $ba_class = app(\App\Http\Controllers\DressFairExchange\DressFairExchangeOrdersController::class)->deliverSingleOrder([$order_id]);
-                  }
+                  $ba_class = app(\App\Http\Controllers\Exchange\ExchangeOrdersController::class)->deliverSingleOrder($order_id,$store_id);
                 }
               }else if( trim($val['status']) == "Ready for Return" OR trim($val['status']) == "RETURN TO SHIPPER" ){
                $record = OmsOrdersModel::where("order_id",$order_id)->where("store",$store_id)->where("oms_order_status",3)->whereNull("ready_for_return")->update(['ready_for_return'=>1]);

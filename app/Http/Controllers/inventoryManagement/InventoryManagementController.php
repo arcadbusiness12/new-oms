@@ -1055,6 +1055,10 @@ use Carbon\Carbon;
     }
     return view(self::VIEW_DIR.".optionConnection")->with(compact('oms_options','baOption','dfOption'));
   }
+  public function sizeOptionDetials(){
+    $data = OmsOptions::with('omsOptionsDetails')->get();
+    // dd($data->toArray());
+  }
  }
 
 

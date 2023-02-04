@@ -55,13 +55,13 @@
                                 </ul>
                         </li>
 
-                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) ) active @endif)">
+                        <li class="treeview @if( (str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1) || ( str_contains(Request::url(), '/exchange') ) || ( str_contains(Request::url(), '/return') ) || str_contains(Request::url(), '/accounts') ) active @endif)">
                             <a href="#">
                                 <i class="icon icon-shopping-cart s-24"></i> <span>Orders</span>
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Normal<i
+                                <li class="@if( str_contains(Request::url(), '/orders') && str_contains(Request::url(), '/PurchaseManagement') != 1 && Request::url() != route('orders.online') && Request::url() != route('orders.reship-orders') && Request::url() != route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-shopping-cart"></i>Normal<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('orders') ) active @endif"><a href="{{ route('orders') }}">All Orders </a></li>
@@ -99,37 +99,35 @@
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
                                         </li>
-                                        <li><a href="login.html">Ship</a>
+                                        <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
                                         </li>
-                                        <li><a href="login-2.html">Deliver</a>
                                         </li>
-                                        <li><a href="login.html">Return</a>
+                                        <li class="@if( Request::url() == route('exchange.return') ) active @endif"><a href="{{ route('exchange.return') }}">Return</a>
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.awb.generated') ) active @endif"><a  href="{{ route('exchange.awb.generated') }}">Airway Bill History</a>
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-undo"></i>Return<i
+                                <li class="@if( str_contains(Request::url(), '/return') && Request::url() != route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-undo"></i>Return<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-invoice.html">All Orders</a>
+                                        <li class="@if( Request::url() == route('return') ) active @endif"><a href="{{ route('return') }}">All Orders</a>
                                         </li>
-                                        <li><a href="panel-page-no-posts.html">Returns Deliver Orders</a>
+                                        <li class="@if( Request::url() == route('return.search') ) active @endif"><a href="{{ route('return.search') }}">Returns Deliver</a>
                                         </li>
-                                        <li><a href="panel-page-no-posts.html">Airway Bill History</a>
+                                        <li class="@if( Request::url() == route('return.awb.generated') ) active @endif"><a href="{{ route('return.awb.generated') }}">Airway Bills</a>
                                         </li>
                                     </ul>
                                 </li>
                                 <!--  order opertaion menu start  -->
-                                <li><a href="#"><i class="icon icon-developer_board"></i>Operation<i
+                                <li class="@if( Request::url() == route('orders.online') || Request::url() == route('orders.reship-orders') || Request::url() == route('orders.ready.for.return') ) active @endif"><a href="#"><i class="icon icon-developer_board"></i>Operation<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if( Request::url() == route('orders.online') ) active @endif"><a href="{{ route('orders.online') }}">Online Orders </a></li>
                                         <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Reshipment Approval</a>
                                         </li>
-                                        <li class="@if( Request::url() == route('orders.reship-orders') ) active @endif"><a href="{{ route('orders.reship-orders') }}">Exchange Approval</a>
                                         </li>
-                                        <li><a href="panel-page-blank-tabs.html">Ready For Returns </a></li>
+                                        <li class="@if( Request::url() == route('orders.ready.for.return') ) active @endif"><a href="{{ route('orders.ready.for.return') }}">Ready For Returns </a></li>
                                         <li class="@if( Request::url() == route('orders.awb.generated') ) active @endif"><a href="{{ route('orders.awb.generated') }}">Airway Bill History  </a>
                                         </li>
                                     </ul>
@@ -144,14 +142,14 @@
                                     </li>
                                 </ul>
                                 </li>
-                                <li><a href="#"><i class="icon icon-documents3"></i>Vouchers<i
+                                <li class="@if( str_contains(Request::url(), '/accounts') ) active @endif"><a href="#"><i class="icon icon-documents3"></i>Vouchers<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                 <ul class="treeview-menu">
-                                    <li><a href="panel-page-invoice.html">Receipts</a>
+                                    <li class="@if( Request::url() == route('accounts.receipts') ) active @endif"><a href="{{ route('accounts.receipts') }}">Receipts</a>
                                     </li>
-                                    <li><a href="panel-page-no-posts.html">Pending</a>
+                                    <li class="@if( Request::url() == route('accounts.pending.receipts') ) active @endif"><a href="{{ route('accounts.pending.receipts') }}?payment=0">Pending</a>
                                     </li>
-                                    <li><a href="panel-page-no-posts.html">Payments</a>
+                                    <li class="@if( Request::url() == route('accounts.payments') ) active @endif"><a href="{{ route('accounts.payments') }}">Payments</a>
                                     </li>
                                 </ul>
                             </li>
@@ -214,7 +212,7 @@
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/accounts') !== false) active @endif">
                                     <a href="{{route('accounts')}}"><i class="icon icon-account_balance"></i>Accounts</a>
                                 </li>
-                                
+
                                 <li class="@if(strpos(Request::url(), 'PurchaseManagement/account/summary/report') !== false) active @endif">
                                     <a href="{{route('account.summary.report')}}"><i class="icon icon-report"></i>Account Summary Report</a>
                                 </li>
@@ -404,7 +402,7 @@
                                 <li><a href="#"><i class="icon icon-document-code2"></i>IT Team<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        
+
                                         <li><a href="#"><i class="icon icon-document-code"></i>Web Developer<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
@@ -472,7 +470,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                
+
                                 <li><a href="#"><i class="icon icon-settings_input_svideo"></i>Duties Setting<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
@@ -498,14 +496,12 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="treeview @if(strpos(Request::url(), 'omsSetting/category/setting') !== false || strpos(Request::url(), '/roles') !== false || strpos(Request::url(), '/omsSetting/payment/method') !== false || strpos(Request::url(), 'omsSetting/shipping/method') !== false
-                        || strpos(Request::url(), '/omsSetting/localisations/add/geo/zones') !== false || strpos(Request::url(), 'add/shipping/method') !== false || strpos(Request::url(), 'edit/shipping/method') !== false
-                        || strpos(Request::url(), 'omsSetting/localisations/edit/goe/zone') !== false) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
+                        <li class="treeview @if( str_contains(Request::url(), 'omsSetting') ) active @endif"><a href="#"><i class="icon icon-settings s-24"></i>OMS Settings<i
                                 class=" icon-angle-left  pull-right"></i></a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-vcard"></i>Supplier</a>
+                                <li><a href=""><i class="icon icon-vcard"></i>Supplier</a>
                                 </li>
-                                <li><a href="panel-page-users-create.html"><i class="icon icon-user-circle-o"></i>Staff</a>
+                                <li  class="@if( Request::url() == route('setting.users') ) active  @endif"><a href="{{ route('setting.users') }}"><i class="icon icon-user-circle-o"></i>Staff</a>
                                 </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-phonelink_off"></i>Public Holiday </a>
                                 </li>

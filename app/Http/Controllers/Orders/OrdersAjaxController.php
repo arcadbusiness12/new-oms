@@ -58,14 +58,14 @@ class OrdersAjaxController extends Controller {
 	private $df_website_image_source_url  =  '';
     //
 	function __construct(){
-        $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
-        $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
-        $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
-        $this->website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
-        //for df
-        $this->df_website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/dressfair.com/image/';
-		$this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
-        $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
+        // $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
+        // $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
+        // $this->website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/image/';
+        // $this->website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/image/' : "";
+        // //for df
+        // $this->df_website_image_source_path =  $_SERVER["DOCUMENT_ROOT"] . '/dressfair.com/image/';
+		// $this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
+        // $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
 	}
     public function index(){
 
@@ -259,6 +259,35 @@ class OrdersAjaxController extends Controller {
 			}
 		}
 	}
+    public function trackOrderCourier(Request $request){
+        // dd($request->all())
+          $shippingProvider = $request->courier_name;
+          $order_id = $request->order_id;
+          $store_id = $request->store_id;
+          $shippingCompanyClass = "\\App\\Platform\\ShippingProviders\\" . $shippingProvider;
+          if (!class_exists($shippingCompanyClass)) {
+            throw new \Exception("Shipping Provider Class {$shippingCompanyClass} does not exist");
+          }
+          $shipping = new $shippingCompanyClass();
+          $airwaybill_table_name = 'airwaybill_tracking';
+          $awb_type = 0;
+          if( $request->has('order_type') && $request->order_type == 1 ){
+            $airwaybill_table_name = 'exchange_airwaybill_tracking';
+            $awb_type = 1;
+          }
+          if( $request->has('order_type') && $request->order_type == 2 ){
+            $airwaybill_table_name = 'return_airwaybill_tracking';
+            $awb_type = 2;
+          }
+          $airway_bill = DB::table($airwaybill_table_name)->where('order_id',$order_id)->where('store',$store_id)->orderBy('tracking_id','DESC')->first();
+          // echo "<pre>"; print_r($airway_bill); die;
+          if($airway_bill){
+            // die("in if");
+            $tracking_info = $shipping->getOrderTrackingHistory($airway_bill,$awb_type);
+            return response()->json(['data'=>$tracking_info]);
+          }
+          return response()->json(['data'=>null]);
+      }
     public function reship(Request $request){
 		// dd($request->all());
 		////return just history start
@@ -536,21 +565,10 @@ class OrdersAjaxController extends Controller {
             $orders = collect();
             if( is_array($orderIds) && count($orderIds) > 0 ){
                 foreach( $orderIds as $order_id ){
-                    $data = OmsOrdersModel::where("order_id",$order_id )->first();
-                    if( $data->store == 1 ){
-                        $order = OrdersModel::with(['status', 'orderd_products'])
-                        ->where("order_id", $order_id)->first();
-                    }else if( $data->store == 2 ){
-                        $order = DFOrdersModel::with(['status', 'orderd_products'])
-                        ->where("order_id", $order_id)->first();
-                    }
+                    $order = OmsPlaceOrderModel::with(['orderProducts.product'])->where("order_id",$order_id)->first();
                     $orders->push($order);
                 }
             }
-			// $order_data = OrdersModel::with(['status', 'orderd_products'])
-			// ->whereIn(OrdersModel::FIELD_ORDER_ID, $orderIds)
-			// ->get();
-			// echo "<pre>"; print_r($order_data->toArray());
 			$order_tracking = AirwayBillTrackingModel::whereIn('order_id', $orderIds)->get();
 			$order_tracking_ids = $order_tracking->pluck(AirwayBillTrackingModel::FIELD_SHIPPING_PROVIDER_ID);
 			// echo "<pre>"; print_r($order_tracking_ids->toArray()); die;

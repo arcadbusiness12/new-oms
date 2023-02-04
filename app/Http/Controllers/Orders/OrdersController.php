@@ -23,6 +23,7 @@ use App\Models\Oms\CityArea;
 use App\Models\Oms\OmsOrderProductModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockHistoryModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryAddStockOptionModel;
+use App\Models\Oms\InventoryManagement\OmsInventoryDeliveredQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryReturnQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsInventoryShippedQuantityModel;
 use App\Models\Oms\InventoryManagement\OmsOptions;
@@ -58,72 +59,10 @@ class OrdersController extends Controller
 		$this->df_website_image_source_url  =   isset($_SERVER["REQUEST_SCHEME"]) ? $_SERVER["REQUEST_SCHEME"] . '://'. $_SERVER["HTTP_HOST"] .'/dressfair.com/image/' : "";
         $this->opencart_image_url = env('OPEN_CART_IMAGE_URL');
     }
-    // public function index(){
-    //     $old_input = Request::all();
-    //     // dd($old_input);
-    //     $ba_orders = OrdersModel::with(['status', 'orderd_products','orderd_totals'=>function($query){
-    //             $query->whereNotIn('code',['tax']);
-    //          }])
-    //         ->select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,
-    //         shipping_city,shipping_zone,date_added,date_modified,
-    //         1 AS store"))
-    //         // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
-    //         ->where('order_type', 'like', 'normal')
-    //         ->where('order_status_id', '>', 0)
-    //         ->where('online_approved', 1)
-    //         ->where('reseller_approve', 1)
-    //         ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-    //             return $query->where('order_id',$old_input['order_id']);
-    //         })
-    //         ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-    //             return $query->where('order_status_id',$old_input['order_status_id']);
-    //         })
-    //         ->when(@$old_input['date_from'] != "",function($query) use ($old_input){
-    //             return $query->whereDate('date_added','>=',$old_input['date_from']);
-    //         })
-    //         ->when(@$old_input['date_to'] != "",function($query) use ($old_input){
-    //             return $query->whereDate('date_added','<=',$old_input['date_to']);
-    //         });
-    //     //dressfair orders
-    //     $df_orders = DFOrdersModel::with(['status', 'orderd_products','orderd_totals'=>function($query){
-    //         $query->whereNotIn('code',['tax']);
-    //         }])
-    //         ->select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,
-    //         shipping_city,shipping_zone,date_added,date_modified,
-    //         2 AS store"))
-    //         // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
-    //         ->where('order_type', 'like', 'normal')
-    //         ->where('order_status_id', '>', 0)
-    //         ->where('online_approved', 1)
-    //         ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-    //             return $query->where('order_id',$old_input['order_id']);
-    //         })
-    //         ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-    //             return $query->where('order_status_id',$old_input['order_status_id']);
-    //         })
-    //         ->when(@$old_input['date_from'] != "",function($query) use ($old_input){
-    //             return $query->whereDate('date_added','>=',$old_input['date_from']);
-    //         })
-    //         ->when(@$old_input['date_to'] != "",function($query) use ($old_input){
-    //             return $query->whereDate('date_added','<=',$old_input['date_to']);
-    //         });
-    //     if( @$old_input['by_store'] == 1 ){
-    //         $data = $ba_orders->paginate(20);
-    //     }else if( @$old_input['by_store'] == 2 ){
-    //         $data = $df_orders->paginate(20);
-    //     }else{
-    //         $data = $ba_orders->union($df_orders)->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc');
-    //         $data = $data->paginate(20);
-    //     }
-    //     // dd($data->toArray());
-    //     $searchFormAction = URL::to('orders');
-    //     $orderStatus = OrderStatusModel::all();
-    //     return view(self::VIEW_DIR.".index",compact('data','searchFormAction','orderStatus','old_input'));
-    // }
     public function index(){
         $old_input = RequestFacad::all();
         $data = OmsPlaceOrderModel::select('oms_place_order.*')
-                ->with(['orderProducts.product','omsOrder','omsStore'])
+                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore','omsOrder.lastAwb'])
                 ->leftjoin("oms_orders",function($join){
                     $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
                     $join->on('oms_orders.store', '=', 'oms_place_order.store');
@@ -157,6 +96,7 @@ class OrdersController extends Controller
             // $data = $this->getOrdersWithImage($data);
             // dd($data->toArray());
         ///
+        // dd($data->toArray());
         $searchFormAction = URL::to('orders');
         $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();
@@ -165,41 +105,52 @@ class OrdersController extends Controller
     }
     public function online(){
         $old_input = RequestFacad::all();
-
-        $ba_orders = OrdersModel::
-            select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
-            // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
-            ->where('order_type', 'like', 'normal')
-            ->where('order_status_id', '>', 0)
-            ->where('online_approved', 0)
-            ->where('reseller_approve', 1);
-
-        //dressfair orders
-        $df_orders = DFOrdersModel::
-            select(DB::raw("order_id,firstname,lastname,telephone,alternate_number,email,total,shipping_address_1,shipping_address_2,shipping_city,shipping_zone,date_added,date_modified"))
-            // ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc')
-            ->where('order_type', 'like', 'normal')
-            ->where('order_status_id', '>', 0)
-            ->where('online_approved', 0);
-        // fileter by store
-        if( @$old_input['by_store'] == 1 ){
-            $data = $ba_orders->paginate(20);
-        }else if( @$old_input['by_store'] == 2 ){
-            $data = $df_orders->paginate(20);
-        }else{
-            // die("elase");
-            $data = $ba_orders->union($df_orders)
-            ->orderBy(OrdersModel::FIELD_DATE_MODIFIED, 'desc');
-            $data = $data->paginate(20);
-        }
-        // dd($data->toArray());
+        $data = OmsPlaceOrderModel::select('oms_place_order.*')
+                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->leftjoin("oms_orders",function($join){
+                    $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
+                    $join->on('oms_orders.store', '=', 'oms_place_order.store');
+                })
+                ->where('online_approved', 0)
+                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.order_id',$old_input['order_id']);
+                })
+                ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.store',$old_input['by_store']);
+                })
+                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
+                })
+                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
+                })
+                ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
+                })
+                ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.total_amount',$old_input['total']);
+                })
+                ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_orders.oms_order_status',$old_input['order_status_id']);
+                });
+            $data = $data->orderByRaw("(CASE WHEN oms_orders.order_id > 0 THEN oms_orders.updated_at ELSE oms_place_order.created_at END) DESC")
+                ->paginate(20);
         ///extra variable
         $searchFormAction = URL::to('orders/online');
         $orderStatus = OmsOrderStatusModel::orderBy('id','DESC')->get();
         return view(self::VIEW_DIR.".online",compact('data','searchFormAction','orderStatus','old_input','old_input'));
     }
-    protected function getOrdersWithImage($orders){
+    function onlineApprove(Request $request){
+        $order_id = $request->order_id;
+        $store_id = $request->oms_store;
 
+        $qry  = OmsPlaceOrderModel::where('order_id',$order_id)->where('store', $store_id)->update(['online_approved'=>1]);
+        if( $qry ){
+            OmsActivityLogModel::newLog($order_id,25,$store_id); //25 for Approve online order
+        }
+        return redirect('online');
+    }
+    protected function getOrdersWithImage($orders){
         foreach ($orders as $key => $order) {
           $ordered_products = $this->orderedProducts($order);
           foreach ($ordered_products as $orderd_product_key => $orderd_products_value) {
@@ -237,75 +188,43 @@ class OrdersController extends Controller
             $store = $request->store;
             $updqry = OmsOrdersModel::where("order_id",$request->order_id)->where('store',$store)->update(['oms_order_status'=>1,"reship"=>1,"last_shipped_with_provider"=>0,"picklist_courier"=>$request->reassign_courier,'picklist_print'=>NULL]);
             if($updqry){
-                if( $store == 1 ){
-                    $ocupd = OrdersModel::where("order_id",$store)->update(['order_status_id'=>2]);
-                }else if(  $store == 2 ){
-                    $ocupd = DFOrdersModel::where("order_id",$store)->update(['order_status_id'=>2]);
-                }
-                if($ocupd){
                    OmsActivityLogModel::newLog($request->order_id,9,$store); //9 is for reship Approved order
                     Session::flash('success','Order successfully Reshiped.');
-                }
+                    return redirect('orders/reship-orders');
             }
         }
         $old_input = RequestFacad::all();
-        $data = DB::table("oms_place_order AS opo")
-                ->leftjoin("oms_orders AS ord",function($join){
-                    $join->on("ord.order_id","=","opo.order_id");
-                    $join->on("ord.store","=","opo.store");
+        $data = OmsPlaceOrderModel::select('oms_place_order.*')
+                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->leftjoin("oms_orders",function($join){
+                    $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
+                    $join->on('oms_orders.store', '=', 'oms_place_order.store');
                 })
-              ->leftjoin($this->DB_BAOPENCART_DATABASE.".oc_order AS baord",function($join){
-                $join->on("baord.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("1"));
-              })
-              ->leftjoin($this->DB_DFOPENCART_DATABASE.".oc_order AS dford",function($join){
-                $join->on("dford.order_id","=","opo.order_id");
-                $join->on("opo.store","=",DB::raw("2"));
-              })
-            // ->join("airwaybill_tracking AS awbt",function($join){
-            //   $join->on('awbt.order_id','=','ord.order_id');
-            //   $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-            //  })
-             ->leftjoin(DB::raw("(SELECT * FROM `airwaybill_tracking` WHERE tracking_id IN( SELECT MAX(`tracking_id`) FROM airwaybill_tracking GROUP BY order_id)) AS awbt"),function($join){
-              $join->on('awbt.order_id','=','ord.order_id');
-              $join->on('awbt.shipping_provider_id','=','ord.last_shipped_with_provider');
-             })
-             ->leftjoin("shipping_providers AS courier","courier.shipping_provider_id","=","ord.last_shipped_with_provider")
-             ->select(DB::raw("opo.order_id,ord.oms_order_status,ord.reship,opo.store,courier.name AS courier_name,awbt.airway_bill_number,awbt.courier_delivered,awbt.payment_status,awbt.created_at,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS amount,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_code WHEN opo.store = 2 THEN dford.payment_code ELSE 0 END) AS payment_code,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_1 WHEN opo.store = 2 THEN dford.shipping_address_1 ELSE 0 END) AS shipping_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_address_2 WHEN opo.store = 2 THEN dford.shipping_address_2 ELSE 0 END) AS shipping_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_area WHEN opo.store = 2 THEN dford.shipping_area ELSE 0 END) AS shipping_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_zone WHEN opo.store = 2 THEN dford.shipping_zone ELSE 0 END) AS shipping_zone,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_1 WHEN opo.store = 2 THEN dford.payment_address_1 ELSE 0 END) AS payment_address_1,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_address_2 WHEN opo.store = 2 THEN dford.payment_address_2 ELSE 0 END) AS payment_address_2,
-                  (CASE WHEN opo.store = 1 THEN baord.payment_area WHEN opo.store = 2 THEN dford.payment_area ELSE 0 END) AS payment_area,
-                  (CASE WHEN opo.store = 1 THEN baord.shipping_city WHEN opo.store = 2 THEN dford.shipping_city ELSE 0 END) AS shipping_city,
-                  (CASE WHEN opo.store = 1 THEN baord.firstname WHEN opo.store = 2 THEN dford.firstname ELSE 0 END) AS firstname,
-                  (CASE WHEN opo.store = 1 THEN baord.lastname WHEN opo.store = 2 THEN dford.lastname ELSE 0 END) AS lastname,
-                  (CASE WHEN opo.store = 1 THEN baord.telephone WHEN opo.store = 2 THEN dford.telephone ELSE 0 END) AS telephone,
-                  (CASE WHEN opo.store = 1 THEN baord.email WHEN opo.store = 2 THEN dford.email ELSE 0 END) AS email,
-                  (CASE WHEN opo.store = 1 THEN baord.total WHEN opo.store = 2 THEN dford.total ELSE 0 END) AS total,
-                  (CASE WHEN opo.store = 1 THEN baord.date_modified WHEN opo.store = 2 THEN dford.date_modified ELSE 0 END) AS date_modified,
-                  (CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) AS date_added
-                "))
-                ->where('reship','-1')
-                ->where('oms_order_status',3)
+                ->where('oms_orders.reship', -1)
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
+                    return $query->where('oms_place_order.order_id',$old_input['order_id']);
+                })
+                ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.store',$old_input['by_store']);
+                })
+                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
+                })
+                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
+                })
+                ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
+                })
+                ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.total_amount',$old_input['total']);
                 })
                 ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
-                    return $query->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_status_id = '.$old_input["order_status_id"].' WHEN opo.store = 2 THEN dford.order_status_id = '.$old_input["order_status_id"].' ELSE 0 END)');
+                    return $query->where('oms_orders.oms_order_status',$old_input['order_status_id']);
                 });
-            // if( @$old_input['order_id'] != "" ){
-            //     $data = $data->whereRaw('(CASE WHEN opo.store = 1 THEN baord.order_id = '.$old_input["order_id"].' WHEN opo.store = 2 THEN dford.order_id = '.$old_input["order_id"].' ELSE 0 END)');
-            // }
-            $data = $data->orderByRaw("(CASE WHEN opo.store = 1 THEN baord.date_added WHEN opo.store = 2 THEN dford.date_added ELSE 0 END) DESC")
+            $data = $data->orderByRaw("(CASE WHEN oms_orders.order_id > 0 THEN oms_orders.updated_at ELSE oms_place_order.created_at END) DESC")
                 ->paginate(20);
-            $data = $this->getOrdersWithImage($data);
-            // dd($data->toArray());
-        ///
+        // dd($data->toArray());
         $searchFormAction = URL::to('orders/reship-orders');
         $orderStatus = OmsOrderStatusModel::all();
         $couriers = ShippingProvidersModel::where('is_active',1)->get();
@@ -316,10 +235,11 @@ class OrdersController extends Controller
         if (isset($old_input['o_id'])){
             return $this->generatePickingList($old_input['o_id']);
         }
-        $data = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder','omsStore'])
+        $data = OmsPlaceOrderModel::with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
                 ->whereHas('omsOrder',function($q) use($old_input){
-                    $q->where('oms_order_status',0);
+                    $q->where('oms_order_status',0)->orderBy("updated_at","DESC");
                 })
+                ->join("oms_orders","oms_orders.order_id","=","oms_place_order.order_id")
                 ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
                     return $query->where('order_id',$old_input["order_id"]);
                 });
@@ -332,7 +252,7 @@ class OrdersController extends Controller
                         }
                     });
                 }
-            // $data = $data->orderByRaw("omsOrder.updated_at DESC");
+            $data = $data->orderBy("oms_orders.updated_at","DESC");
             $data = $data->paginate(10);
             // dd($data->toArray());
         ///
@@ -653,6 +573,66 @@ class OrdersController extends Controller
             }
         }
     }
+    public function readyForReturn(Request $request){
+        if( $request->isMethod('post') ){
+            // dd($request->all());
+            $activity = new OmsActivityLogModel();
+            $activity->ref_id = $request->order_id_for_return;
+            $activity->store = $request->store_id;
+            $activity->created_by = session('user_id');
+            if(  isset( $request->approve_return_button ) && $request->approve_return_button != "" ){
+              $update_qry = OmsOrdersModel::where("ready_for_return",1)->where('store',$request->store_id)->where("order_id",$request->order_id_for_return)->update(['ready_for_return'=>2]);
+              if( $update_qry ){
+                $activity->activity_id = 27;
+                $activity->comment = $request->admin_comment;
+                $activity->save();
+              }
+            }else if( isset( $request->disapprove_return_button ) && $request->disapprove_return_button != "" ){
+              $update_qry = OmsOrdersModel::where("ready_for_return",1)->where('store',$request->store_id)->where("order_id",$request->order_id_for_return)->update(['ready_for_return'=>0]);
+              if( $update_qry ){
+                $activity->activity_id = 28;
+                $activity->comment = $request->admin_comment;
+                $activity->save();
+              }
+            }
+            redirect()->back();
+          }
+        $old_input = RequestFacad::all();
+        $data = OmsPlaceOrderModel::select('oms_place_order.*')
+                ->with(['orderProducts.product','omsOrder.assignedCourier','omsOrder.generatedCourier','omsStore'])
+                ->leftjoin("oms_orders",function($join){
+                    $join->on('oms_orders.order_id', '=', 'oms_place_order.order_id');
+                    $join->on('oms_orders.store', '=', 'oms_place_order.store');
+                })
+                ->where('oms_orders.ready_for_return', 1)
+                ->when(@$old_input['order_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.order_id',$old_input['order_id']);
+                })
+                ->when(@$old_input['by_store'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.store',$old_input['by_store']);
+                })
+                ->when(@$old_input['telephone'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.mobile','LIKE',"%".$old_input['telephone']."%");
+                })
+                ->when(@$old_input['customer'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.firstname','LIKE',"%".$old_input['customer']."%");
+                })
+                ->when(@$old_input['email'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.email','LIKE',"%".$old_input['email']."%");
+                })
+                ->when(@$old_input['total'] != "",function($query) use ($old_input){
+                    return $query->where('oms_place_order.total_amount',$old_input['total']);
+                })
+                ->when(@$old_input['order_status_id'] != "",function($query) use ($old_input){
+                    return $query->where('oms_orders.oms_order_status',$old_input['order_status_id']);
+                });
+            $data = $data->orderByRaw("(CASE WHEN oms_orders.order_id > 0 THEN oms_orders.updated_at ELSE oms_place_order.created_at END) DESC")
+                ->paginate(20);
+        ///extra variable
+        $searchFormAction = URL::to('orders/ready/for/return');
+        $orderStatus = OmsOrderStatusModel::orderBy('id','DESC')->get();
+        return view(self::VIEW_DIR.".ready_for_return",compact('data','searchFormAction','orderStatus','old_input','old_input'));
+    }
     public function returnOrder(){
         $old_input = RequestFacad::all();
         return view(self::VIEW_DIR.".return_order",compact('old_input'));
@@ -675,114 +655,6 @@ class OrdersController extends Controller
                 echo "<h2 style='color:red'>Order cannot be return in this status OR order not found.</h2>";
                 return;
             }
-            // $order_array = array();
-            // if($order){
-            //     $oms_store = $order->store;
-            //     $products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$oms_store)->get();
-            //     // dd($products->toArray());
-            //     $product_array = array();
-
-            //     foreach ($products as $product) {
-            //         if( $oms_store == 1 ){
-            //             $opencartProduct = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
-            //         }else if( $oms_store == 2 ){
-            //             $opencartProduct = DFProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
-            //         }
-            //         $omsProduct = OmsInventoryProductModel::select('*','option_name AS color','option_value AS size')->where('sku', $opencartProduct->sku)->first();
-            //         // echo "<pre>"; print_r($omsProduct->toArray()); die;
-            //         if($omsProduct){
-            //             if( $oms_store == 1 ){
-            //                 $options = OrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-            //                 ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-            //                 ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-            //             }else if( $oms_store == 2 ){
-            //                 $options = DFOrderOptionsModel::select('order_option.product_option_id','order_option.product_option_value_id','order_option.name','order_option.value','op.quantity')
-            //                 ->leftJoin('order_product as op', 'op.order_product_id', '=', 'order_option.order_product_id')
-            //                 ->where('order_option.order_id', $order['order_id'])->where('order_option.order_product_id', $product->order_product_id)->get()->toArray();
-            //             }
-
-            //             $option_array = array();
-            //             foreach ($options as $option) {
-            //                 if( $oms_store == 1 ){
-            //                     $optionData = OptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-            //                     ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-            //                     ->where('option_description.name', $option['name'])
-            //                     ->where('ovd.name', $option['value'])
-            //                     ->first();
-            //                     $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromBa($optionData->option_id,$optionData->option_value_id);
-            //                 }else if( $oms_store == 2 ){
-            //                     $optionData = DFOptionDescriptionModel::select('option_description.option_id','ovd.option_value_id')
-            //                     ->leftJoin('option_value_description as ovd', 'ovd.option_id', '=', 'option_description.option_id')
-            //                     ->where('option_description.name', $option['name'])
-            //                     ->where('ovd.name', $option['value'])
-            //                     ->first();
-            //                     $OmsOptionsData = OmsInventoryOptionValueModel::OmsOptionsFromDf($optionData->option_id,$optionData->option_value_id);
-            //                 }
-            //                 // dd($optionData->toArray());
-            //                 $omsColorId = OmsDetails::colorId($omsProduct['color']);
-            //                 $oms_color_option_id = OmsOptions::colorOptionId();
-            //                 if($omsProduct['size'] == 0){
-            //                     $barcode = $omsProduct->product_id;
-            //                     $barcode .= $omsColorId;
-            //                     $option_n_v = $option['name']. ' - ' .$option['value'];
-
-            //                     $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$oms_color_option_id)->where('option_value_id', $omsColorId)->where('store', $oms_store)->exists();
-
-            //                     $option_array[] = array(
-            //                         'option'                    =>  $option_n_v,
-            //                         'option_id'                 =>  $optionData->option_id,
-            //                         'option_value_id'           =>  $optionData->option_value_id,
-            //                         'barcode'                   =>  $barcode,
-            //                         'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
-            //                         'product_option_value_id'   =>  $option['product_option_value_id'],
-            //                         'manual_checkable'          =>  $this->forceScanning($product->model),
-            //                     );
-            //                 }else{
-            //                     if( $oms_store == 1 ){
-            //                         $ba_color_option_id = OmsInventoryOptionModel::baColorOptionId();
-            //                     }else if( $oms_store == 2 ){
-            //                         $ba_color_option_id = OmsInventoryOptionModel::dfColorOptionId();
-            //                     }
-            //                     if($optionData->option_id != $ba_color_option_id){
-            //                         $barcode = $omsProduct->product_id;
-            //                         $barcode .= $OmsOptionsData->oms_option_details_id;
-            //                         $option_n_v = $option['name']. ' - ' .$option['value'];
-
-            //                         $alreadyPicked = OmsInventoryReturnQuantityModel::where('order_id', $order_id)->where('product_id', $product->product_id)->where('option_id',$OmsOptionsData->oms_options_id)->where('option_value_id', $OmsOptionsData->oms_option_details_id)->where('store', $oms_store)->exists();
-
-            //                         $option_array[] = array(
-            //                             'option'                    =>  $option_n_v,
-            //                             'option_id'                 =>  $optionData->option_id,
-            //                             'option_value_id'           =>  $optionData->option_value_id,
-            //                             'barcode'                   =>  $barcode,
-            //                             'quantity'                  =>  $alreadyPicked ? 0 : $option['quantity'],
-            //                             'product_option_value_id'   =>  $option['product_option_value_id'],
-            //                             'manual_checkable'          =>  $this->forceScanning($product->model),
-            //                         );
-            //                     }
-            //                 }
-            //             }
-
-            //             $product_array[] = array(
-            //              'order_product_id'  =>  $product->order_product_id,
-            //              'product_id'        =>  $product->product_id,
-            //              'oms_product_id'    =>  $omsProduct->product_id,
-            //              'image'             =>  $this->getProductImage($product->product_id,$oms_store,100, 100),
-            //              'name'              =>  $product->name,
-            //              'model'             =>  $product->model,
-            //              'options'           =>  $option_array,
-            //          );
-            //         }
-            //     }
-            //     $order_array = array(
-            //         'order_id'          =>  $order_id,
-            //         'oms_store'         =>  $oms_store,
-            //         'total'             =>  $opencartOrder->total,
-            //         'status'            =>  $order->status,
-            //         'date'              =>  $order->created_at,
-            //         'products'          =>  $product_array,
-            //     );
-            // }
         }
         return view(self::VIEW_DIR.'.return_order_search', ["order" => $order]);
     }
@@ -859,6 +731,68 @@ class OrdersController extends Controller
                 return redirect('/orders/return/order');
             }
         }
+    }
+    public function deliverSingleOrder($order_id,$store_id){
+            try{
+                $omsOrder = OmsOrdersModel::where("order_id", $order_id)->where('store',$store_id)->first();
+
+                if( $omsOrder->oms_order_status == 3 ){
+                    //delivered quantity in oms_inventory_delivered_quantity and oms_inventory_product_option tables
+                    $order_products = OmsOrderProductModel::with(['product','productOption'])->where('order_id',$order_id)->where("store_id",$store_id)->get();
+                    // dd($order_products->toArray());
+                    if( $order_products ){
+                        $order_quantity = 0;
+                        foreach( $order_products as $key => $order_product ){
+                            $order_quantity = $order_product->quantity;
+                            $product_id      = $order_product->product_id;
+                            $option_id       = $order_product->productOption->option_id;
+                            $option_value_id = $order_product->productOption->option_value_id;
+                            $check_exist = OmsInventoryDeliveredQuantityModel::where("order_id",$order_product->order_id)->where('product_id',$product_id)
+                            ->where('option_id',$option_id)->where('option_value_id',$option_value_id)->where('store',$order_product->store_id)->first();
+                            if( !$check_exist ){
+                                $new_deliver = new OmsInventoryDeliveredQuantityModel();
+                                $new_deliver->order_id        = $order_product->order_id;
+                                $new_deliver->product_id      = $product_id;
+                                $new_deliver->option_id       = $option_id;
+                                $new_deliver->option_value_id = $option_value_id;
+                                $new_deliver->quantity        = $order_quantity;
+                                $new_deliver->store           = $order_product->store_id;
+                                if( $new_deliver->save() ){
+                                    $decrement_query     = 'IF (shipped_quantity-' . $order_quantity . ' <= 0, 0, shipped_quantity-' . $order_quantity . ')';
+                                    $deliver_query = OmsInventoryProductOptionModel::where(["product_id"=>$product_id,"product_option_id"=>$order_product->product_option_id])
+                                    ->update(['shipped_quantity'=>DB::raw($decrement_query),'delivered_quantity'=>DB::raw("delivered_quantity + $order_quantity")]);
+                                }
+                            }
+                        }
+                    }
+                    // UPDATE OMS ORDER STATUS
+                    $omsOrder->oms_order_status = 4;
+                    $omsOrder->{OmsOrdersModel::UPDATED_AT} = \Carbon\Carbon::now();
+                    $qry = $omsOrder->save();
+                    //oms activity log
+                    $check_activity = OmsActivityLogModel::where("ref_id",$order_id)->where('store',$store_id)->where("activity_id",7)->first();
+                    if( !$check_activity ){
+                        $activity_ins_obj = new OmsActivityLogModel();
+                        $activity_ins_obj->activity_id = 7; //7 is for deliver order
+                        $activity_ins_obj->ref_id = $order_id;
+                        $activity_ins_obj->store = $store_id;
+                        $activity_ins_obj->created_by_courier = $omsOrder->last_shipped_with_provider;
+                        $activity_ins_obj->created_by = 0;
+                        $activity_ins_obj->created_at = date('Y-m-d H:i:s');
+                        $activity_ins_obj->save();
+                    }
+                    if($qry){
+                        AirwayBillTrackingModel::where(['order_id'=>$order_id,"shipping_provider_id"=>$omsOrder->last_shipped_with_provider,'store'=>$store_id])->update(["courier_delivered"=>1]);
+                    }
+                }else{
+                    throw new \Exception("Order can be Delivered in 'Shipped' status only.");
+                }
+            }catch (\Exception $e){
+              // dd($e);die;
+                // Session::flash('message', $e->getMessage());
+                // Session::flash('alert-class', 'alert-danger');
+                // return redirect('/orders/deliver-orders');
+            }
     }
     public function printLabel($order_id){
         $print_label = '';

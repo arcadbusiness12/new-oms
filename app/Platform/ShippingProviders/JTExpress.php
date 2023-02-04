@@ -410,21 +410,14 @@ class JTExpress implements ShippingProvidersInterface
           );
           $current_status = $val['scanType'];
           //update oms table if order is deliver by courier
-          if( $current_status != "" && $current_status == "Sign scan" ){
+        //   if( $current_status != "" && $current_status == "Sign scan" ){
+            if( $current_status != "" && $current_status == "Sign scan" ){
             if( $awb_type == 0 ){
-              AirwayBillTrackingModel::where('airway_bill_number',$awbNumber)->where('order_id',$order_id)->where('store',$store_id)->update(['courier_delivered'=>1, 'courier_response' => $result]);
-              if($store_id == 1) {
-                $ba_class = app(\App\Http\Controllers\Orders\OrdersController::class)->deliverSingleOrder([$order_id]);
-              }else if($store_id == 2){
-                $ba_class = app(\App\Http\Controllers\DressFairOrders\DressFairOrdersController::class)->deliverSingleOrder([$order_id]);
-              }
+                AirwayBillTrackingModel::where('airway_bill_number',$awbNumber)->where('order_id',$order_id)->where('store',$store_id)->update(['courier_delivered'=>1, 'courier_response' => $result]);
+                $ba_class = app(\App\Http\Controllers\Orders\OrdersController::class)->deliverSingleOrder($order_id,$store_id);
             }elseif( $awb_type == 1 ){
               ExchangeAirwayBillTrackingModel::where('airway_bill_number',$awbNumber)->where('order_id',$order_id)->where('store',$store_id)->update(['courier_delivered'=>1, 'courier_response' => $result]);
-              if($store_id == 1) {
-                $ba_class = app(\App\Http\Controllers\Exchange\ExchangeOrdersController::class)->deliverSingleOrder([$order_id]);
-              }else if($store_id == 2){
-                $ba_class = app(\App\Http\Controllers\DressFairExchange\DressFairExchangeOrdersController::class)->deliverSingleOrder([$order_id]);
-              }
+              $ba_class = app(\App\Http\Controllers\Exchange\ExchangeOrdersController::class)->deliverSingleOrder($order_id,$store_id);
             }
           }else if( $current_status != "" && $current_status == "Returned parcel scan" ){
             $record = OmsOrdersModel::where("order_id",$order_id)->where("oms_order_status",3)->where("store",$store_id)->whereNull("ready_for_return")->update(['ready_for_return'=>1]);
