@@ -388,7 +388,6 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::any('/attribute/templates', 'attributeTemplates')->name('attribute.templates');
     });
 });
-<<<<<<< HEAD
 
 Route::prefix('performance')->middleware('auth')->group(function() {
     Route::controller(MarketingPerformanceController::class)->group(function() {
@@ -400,7 +399,5 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::get('/stop/single/paid/ads/{post}/{main_setting}/{setting}/{duration}/{campaign}', 'stopSinglePaidAd')->name('stop.single.paid.ad');
     });
 });
-=======
->>>>>>> aa83dce99821a902ee71689e8a511cedaaee53a5
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);
