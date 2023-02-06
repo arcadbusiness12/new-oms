@@ -13,10 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     {{-- <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"> --}}
-    <link href="{{ URL::asset('assets/css/font-awesome.min.css')}}" rel="stylesheet">
-
+    {{-- <link href="{{ URL::asset('assets/css/app.css')}}" rel="stylesheet">  --}}
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/css/theme.css', 'resources/css/style.css', 'resources/css/sweetalert.css','resources/css/select2.min.css', 'resources/js/app.js'])
+    @vite(['resources/sass/app.scss', 'resources/css/app.css', 'resources/css/theme.css', 'resources/css/style.css', 'resources/css/sweetalert.css','resources/css/select2.min.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote.min.css"/>
     <script type="text/javascript">
         var APP_URL = {!! json_encode(url('/')) !!}
