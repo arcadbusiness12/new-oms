@@ -10,7 +10,7 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-4 col-sm-3">
-                                <label>Category</label>
+                                <label class="text-black font-weight-bold"> Category</label>
                                 <select name="purchase[product][<?= $unique ?>][category]" id="category" class="form-control select-category main-cate<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $cate)
@@ -22,7 +22,7 @@
                                 </select>
                             </div>
                             <div class="col-xs-4 col-sm-3">
-                                <label>Sub Category</label>
+                                <label class="text-black font-weight-bold"> Sub Category</label>
                                 <select name="purchase[product][<?= $unique ?>][subCategory]" id="sub-category" class="form-control sub-category subCate-row<?= $unique ?>" data-row="<?= $unique ?>">
                                     <option value="">Select Sub-category</option>
                                     {{-- @foreach($subcategories as $cate)
@@ -31,7 +31,7 @@
                                 </select>
                             </div>
                             <div class="col-xs-4 col-sm-3">
-                                <label>Sku Code</label>
+                                <label class="text-black font-weight-bold"> Sku Code</label>
                                 <div class="input-group mb-3">
                                 <input type="text" id="newgroup-code<?= $unique ?>" class="form-control"style="float: left;
                                 border-right: none;position: relative;
@@ -47,7 +47,7 @@
                             </div>
 
                         <div class="col-xs-4 col-sm-3">
-                            <label>Sku</label>
+                            <label class="text-black font-weight-bold"> Sku</label>
                             <input type="hidden" class="new-code<?= $unique ?>" >
                             <input type="hidden" name="purchase[product][<?= $unique ?>][newSku]" class="new-sku<?= $unique ?>" >
                             <input type="hidden" class="newCode<?= $unique ?>" >
@@ -60,7 +60,7 @@
                 <div class="form-group">
                 <div class="row mt-4 all_options_row">
                     <div class="col-lg-4">
-                        <label class="control-label">Color</label>
+                        <label class="control-label text-black font-weight-bold"> Color</label>
                         <select name="purchase[product][<?= $unique ?>][manually_option_color]" id="manually_option_color" class="form-control manually_option_color<?= $unique ?>" data-row="<?= $unique ?>">
                             <option value="">Select Color</option>
                         <?php foreach ($colors as $key => $value) { ?>
@@ -71,7 +71,7 @@
                     
                     <div class="col-lg-4">
                         <div class="input-group mb-3">
-                            <label class="control-label col-lg-12">Size</label>
+                            <label class="control-label col-lg-12 text-black font-weight-bold"> Size</label>
                                 <select name="purchase[product][<?= $unique ?>][manually_option_size]" id="manually_option_size" class="form-control manually_option_size">
                                 <option value="0">None</option>
                                 <?php $i=0; foreach ($sizes as $key => $value) { ?>

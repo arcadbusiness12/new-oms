@@ -60,9 +60,11 @@
                                             <?php if($order['urgent']) { ?>
                                                 <div class="badge badge-warning orange darken-1" style="font-size: 15px;">Urgent</div>
                                             <?php } ?>
-                                            <?php if(isset($order['ship_by_sea']) && $order['ship_by_sea']) { ?>
-                                                <div class="badge badge-warning orange darken-1" style="font-size: 15px;">Ship By Sea</div>
-                                            <?php } ?>
+                                            <?php if($order['ship_by_sea'] == 1) { ?>
+                                                <div class="badge badge-success darken-1" style="font-size: 15px;">Ship By Sea</div>
+                                            <?php } else { ?>
+                                                <div class="badge badge-primary" style="font-size: 15px;">Ship By Air</div>
+                                            <?php  } ?>
                                             <div>
                                                 <div class="badge badge-secondary font-weight-bold"><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></div>
                                             </div>

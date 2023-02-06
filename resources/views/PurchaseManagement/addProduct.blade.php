@@ -251,7 +251,7 @@
                                             <textarea name="instruction" class="form-control special_instruction" rows="3" placeholder="Special Instruction" required></textarea>
                                         </div>
                                         <div class="col-xs-7 col-sm-2 supplier-box text-center">
-                                            <label class="control-label heading-box"><strong> Supplier </strong></label>
+                                            <label class="control-label heading-box text-black"><strong> Supplier </strong></label>
                                             <select name="supplier" class="form-control">
                                                 <?php foreach ($suppliers as $supplier) { ?>
                                                     <option value="<?php echo $supplier['user_id'] ?>"><?php echo $supplier['firstname'] .' '. $supplier['lastname'] ?></option>
@@ -262,7 +262,7 @@
                                             <div>
                                               <label for="urgent" class="heading-box">
                                                   <input type="checkbox" name="urgent" style="width: 20px;
-                                                height: 20px;" id="urgent"><strong> Urgent </strong></label>
+                                                height: 20px;" id="urgent"><strong class="text-black"> Urgent </strong></label>
                                             </div>
                                             <div>
                                                 <button type="submit" name="submit" value="add_purchase_order" id="submit-add-order" class="btn btn-success">Add Order</button>
@@ -273,11 +273,11 @@
                                 <?php } else { ?>
                                     <div class="card product_list" style="display: none;">
                                         <div class="row instruction_row">
-                                            <div class="col-xs-12 col-sm-8 supplier-box">
+                                            <div class="col-xs-12 col-sm-6 supplier-box">
                                                 <textarea name="instruction" class="form-control special_instruction" rows="3" placeholder="Special Instruction" required></textarea>
                                             </div>
                                             <div class="col-xs-7 col-sm-2 supplier-box text-center">
-                                                <label class="control-label heading-box"><strong> Supplier </strong></label>
+                                                <label class="control-label heading-box text-black"><strong> Supplier </strong></label>
                                                 <select name="supplier" class="form-control">
                                                     <?php foreach ($suppliers as $supplier) { ?>
                                                         <option value="<?php echo $supplier['user_id'] ?>"><?php echo $supplier['firstname'] .' '. $supplier['lastname'] ?></option>
@@ -287,11 +287,24 @@
                                             <div class="col-xs-5 col-sm-2 supplier-box">
                                                 <div>
                                                   <label for="urgent" class="heading-box"><input type="checkbox" name="urgent" id="urgent" style="width: 20px;
-                                                    height: 20px;" class="chk-col-green"><strong> Urgent </strong></label>
+                                                    height: 20px; color:black;" class="chk-col-green "><strong class="text-black"> Urgent </strong></label>
                                                 </div>
                                                 <div>
                                                     <button type="submit" name="submit" value="add_purchase_order" id="submit-add-order" class="btn btn-success">Add Order</button>
                                                 </div>
+                                            </div>
+                                            <div class="col-xs-4 col-sm-2">
+                                                <div>
+                                                  <label for="shipp_by_sea" class="text-black"><strong> Ship By </strong></label>
+                                                </div>
+            
+                                                <div>
+                                                    <select name="shipp_by_sea" class="form-control custom-select" required>
+                                                        <option value="">Select Ship</option>
+                                                        <option value="1">By Sea</option>
+                                                        <option value="0">By Air</option>
+                                                    </select>
+                                                  </div>
                                             </div>
                                         </div>
                                     </div>
