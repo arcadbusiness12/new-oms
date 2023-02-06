@@ -6,7 +6,6 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/sass/app.scss',
-                'resources/css/app.css',
                 'resources/css/theme.css',
                 'resources/css/style.css',
                 'resources/css/sweetalert.css',
