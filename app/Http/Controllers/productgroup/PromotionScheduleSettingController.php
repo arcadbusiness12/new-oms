@@ -62,7 +62,7 @@ class PromotionScheduleSettingController extends Controller
         $budget_types = BudgetType::all();    
         $ads_types = AdsTypeModel::where('status', 1)->where('type', 0)->get();
         $creative_types = AdsTypeModel::where('status', 1)->where('type', 1)->get();
-        $page = ($setting != 'null') ? '.paidAds.editPaidSettingForm' : '.paidAds.createPaidSettingForm';
+        $page = ($setting != 'null') ? '.promotionSetting.paidAds.editPaidSettingForm' : '.promotionSetting.paidAds.createPaidSettingForm';
         // dd($page);
         return view('productGroup'.$page.'')->with(compact('settings','types_for_setting','store','socials','categories','users','budget_types','ads_types','creative_types','staff'));
     }
@@ -93,7 +93,8 @@ class PromotionScheduleSettingController extends Controller
             'budget_type' => 'required',
             'range' => 'required',
             'estimate_cost' => 'required',
-            'optimization_type' => 'required'
+            'optimization_type' => 'required',
+            'user' => 'required'
         ]);
         // $exist = PromotionScheduleSettingMainModel::where('social_ids', implode(',', $request->social))->where('store_id', $request->store)->where('posting_type', $request->postIng_type)->where('id', '!=' ,$request->main_setting_id)->first();
         // if(!$exist) {
@@ -169,7 +170,7 @@ class PromotionScheduleSettingController extends Controller
                     
                     $promotion_main_setting = PromotionScheduleSettingMainModel::with('adsType','user')->where('store_id', $request->store)->where('posting_type', $request->postIng_type)->where('is_deleted', 0)->orderBy('id', 'DESC')->paginate(self::PER_PAGE);
                     
-                    return view('productGroup.paidAds.paid_setting_ajax_template')->with(compact('promotion_main_setting'));
+                    return view('productGroup.promotionSetting.paidAds.paid_setting_ajax_template')->with(compact('promotion_main_setting'));
                 }else {
                      return response()->json([
                         'status' => false,
@@ -667,4 +668,22 @@ class PromotionScheduleSettingController extends Controller
         }
         
     }
+
+    public function destroySetting(PromotionScheduleSettingModel $setting) {
+        $setting->is_deleted = 1;
+        if($setting->update()) {
+            // PromotionProductPostModel::where('setting_id', $setting->id)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Setting deleted successfully.'
+            ]);
+        }else {
+            return response()->json([
+                'error' => true,
+                'message' => 'Opps, Process fail try again.'
+            ]);
+        }
+    }
+
+    
 }

@@ -33,7 +33,7 @@
                     <ul class="sidebar-menu">
                         <li class="treeview @if(strpos(Request::url(), 'home') !== false) active @endif">
                             <a href="{{url('/home')}}">
-                            <i class="icon icon-sailing-boat-water s-24"></i> <span>Dashboard</span>
+                            <i class="icon icon-dashboard2 s-24"></i> <span>Dashboard</span>
                             </a>
                         </li>
                         <li class="treeview @if( str_contains(Request::url(), '/place/order') ) active @endif"><a href="#"><i class="icon icon-shopping-cart s-24"></i>Place Order<i
@@ -329,7 +329,7 @@
                                 <li><a href="#"><i class="icon icon-buysellads"></i>Paid Ads<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Product List</a>
+                                        <li><a href="{{route('promotion.paid.ad.product.list', 'productList')}}"><i class="icon icon-more"></i>Product List</a>
                                         </li>
                                         <li>
                                             <a href="panel-page-blank-tabs.html"> <i class="icon icon-tasks"></i>Work <i
@@ -362,7 +362,7 @@
 
 
 
-                        <li class="treeview">
+                        <li class="treeview @if(str_contains(Request::url(), '/performance')) active @endif">
                             <a href="#">
                                 <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -430,12 +430,12 @@
                                     </ul>
                                 </li>
 
-                                <li>
+                                <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif">
                                     <a href="#">
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        <li><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
                                         </li>
                                         <li><a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>

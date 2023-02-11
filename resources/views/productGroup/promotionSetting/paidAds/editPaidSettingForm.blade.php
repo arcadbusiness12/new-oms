@@ -1,3 +1,9 @@
+<style>
+  .alert-error {
+    color: red;
+    font-weight: 600;
+  }
+</style>
 <div class="sub-setting-loop col-md-12" >
               <form name="setting_form" class="setting_form" class="" action="{{url('add/group')}}" method="post">
                           {{ csrf_field() }}

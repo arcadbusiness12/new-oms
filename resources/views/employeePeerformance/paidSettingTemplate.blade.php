@@ -63,7 +63,7 @@
                           
                        <hr style="margin-top: 0.5rem;margin-bottom: 0.5rem; border-top: 2px solid rgb(0 0 0 / 29%);width: 97%;">
                        <table class="table" width="100%" style="border-bottom: 1px solid #2196f3">
-                         <caption>Check the you want</caption>
+                         <caption>Check that rows you want add</caption>
                          <thead>
                            <tr style="border-bottom: 1px solid #323131 !important;background-color: #3f51b5;color:white">
                             <th class="fw-blod">Ad Set Name</th>
@@ -84,7 +84,7 @@
                                   <td>{{$setting->category}}</td>
                                   <td>{{$setting->sub_category}}</td>
                                   <td>{{$setting->budget}}</td>
-                                  <td>{{$setting->creativeType->name}}</td>
+                                  <td>{{@$setting->creativeType->name}}</td>
                                   <td>
                                     <input type="checkbox" name="setting_id[]" value="{{$setting->id}}" class=""> 
                                     

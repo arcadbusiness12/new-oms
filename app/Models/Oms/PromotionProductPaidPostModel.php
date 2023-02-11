@@ -12,7 +12,7 @@ class PromotionProductPaidPostModel extends Model
     
     public $timestamps = false;
     protected $table = 'oms_promotion_product_paid_posts';
-    protected $fillable = ['product_id','store_id','main_setting_id','social_id','group_id','group_code','group_name','date','time','created_at','created_by','posting_type'];
+    protected $fillable = ['product_id','store_id','main_setting_id','setting_id','social_id','group_id','group_code','group_name','date','time','created_at','created_by','posting_type'];
 
     public function group() {
         return $this->belongsTo(ProductGroupModel::class, 'group_id');

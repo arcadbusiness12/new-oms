@@ -321,10 +321,10 @@ input:checked + .slider:before {
               
                           <div class="col-sm-1 col-md-1 list-inner col-grid">
                               {{--  <i class="material-icons" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">keyboard_arrow_down</i>  --}}
-                              <a href="{{ route('performance.marketing.save.add.chat', ['current',$id]) }}" class=""> <button class="btn btn-outline-secondary btn-sm {{($action == 'current') ? 'btn-active' : ''}}">Current</button> </a>
+                              <a href="{{ route('performance.marketing.save.add.chat', ['current',$id]) }}" class=""> <button class="btn btn-outline-secondary btn-sm {{($action == 'current') ? 'btn-active' : ''}}" style="background: greenyellow;font-weight:bold;">Current</button> </a>
                           </div>
                           <div class="col-sm-1 col-md-1 list-inner col-grid">
-                            <a href="{{ route('performance.marketing.save.add.chat', ['comming',$id]) }}"> <button class="btn btn-outline-secondary btn-sm {{($action == 'comming') ? 'btn-active' : ''}}">Comming</button> </a>
+                            <a href="{{ route('performance.marketing.save.add.chat', ['comming',$id]) }}"> <button class="btn btn-outline-secondary btn-sm {{($action == 'comming') ? 'btn-active' : ''}}" style="background: #fefe0a;font-weight:bold;">Comming</button> </a>
                         </div>
                         
             </div>
@@ -420,10 +420,11 @@ input:checked + .slider:before {
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>
                          <div class="wrapper">
-                            <form method="post" action="{{url('/employee-performance/marketing/save/paid/ad/chat')}}">
+                            <form method="post" action="{{url('/performance/marketing/save/paid/ad/chat')}}">
                               {{ csrf_field() }}
                             <table class="table"  style="border: 1px solid #2196f3">
                             <input type="hidden" name="main_id" value="{{$id}}">
+                            <input type="hidden" name="action_status" value="{{$action}}">
                             <input type="hidden" name="user_id" value="{{@$templates->user_id}}">
                             <input type="hidden" name="campaign_current" value="{{@$campaign_current->id}}">
                             <input type="hidden" name="campaign_next" value="{{@$campaign_next->id}}">
@@ -437,7 +438,7 @@ input:checked + .slider:before {
                                       <span>
                                        <th colspan="{{(@$templates->ads_type_id == 1) ? '5' : '9'}}" style="text-align:center;" class="top-row">
                                          <span>Current</span> 
-                                         @if(@$templates->ads_type_id == 1)
+                                         {{-- @if(@$templates->ads_type_id == 1) --}}
                                          <span class="btn-stop"><button type="button" class="btn btn-danger btn-sp btn_stop btn-sm" onclick="showStopBtns()">Stop</button> </span> 
                                          <div class="campaign-btn">
                                           @if($campaign_current)
@@ -445,7 +446,7 @@ input:checked + .slider:before {
                                          
                                           @endif
                                          </div> 
-                                         @endif
+                                         {{-- @endif --}}
                                          
                                        </th>
                                        </span>
@@ -453,18 +454,18 @@ input:checked + .slider:before {
                                        <span>
                                        <th scope="col" colspan="4" class="top-row">
                                           <center>
-                                            @if(@$templates->ads_type_id == 1)
+                                            {{-- @if(@$templates->ads_type_id == 1) --}}
                                             <span class="btn-stop"><button type="button" class="btn btn-success btn-sp btn_run" onclick="showActiveBtns()">Active</button> </span>
-                                            @endif 
-                                            Coming<br>
-                                            @if(@$templates->ads_type_id == 1)
+                                            {{-- @endif  --}}
+                                            Coming <br>
+                                            {{-- @if(@$templates->ads_type_id == 1) --}}
                                             <div class="campaign-btn">
                                               @if($campaign_next)
                                                 <h5 class="text-black">{{$campaign_next->campaign_name}}</h5>
                                               @else 
                                                 <input type="button" name="create-campaign" class="btn btn-info active" value="Create Campaign" data-toggle="tooltip" data-placement="top" data-bs-toggle="modal" data-bs-target="#create_campaign_modal" onclick="createCampaign('{{@$templates->setting_name}}', {{$id}}, '{{date('y_m_d')}}')">
                                               @endif
-                                              @endif
+                                              {{-- @endif --}}
                                             </div> 
                                           </center>
                                           
@@ -623,7 +624,7 @@ input:checked + .slider:before {
                                                           @endif
                                                           @if($ad_row->stock == 0)
                                                           <br>
-                                                          <a href="javascript:void(0)" onclick="showQuantityCounts('{{$group_id}}', '{{$ad_row->out_stock_days}}')">
+                                                          <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#stock_detail_modal" onclick="showQuantityCounts('{{$group_id}}', '{{$ad_row->out_stock_days}}')">
                                                             
                                                                 <span class="out-stock-text">Out of stock
                                                                   @if($ad_row->out_stock_days && $ad_row->out_stock_days > 0)
@@ -724,7 +725,7 @@ input:checked + .slider:before {
                                           <td class="argn-popup-td current-td table-td-text" style="vertical-align: middle;">
                                             <center>
                                               <span class="text-section"> {{ ($product_pro_post->budget_used && $product_pro_post->result) ? round($product_pro_post->budget_used/$product_pro_post->result, 5) : 0 }} </span> <br>
-                                              <a href="javascript:;" onclick="showAllResults({{$product_pro_post->adResultHistories}})"><span style="font-size: 12px;">Show All</span></a>
+                                              <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#chat_history_modal" onclick="showAllResults({{$product_pro_post->adResultHistories}})"><span style="font-size: 12px;">Show All</span></a>
                                             </center>
                                           </td>
                                           
@@ -984,12 +985,28 @@ input:checked + .slider:before {
 
 @push('scripts')
 <script>
+  $(document).ready(function() {
+    setTimeout(() => {
+      var br = document.getElementById('date_from').style.border='1px solid grey';
+      $('.date-error').text('');
+    },3500);
+    $('.datepicker').datetimepicker({format: "Y-m-d",'timepicker':false})
+  });
+
   $('.next-active-a').parent().parent().parent().addClass('next-active-td');
+
+  function calculatePerCost(v){
+    var total_budget_used   =  $('#'+v+'total_budget_used').val() || 0;
+    var total_chat_received =  $('#'+v+'total_chat_received').val() || 0;
+    var total_cost_per_chat = total_budget_used/total_chat_received;
+    $('#'+v+'total_cost_per_chat').val(total_cost_per_chat.toFixed(4));
+  }
+
  function showQuantityCounts(group, catopn) {
   // var detail = JSON.parse(details);
   console.log(catopn);
-  $('.stock_detail_modal').modal('toggle');
-  $('.history').html('');
+  // $('#stock_detail_modal').modal('show');
+  // $('.history').html('');
   $('#exampleModalCenterTitle').text('Stock Details');
   $('#top-title').text('');
   $('#schedule_view_content').css('display', 'none');
@@ -1271,5 +1288,87 @@ function stopAd(post,main_setting,setting,current_duration,code,index,campaign) 
     })
   }
 }
+
+function selectEntryDate(value) {
+    console.log(value);
+    $('#chat_entry_date').val(value);
+  }
+
+  function showAllResults(history) {
+    // console.log(history);
+    if(history.length > 0) {
+      var tbody = '';
+      history.forEach(function callback(value, index) {
+        tbody += '<tr><td class="text-center">'+value.budget_used+'</td><td class="text-center">'+value.results+'</td><td class="text-center">'+value.cost_per_result+'</td><td class="text-center">'+value.date+'</td></tr>'
+        
+          // total_chat = total_chat+value.chat;
+        });
+        }else {
+          tbody += '<tr><td colspan="4" class="text-center">No history availible..</td></tr>'
+        }
+        
+        // console.log(budget_range/total_chat);
+        // $('#chat_history_modal').modal('toggle');
+        $('.chat_history').html(tbody);
+  }
+
+  function saveRemark(index) {
+    var post = $('#post'+index).val();
+    var rmark = $('#remark'+index).val();
+    var raction = $('#remark_action'+index).val();
+    if(rmark == '') {
+      $('#remark'+index).addClass('error-rmark');
+      setTimeout(() => {
+        $('#remark'+index).removeClass('error-rmark');
+      },2500);
+    }else {
+      $('.savebnt'+index).html('<i class="fa fa-spin fa-circle-o-notch"></i>');
+      $('.savebnt'+index).prop('disabled', true);
+      var CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+      $.ajax({
+        url: "{{url('/performance/save/paid/post/remark')}}",
+        type: "POST",
+        data: {_token:CSRF_TOKEN,post:post,rmark:rmark,action:raction},
+        cache: false,
+        success: function(resp) {
+            $('.savebnt'+index).html('Saved');
+            if(resp.status) {
+                            $(".toast-action").data('title', 'Action Done!');
+                            $(".toast-action").data('type', 'success');
+                            $(".toast-action").data('message', 'Remarks saved successfully.');
+                            $(".toast-action").trigger('click');
+                        } else {
+                            $(".toast-action").data('title', 'Went Wrong!');
+                            $(".toast-action").data('type', 'error');
+                            $(".toast-action").data('message', 'Something went wrong.');
+                            $(".toast-action").trigger('click');
+                        }
+            setTimeout(() => {
+            $('.savebnt'+index).html('Save');
+            $('.savebnt'+index).prop('disabled', false);
+            }, 2500);
+        }
+      })
+    }
+    console.log(post);
+  }
+
+  function changeStatus(post, index) {
+    console.log($('.status-switch'+index).is(':checked'));
+    if($('.status-switch'+index).is(':checked')) {
+      var status = 0;
+    }else {
+      var status = 1;
+    }
+    $.ajax({
+        url: "{{url('/performance/change/status/paid/ad/setting')}}/"+post +"/"+ status,
+        type: "GET",
+        cache: false,
+        success: function(resp) {
+            console.log(resp);
+        }
+      });
+    
+  }
 </script>
 @endpush

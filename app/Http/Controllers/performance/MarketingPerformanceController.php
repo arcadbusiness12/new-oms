@@ -18,6 +18,7 @@ use App\Models\Oms\PromotionProductPaidPostModel;
 use App\Providers\Reson8SmsServiceProvider;
 use App\Models\Oms\AdsTypeModel;
 use App\Models\Oms\OmsUserModel;
+use App\Models\Oms\DailyAdResult;
 use Carbon\Carbon;
 use DateTime;
 
@@ -33,7 +34,7 @@ class MarketingPerformanceController extends Controller
         $all_lists = PromotionScheduleSettingMainModel::with('user')->where('is_deleted',0)->where('posting_type',2)->get();
         
         if( $id == "" && $all_lists->count() > 0 ){
-        $id = $all_lists[0]->id;
+          $id = $all_lists[0]->id;
         }
         $next_date = strtotime("+7 days", strtotime($today));
         $next_seven_day = date('Y-m-d',$next_date);
@@ -55,7 +56,6 @@ class MarketingPerformanceController extends Controller
           if($campaign_current) {
             $product_pro_posts = PromotionSchedulePaidAdsCampaignTemplateModel::with(['type','subCategory','creativeType','adResultHistories'])->where('campaign_id', $campaign_current->id)->where('is_deleted', 0)->orderBy('category')->get();
           }
-    
         $product_next_pro_posts = [];
         $campaign_next = PaidAdsCampaign::with(['schedulechatResults' => function($q) {
           $q->orderBy('date','DESC')->first();
@@ -98,7 +98,77 @@ class MarketingPerformanceController extends Controller
     }
 
     public function getOutStockPaidAdsDetails($group) {
-      dd($group);
+      $groupProducts = ProductGroupModel::with('producType','products')->find($group);
+      $whereClause = [];
+      $socials = SocialModel::where('status', 1)->get();
+      $groupProducts->action = 1;
+      $groupProducts->histories = [];
+      return view(self::VIEW_DIR. '.marketting.scheduleGroupDetails')->with(compact('groupProducts', 'socials'));
+    }
+
+    public function savePaidAdChat(Request $request) {
+      // dd($request->all());
+      $post_data = $request->all();
+      $today = date("Y-m-d");
+      if(count($post_data) > 0) {
+        if(isset($post_data['chat']) && isset($post_data['used_budget']))  {
+          $this->validate($request, [
+            'chat_entry_date' => 'required|date'
+          ]);
+          $chat_data = $post_data['chat'];
+          $used_budget_data = $post_data['used_budget'];
+          foreach($chat_data as $setting_id => $chat) {
+            if($chat > 0) {
+              $update_data = PromotionSchedulePaidAdsCampaignTemplateModel::where('id', $setting_id)->update(['budget_used' => $used_budget_data[$setting_id], 'result' => $chat]);
+              $whereClause = ['setting_id' => $setting_id, 'date' => $request->chat_entry_date];
+              $user_chat_data = [
+                'promotion_schedule_setting_main_id' => $request->main_id,
+                'setting_id' => $setting_id,
+                'user_id' => $request->user_id,
+                'budget_used' => $used_budget_data[$setting_id],
+                'results' => $chat,
+                'cost_per_result' => ($used_budget_data[$setting_id] && $chat) ? $used_budget_data[$setting_id]/$chat : 0,
+                'date' => $request->chat_entry_date,
+                'created_at' => date('Y-m-d')
+              ];
+              DailyAdResult::updateOrCreate($whereClause, $user_chat_data);
+            }
+          }
+        }else {
+          if(isset($request->schedule_chat)) {
+            $date = $request->schedule_date;
+            $action = 'schedule';
+            $campaign_id = $request->campaign_next;
+            $u_c_data  = ['budget_alloted'=>$request->schedule_total_budget_alloted,
+            'budget_used'=>$request->schedule_total_budget_used,
+            'user_id' => $request->user_id,
+            'results'=>$request->schedule_total_chat_received,
+            'cost_per_result_alloted'=>$request->schedule_total_cost_per_chat_alloted,
+            'cost_per_result'=>$request->schedule_total_cost_per_chat
+          ];
+          }else {
+            $date = $request->date;
+            $action = 'current';
+            $campaign_id = $request->campaign_current;
+            $u_c_data  = ['budget_alloted'=>$request->total_budget_alloted,
+            'budget_used'=>$request->total_budget_used,
+            'user_id' => $request->user_id,
+            'results'=>$request->total_chat_received,
+            'cost_per_result_alloted'=>$request->total_cost_per_chat_alloted,
+            'cost_per_result'=>$request->total_cost_per_chat
+          ];
+          }
+          $u_c_where = ['date'=>$date,'promotion_schedule_setting_main_id'=>$request->main_id,'duration'=>$action,'campaign_id'=>$campaign_id];
+          
+          DailyAdResult::updateOrCreate($u_c_where,$u_c_data);
+            
+        }
+        if($post_data['main_id']) {
+          return Redirect()->route('performance.marketing.save.add.chat', [$request->action_status, $post_data['main_id']])->with("success","Chat updated Successfully.");
+        }else {
+          return Redirect()->route('performance.marketing.save.add.chat')->with("success","Chat updated Successfully.");
+        }
+      }
     }
 
     public function calculate_week_Days($today, $action) {
@@ -183,6 +253,9 @@ class MarketingPerformanceController extends Controller
             $campaignTemplate->created_at = date('Y-m-d H:i s');
             $campaignTemplate->save();
         }
+        $mainSetting = PromotionScheduleSettingMainModel::find($request->main_setting_id);
+        $mainSetting->user_id = $request->user;
+        $mainSetting->update();
       }
     
         return response()->json([
@@ -287,4 +360,30 @@ class MarketingPerformanceController extends Controller
         'chat'  => false
       ]);
     }
+
+    function saveRemark(Request $request) {
+      // dd($request->all());
+      if($request->action == 'post') {
+        $post = PromotionProductPaidPostModel::find($request->post);
+      }else {
+        $post = PromotionSchedulePaidAdsCampaignTemplateModel::find($request->post);
+      }
+      $post->remark = $request->rmark;
+    if($post->update()) {
+      return response()->json([
+        'status' => true
+      ]);
+    }
+  }
+
+  public function changePaidAdsSettingStatus(PromotionSchedulePaidAdsCampaignTemplateModel $setting, $status) {
+    // dd($setting);
+    if($setting) {
+      $setting->is_active = $status;
+      $setting->update();
+      return response()->json([
+        'status' => true
+      ]);
+    }
+  }
 }
