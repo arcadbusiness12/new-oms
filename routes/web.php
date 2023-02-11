@@ -369,7 +369,6 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::get('/destroy/setting/{setting}', 'destroySetting')->name('destroy.setting');
         Route::get('/get/schedule/group/detail/{group}/{posting_type?}', 'scheduleGroupDetail')->name('promotion.schedule.group.detail');
         
-        
     });
     
     Route::controller(AttributeController::class)->group(function() {

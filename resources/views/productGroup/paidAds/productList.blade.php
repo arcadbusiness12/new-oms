@@ -206,7 +206,7 @@
                             <tr style="border-top: 2px solid white;">
                             <td colspan="3">
                                <div class="table-responsive promo-table history-tbl-{{$product->id}}" id="history-tbl-{{$product->id}}">
-                                @if(count($product->histories) > 0) 
+                                @if(isset($product->histories) && count($product->histories) > 0) 
                                   <table class="table table-bordered table-hover">
                                  
                                       <thead style="background-color: #eee;">
@@ -221,7 +221,7 @@
                                           </tr>
                                       </thead>
                                       <tbody class="history">
-                                        @if(count($product->histories) > 0) 
+                                    @if(count($product->histories) > 0) 
                                       @foreach($product->histories as $history)
                                         @foreach($history as $hi)
                                         <tr>
@@ -234,7 +234,7 @@
                                                  @php $campaigns = json_encode($hi['main_setting']['paidAdsCampaigns']); @endphp
                                                  @php $compgn = ''; $date = ''; $c_date = '';@endphp
                                                    @foreach($hi['campaigns'] as $cmpaigns)
-                                                        @if($cmpaigns->campaign['status'] == 1)
+                                                        @if(@$cmpaigns->campaign['status'] == 1)
                                                         @php $compgn = $cmpaigns->campaign['campaign_name']; $date = $cmpaigns->campaign['start_date'];
                                                           break;
                                                         @endphp
@@ -244,21 +244,23 @@
             
                                                     @foreach($hi['campaigns'] as $cmpaigns)
                                                         @php $c_name = ''; $c_date = '' @endphp
-                                                        @if($cmpaigns->campaign['status'] == 1)
+                                                        @if(@$cmpaigns->campaign['status'] == 1)
                                                           @php $c_name = $cmpaigns->campaign['campaign_name']; 
                                                             $c_date = $cmpaigns->campaign['start_date'];
                                                             break; 
                                                           @endphp
             
-                                                        @elseif($cmpaigns->campaign['status'] == 2)
+                                                        @elseif(@$cmpaigns->campaign['status'] == 2)
                                                           @php $c_name = $cmpaigns->campaign['campaign_name'];
                                                             $c_date = $cmpaigns->campaign['start_date'];
                                                             break; 
                                                           @endphp
                                                         @else
-                                                          @php $c_name = $hi['campaigns'][0]->campaign['campaign_name']; 
+                                                          @if(count($hi['campaigns']) > 0) 
+                                                          @php $c_name = @$hi['campaigns'][0]->campaign['campaign_name']; 
                                                           $c_date = $hi['campaigns'][0]->campaign['start_date'];
                                                           @endphp
+                                                          @endif
                                                         @endif
                                                     @endforeach
             
@@ -360,6 +362,13 @@
 
 @push('scripts')
 <script>
+  $(document).ready(function(){
+  $(".nav-tabs a").click(function(){
+    $(this).tab('show');
+  });
+  getSubCategories(<?php echo @$old_input['cate'] ?>)
+});
+
 function getSettingTemplate(store, group, type,selected_cate) {
     $('.modal-content-loader').css('display', 'none');
     if(store) {
@@ -437,7 +446,7 @@ function scheduleNewPostForEmptyDay(campaign,row,main_setting_id,setting_id,type
   });
 }
 
-function scheduleProduct(row,main_setting_id,setting_id,type, category, group_type, group_code,group_id,post_id,socials,date,last_date,store,range, action,selected_group, selected_cate, sub_category=null) {
+function scheduleProduct(campaign,row,main_setting_id,setting_id,type, category, group_type, group_code,group_id,post_id,socials,date,last_date,store,range, action,selected_group, selected_cate, sub_category=null) {
   // console.log(selected_group);
     var _token = document.querySelector('meta[name="csrf-token"]').content;
     $('.modal-content-loader').css('display', 'block');
@@ -453,7 +462,7 @@ function scheduleProduct(row,main_setting_id,setting_id,type, category, group_ty
   $.ajax({
     url: "{{url('/productgroup/save/change/schedule')}}",
     type: "POST",
-    data: {_token:_token,main_setting:main_setting_id,setting:setting_id,post_id:post_id,category:category,group_type:group_type,socials:socials,date:date,last_date:last_date,time:range,store:store,post_type:2,action:action,type:type,selected_category:selected_cate,schedule_group:selected_group,sub_category:sub_category},
+    data: {_token:_token,campaign:campaign,main_setting:main_setting_id,setting:setting_id,post_id:post_id,category:category,group_type:group_type,socials:socials,date:date,last_date:last_date,time:range,store:store,post_type:2,action:action,type:type,selected_category:selected_cate,schedule_group:selected_group,sub_category:sub_category},
     cache: false,
     success: function(respo) {
       console.log(respo);
@@ -486,6 +495,36 @@ function scheduleProduct(row,main_setting_id,setting_id,type, category, group_ty
       }
     }
   });
+}
+
+function getSubCategories(cate, sub = null) {
+  if(cate) {
+
+    $.ajax({
+      url: "{{url('/productgroup/sub/categories/for/paid/setting')}}/"+cate,
+      type: "GET",
+      cache: false,
+      success: function(respo) {
+        console.log(respo);
+        var html = '';
+        if(respo.status) {
+          respo.cates.forEach(function callback(value) {
+            if(value.id == sub) {
+              var select = 'selected';
+            }else {
+              var select = '';
+            }
+            html += '<option value="'+value.id+'" '+select+'>'+value.name+'</option>';
+          });
+        }
+        console.log(html);
+        var s_html = '<select name="sub_cates" id="sub_catess" class="form-control"><option value="">Sub category</option>';
+        var e_html = '</select>';
+        var h = s_html+html+e_html;
+        $('#sub_catess').html(h);
+      }
+    })
+  }
 }
 
 </script>

@@ -357,7 +357,12 @@ class ProductGroupController extends Controller
                 $g['name'] = $name;
             }
             $old_input = $request->all();
-            // dd($groupProducts);
+            // foreach($groupProducts as $p) {
+            //     foreach($p->histories as $htries) {
+            //         dd($htries);
+            //     }
+            // }
+            // dd($groupProducts->toArray());
             return view(SELF::VIEW_DIR. '.paidAds.productList')->with(compact('groupProducts', 'types_for_organic','types_for_setting', 'socials', 'stores', 'categories','old_input','main_categories'));
           }
 

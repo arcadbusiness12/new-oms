@@ -326,10 +326,13 @@
                                     </ul>
                                 </li>
 
-                                <li><a href="#"><i class="icon icon-buysellads"></i>Paid Ads<i
+                                <li class="@if(strpos(Request::url(), '/promotion/paid/ad/product/list/productList') !== false) active @endif">
+                                    <a href="#">
+                                    <i class="icon icon-buysellads" ></i>Paid Ads<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="{{route('promotion.paid.ad.product.list', 'productList')}}"><i class="icon icon-more"></i>Product List</a>
+                                        <li class="@if(strpos(Request::url(), '/promotion/paid/ad/product/list/productList') !== false) active @endif">
+                                            <a href="{{route('promotion.paid.ad.product.list', 'productList')}}"><i class="icon icon-more"></i>Product List</a>
                                         </li>
                                         <li>
                                             <a href="panel-page-blank-tabs.html"> <i class="icon icon-tasks"></i>Work <i
