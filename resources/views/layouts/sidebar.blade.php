@@ -371,14 +371,16 @@
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li><a href="panel-page-users.html"><i class="icon icon-store_mall_directory"></i>Stock</a>
+                                <li><a href="{{route('stock.performance')}}"><i class="icon icon-store_mall_directory"></i>Stock</a>
                                 </li>
-                                <li><a href="#"><i class="icon icon-add_shopping_cart"></i>Sales<i
+                                <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false) active @endif"><a href="#">
+                                    <i class="icon icon-add_shopping_cart"></i>Sales<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li><a href="panel-page-users.html">Today Sale</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Report</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false) active @endif">
+                                            <a href="{{route('sale.staff.duty.report')}}">Report</a>
                                         </li>
                                         <li><a href="panel-page-users.html">Sale Report</a>
                                         </li>

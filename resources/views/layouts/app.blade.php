@@ -82,7 +82,11 @@
         <div class="control-sidebar-bg shadow white fixed"></div>
     </div>
     <script src="{{ URL::asset('assets/js/jquery.main.js')}}"></script>
-    
+   <script>
+    $(document).ready(function() {
+    $('.datepicker').datetimepicker({format: "Y-m-d",'timepicker':false})
+  });    
+   </script> 
     @stack('scripts')
 
 </body>

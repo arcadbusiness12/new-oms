@@ -24,6 +24,8 @@ use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use App\Http\Controllers\rolepermision\RolePermissionController;
 use App\Http\Controllers\performance\MarketingPerformanceController;
+use App\Http\Controllers\performance\SalePerformancaeController;
+use App\Http\Controllers\performance\StockPerformanceController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
@@ -405,6 +407,13 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::post('/marketing/save/paid/ad/chat/', 'savePaidAdChat')->name('marketing.save.ad.chat');
         Route::post('/save/paid/post/remark/', 'saveRemark')->name('save.paid.post.remark');
         Route::get('/change/status/paid/ad/setting/{setting}/{status}', 'changePaidAdsSettingStatus')->name('change.status.paid.ad.setting');
+    });
+
+    Route::controller(StockPerformanceController::class)->group(function() {
+        Route::get('stock', 'index')->name('stock.performance');
+    });
+    Route::controller(SalePerformancaeController::class)->group(function() {
+        Route::get('/sale/staff/duty/report', 'index')->name('sale.staff.duty.report');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
