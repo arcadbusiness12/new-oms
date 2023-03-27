@@ -258,4 +258,8 @@
         height: 48mm!important;
     }
 }
+
+.barcode text {
+        font-size: 28px !important;
+    }
 </style>

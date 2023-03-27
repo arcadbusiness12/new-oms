@@ -1,10 +1,10 @@
  <!--  Setting modal end -->
-  <div class="modal fade stock_detail_modal" id="stock_detail_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+ <div class="modal fade" id="stock_detail_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" style="width: 60%">
     <div class="modal-content" >
       <div class="modal-header text-center">
-        <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;">Chat history of <span id="changed-group" style="color: green;"></span></h5>
-        <button type="button" class="close close-modal" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;">Chat history of <span id="changed-group" style="color: green;"></span></h5>
+        <button type="button" class="close close-modal" data-bs-dismiss="modal" aria-bs-label="Close">
            <span aria-hidden="true">&times;</span>
         </button>
         <span id="top-title"></span>
@@ -19,6 +19,23 @@
 </div>
 </div>
 
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade setting_view_modal" id="promotion_setting_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" >
@@ -45,12 +62,12 @@
 <!--  Setting modal end -->
 
 <!--  chat history modal start -->
-<div class="modal fade chat_history_view_modal" id="chat_history_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade" id="chat_history_modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" style="width: 60%">
     <div class="modal-content" >
       <div class="modal-header text-center">
-        <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;color: green;">Rusult history<span id="changed-group" style="color: green;"></span></h5>
-        <button type="button" class="close close-modal" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;">Rusult history<span id="changed-group" style="color: green;"></span></h5>
+        <button type="button" class="close close-modal" data-bs-dismiss="modal" aria-bs-label="Close">
            <span aria-hidden="true">&times;</span>
         </button>
         {{-- <span id="top-title"></span> --}}
@@ -68,7 +85,7 @@
                 <th class="text-center th-textl">Date</th>
           </tr>
         </thead>
-        <tbody class="history">
+        <tbody class="chat_history">
         </tbody>
       </table>
         {{-- <div class="row text-center" id="schedule_view_content">
@@ -76,9 +93,6 @@
         
       </div> --}}
        <div class="body-data" id="body-data"></div>
-
-      <div class="modal-footer">
-      </div>
     </div>
   </div>
 </div>

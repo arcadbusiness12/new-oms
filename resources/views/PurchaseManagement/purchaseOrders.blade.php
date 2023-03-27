@@ -109,7 +109,7 @@
                                                         </div>
                                                         <?php } ?>
                                                     </div>
-                                                    <div class="<?php echo $checkbox ? 'col-sm-7' : 'col-sm-8' ?> text-center col-grid purchase-order-progress">
+                                                    <div class="<?php echo $checkbox ? 'col-sm-6' : 'col-sm-7' ?> text-center col-grid purchase-order-progress">
                                                         @include('PurchaseManagement.orderProgressBar')
                                                         
                                                     </div>
@@ -117,6 +117,11 @@
                                                         <?php if($order['urgent']) { ?>
                                                             <div class="badge badge-warning orange darken-1 mb-2" style="font-size: 15px;"><strong> Urgent </strong></div>
                                                         <?php } ?>
+                                                        <?php if($order['ship_by_sea'] == 1) { ?>
+                                                            <div class="badge badge-success darken-1" style="font-size: 15px;">Ship By Sea</div>
+                                                        <?php } else { ?>
+                                                            <div class="badge badge-primary" style="font-size: 15px;">Ship By Air</div>
+                                                        <?php  } ?>
                                                         <div>
                                                             <div class="badge badge-secondary font-weight-bold"><strong><?php echo date('Y-m-d', strtotime($order['created_at'])) ?></strong></div>
                                                         </div>

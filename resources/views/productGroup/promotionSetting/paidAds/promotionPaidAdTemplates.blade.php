@@ -309,6 +309,43 @@ function createCupy(id, rowIndex, row) {
         return false;
         })
   }
+  
+  function deleteSetting(id) {
+    swal({
+            title: "Delete?",
+            text: "Please ensure and then confirm!",
+            type: "warning",
+            showCancelButton: !0,
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            reverseButtons: !0
+        },function (e) {
+        if (e === true) {
+            var CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+            $.ajax({
+                type: 'GET',
+                url: "{{url('/productgroup/destroy/setting')}}/" + id,
+                data: {_token: CSRF_TOKEN},
+                dataType: 'JSON',
+                success: function (results) {
+
+                    if (results.success === true) {
+                      $('#srow_'+id).remove();
+                        swal("Done!", results.message, "success");
+                    } else {
+                        swal("Sorry!", results.message, "error");
+                    }
+                }
+            });
+
+        } else {
+            e.dismiss;
+        }
+
+        }, function (dismiss) {
+        return false;
+        })
+  }
 
 </script>
 @endpush

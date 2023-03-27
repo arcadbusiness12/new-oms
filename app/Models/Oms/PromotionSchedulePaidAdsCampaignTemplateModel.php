@@ -33,4 +33,8 @@ class PromotionSchedulePaidAdsCampaignTemplateModel extends Model
     public function adResultHistories() {
         return $this->hasMany(DailyAdResult::class, 'setting_id');
     }
+
+    public function productPostes() {
+        return $this->hasMany(PromotionProductPaidPostModel::class, 'setting_id');
+     }
 }

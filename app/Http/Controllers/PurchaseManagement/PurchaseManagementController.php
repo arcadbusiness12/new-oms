@@ -102,6 +102,9 @@ class PurchaseManagementController extends Controller
                 $relationWhereClause[] = ['model', 'LIKE', $request->product_sku . "%"];
             }
         }
+        if($request->by_sea != ""){
+            $whereClause[] = ['ship_by_sea', $request->by_sea];
+        }
         $shippedWhereClause = [];
         if($request->order_status_id) {
             $shippedWhereClause[] = ['status', $request->order_status_id];
@@ -424,7 +427,6 @@ class PurchaseManagementController extends Controller
     }
 
     public function addOrder(Request $request) {
-        // dd($request->all());
         if(count($request->all()) > 0){
             $option_id = OmsSettingsModel::get('product_option','color');
             $same_option = false;
@@ -498,12 +500,14 @@ class PurchaseManagementController extends Controller
           }
             if($request->urgent) $urgent = 1;
             else $urgent = 0;
-
+            if($request->shipp_by_sea) $shipp_by_sea = 1;
+            else $shipp_by_sea = 0;
             $OmsPurchaseOrdersModel = new OmsPurchaseOrdersModel();
             $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_TOTAL} = 0;
             $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_ORDER_STATUS_ID} = 0;
             $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_LINK} = '';
             $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_URGENT} = $urgent;
+            $OmsPurchaseOrdersModel->ship_by_sea = $shipp_by_sea;
             $OmsPurchaseOrdersModel->{OmsPurchaseOrdersModel::FIELD_SUPPLIER} = $request->supplier;
             $OmsPurchaseOrdersModel->save();
 
@@ -1564,8 +1568,16 @@ class PurchaseManagementController extends Controller
                 $OmsAccountTransactionModel->{OmsAccountTransactionModel::FIELD_BALANCE} = ($account_summary->balance + $grand_total_value);
                 $OmsAccountTransactionModel->save();
                 $this->addInventoryStock($request->order_id, $request->product);
-                ?> <script>window.open('/oms/PurchaseManagement/barcode/generate/<?php echo $request->print_label ?>/<?php echo $request->shipped_order_id ?>', '_blank');</script> <?php
-                return redirect()->back()->with('message', 'Your Order #'.$request->order_id.' delivered successfully.');
+                ?> 
+                
+                <script>
+                window.open('/oms/public/PurchaseManagement/barcode/generate/<?php echo $request->print_label ?>/<?php echo $request->shipped_order_id ?>', '_blank');
+                // alert("Ok");
+                </script>
+                 <?php
+                //  $this->barcodeGenerate($request->print_label,$request->shipped_order_id);
+                //  return redirect('/PurchaseManagement/add/to/deliver/orders');
+                // return redirect()->back()->with('message', 'Your Order #'.$request->order_id.' delivered successfully.');
             }else {
                 return redirect()->back()->with('message', 'Your order already delivered!');
             }
@@ -2357,23 +2369,26 @@ protected function addInventoryStock($order_id, $products){
 
   public function barcodeGenerate($label_type = 'small', $shipped_order_id = '') {
     $order = OmsPurchaseShippedOrdersModel::where('shipped_order_id', $shipped_order_id)->where('status', 3)->first();
+      
+    //   dd($order['shipped_order_id']);
   $barcode_generate = array();
   if($order){
       $products = OmsPurchaseShippedOrdersProductModel::where('shipped_order_id', $order['shipped_order_id'])->get()->toArray();
+    //   dd($products);
       foreach ($products as $product) {
-        if($product['type'] == 'manual'){
-          $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $product['name'])->first();
-        }else{
-          $opencartSKU = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
-          $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $opencartSKU->sku)->first();
-        }
+        // if($product['type'] == 'manual'){
+          $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $product['model'])->first();
+        //   dd($omsProduct);
+        //   $opencartSKU = ProductsModel::select('sku')->where('product_id', $product['product_id'])->first();
+        //   $omsProduct = OmsInventoryProductModel::select('*')->where('sku', $opencartSKU->sku)->first();
+        // }
 
         if($omsProduct){
             $quantities = OmsPurchaseShippedOrdersProductQuantityModel::select('order_product_quantity_id','received_quantity')->where('shipped_order_id', $shipped_order_id)->where('order_product_id', $product['product_id'])->get()->toArray();
             foreach ($quantities as $quantity) {
                 $options = OmsPurchaseShippedOrdersProductOptionModel::select('product_option_id','product_option_value_id','name','value')->where('shipped_order_id', $order['shipped_order_id'])->where('order_product_quantity_id', $quantity['order_product_quantity_id'])->get()->toArray();
 
-                $barcode = $omsProduct->product_id;
+                $barcode = $omsProduct->sku;
 
                 $color = '';
             foreach ($options as $key => $option) {
@@ -2381,38 +2396,41 @@ protected function addInventoryStock($order_id, $products){
                     $option_value_name = OptionValueDescriptionModel::select('name')->where('option_value_id', $option['product_option_value_id'])->first();
                     $color = $option_value_name->name;
                     unset($options[$key]);
+                    
                 }
+                
             }
-
               $option_array = array();
                 foreach ($options as $option) {
-                    $barcode .= $option['product_option_value_id'];
                 if($option['product_option_id'] == $this->static_option_id){
                     $option_array = array(
                         'color'   =>  $option['value'],
                         'size'  =>  '',
                     );
                 }else{
+                    $code = OmsDetails::select('code')->where('id',$option['product_option_value_id'])->where('options', $option['product_option_id'])->first();
+
+                    $barcode = $barcode.'-'.$code->code;
                     $option_array = array(
                         'color'  =>  $color,
                         'size'   =>  $option['value'],
                     );
                 }
                 }
-
-                $product_sku = ProductSkuModel::select('*')->where('product_id', $product['product_id'])->where('sku', $barcode)->exists();
-                if($product_sku == false){
-                    $ProductSkuModel = new ProductSkuModel();
-                    $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_ID} = $product['product_id'];
-                    $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_OPTION} = json_encode($options);
-                    $ProductSkuModel->{ProductSkuModel::FIELD_SKU} = $barcode;
-                    $ProductSkuModel->save();
-                }
+                // dd($barcode);
+                // $product_sku = ProductSkuModel::select('*')->where('product_id', $product['product_id'])->where('sku', $barcode)->exists();
+                // if($product_sku == false){
+                //     $ProductSkuModel = new ProductSkuModel();
+                //     $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_ID} = $product['product_id'];
+                //     $ProductSkuModel->{ProductSkuModel::FIELD_PRODUCT_OPTION} = json_encode($options);
+                //     $ProductSkuModel->{ProductSkuModel::FIELD_SKU} = $barcode;
+                //     $ProductSkuModel->save();
+                // }
 
               for ($i=0; $i < $quantity['received_quantity']; $i++) {
                     $barcode_generate[$label_type][] = array(
-                        'product_image' =>  $this->get_oms_product_image($omsProduct->image, 100, 100),
-                        'product_sku'   =>  $omsProduct->sku,
+                        'product_image' =>  $this->get_oms_product_image($omsProduct->image),
+                        'product_sku'   =>  $omsProduct->sku_name,
                         'option'        =>  $option_array,
                         'barcode'       =>  $barcode,
                     );
@@ -2422,6 +2440,26 @@ protected function addInventoryStock($order_id, $products){
       }
   }
   return view(self::VIEW_DIR.".barcodeGenerate", ["labels" => $barcode_generate, "label_type" => $label_type]);
+}
+
+protected function get_oms_product_image($image = '', $width = 0, $height = 0){
+    if (file_exists($this->oms_inventory_product_image_source_path.$image)) {
+        if (!empty($width) && !empty($height)) {
+          $ToolImage = new ToolImage();
+          return $ToolImage->resize(
+            $this->oms_inventory_product_image_source_path,
+            $this->oms_inventory_product_image_source_url,
+            $image,
+            $width,
+            $height
+          );
+        } else {
+          return url('/uploads/inventory_products/'.$image);
+        }
+        
+      } else {
+        return $this->opencart_image_url.'placeholder.png';
+      }
 }
 
     public function supplierCancelledAwaitingActionOrderRequest(Request $request) {

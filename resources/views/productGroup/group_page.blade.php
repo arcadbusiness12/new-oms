@@ -119,17 +119,17 @@
                                     <td class="td-valign"><center><b>{{$product->sku}}<br>{{$product->option_name}}</b></center></td>-->
                                     
                                     <td class="col-sm-2 text-center">
-                                    <table class="table table-hover group-title">
-                                        <thead style="background-color: {{ $tab_bg_color }}">
-                                        <th class="tab-th"><center><label><a href="javascript:void()">{{$product->name}}</a></label></center></th>
+                                        <table class="table table-hover group-title">
+                                            <thead style="background-color: {{ $tab_bg_color }}">
+                                            <th class="tab-th"><center><label><a href="javascript:void()">{{$product->name}}</a></label></center></th>
+                                            
+                                            </thead>
                                         
-                                        </thead>
-                                    
-                                    </table> 
-                                    <img src="{{URL::asset('uploads/inventory_products/'.$product['products'][0]->image)}}" class="img-responsive img-thumbnail group-pro" height="120"/> 
-                                    <h5 class="type-name">{{@$product->producType['name']}} </h5>
-                                    
-                                </td>
+                                        </table> 
+                                        <img src="{{URL::asset('uploads/inventory_products/'.$product['products'][0]->image)}}" class="img-responsive img-thumbnail group-pro" height="120"/> 
+                                        <h5 class="type-name">{{@$product->producType['name']}} </h5>
+                                        
+                                    </td>
         
                                     <td class="column col-sm-6 td-valign" >
                                         <table class="" style="display: inline-block;">

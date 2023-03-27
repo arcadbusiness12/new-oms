@@ -24,6 +24,8 @@ use App\Http\Controllers\PurchaseManagement\PurchaseManagementAjaxController;
 use App\Http\Controllers\PurchaseManagement\PurchaseManagementController;
 use App\Http\Controllers\rolepermision\RolePermissionController;
 use App\Http\Controllers\performance\MarketingPerformanceController;
+use App\Http\Controllers\performance\SalePerformancaeController;
+use App\Http\Controllers\performance\StockPerformanceController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
@@ -345,10 +347,12 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::any('/update/product/size/chart', 'updateProductSizeChart')->name('update.product.size.chart');
         Route::get('/promotion/product/{page}', 'productGroup')->name('promotion.product');
         Route::get('/promotion/organic/{page}', 'productGroup')->name('promotion.organic');
+        Route::get('/promotion/paid/ad/product/list/{page}', 'producpaidAdProductListtGroup')->name('promotion.paid.ad.product.list');
         Route::any('/update/site/prices', 'sitePrice')->name('update_site_prices');
         Route::any('/prices/update/site/promotion/prices', 'sitePromotionPrice')->name('update.site.promotion.prices');
         Route::get('/promotion/paid/ads/template/settings/{type}', 'promotionPaidAdsTemplateSettings')->name('promotion.paid.ads.template');
-        
+        Route::get('/get/setting/template/{store}/{group}/{type}/{cate}', 'getSettingTemplate')->name('get.setting.template');
+        Route::get('/get/template/schedules/{schedule}/{type}/{group_id}/{store}/{selected_cate}', 'getTemplateSchedules')->name('get.template.schedules');
     });
     Route::controller(PromotionScheduleSettingController::class,)->group(function() {
         Route::get('/get/paid/ads/setting/template/form/{setting?}', 'paidAdsSettingTemplateForm')->name('paid.ads.setting.template.form');
@@ -364,6 +368,9 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::get('/get/paid/schedule/group/detail/{group}/{posting_type?}', 'scheduleGroupDetail')->name('promotion.paid.schedule.group.detail');
         Route::post('/save/change/schedule', 'saveChangedSchedule')->name('save.change.schedule');
         Route::get('/promotion/get/new/schedule/{main_setting_id}/{setting}/{type}/{category}/{group_type}/{group_code}/{group_id}/{post_id}/{socials}/{date}/{store}/{post_type}/{time?}/{action?}/{sub_category?}', 'getnewschedulesGroups')->name('promotion.get.new.schedule');
+        Route::get('/destroy/setting/{setting}', 'destroySetting')->name('destroy.setting');
+        Route::get('/get/schedule/group/detail/{group}/{posting_type?}', 'scheduleGroupDetail')->name('promotion.schedule.group.detail');
+        
     });
     
     Route::controller(AttributeController::class)->group(function() {
@@ -397,6 +404,16 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::get('/get/group/for/selected/category/for/marketing/{group_type}/{type}/{cate}/{duration?}/{sub_cate?}', 'getGroupListForSelectedCategory')->name('employee.performance.marketing.get.group.list.for.cate');
         Route::get('/activate/single/comming/paid/ads/{main_setting}/{setting}/{duration}/{post}/{capaign}', 'ActiveSinglePaidAd')->name('activate.single.comming.paid.ads');
         Route::get('/stop/single/paid/ads/{post}/{main_setting}/{setting}/{duration}/{campaign}', 'stopSinglePaidAd')->name('stop.single.paid.ad');
+        Route::post('/marketing/save/paid/ad/chat/', 'savePaidAdChat')->name('marketing.save.ad.chat');
+        Route::post('/save/paid/post/remark/', 'saveRemark')->name('save.paid.post.remark');
+        Route::get('/change/status/paid/ad/setting/{setting}/{status}', 'changePaidAdsSettingStatus')->name('change.status.paid.ad.setting');
+    });
+
+    Route::controller(StockPerformanceController::class)->group(function() {
+        Route::get('stock', 'index')->name('stock.performance');
+    });
+    Route::controller(SalePerformancaeController::class)->group(function() {
+        Route::get('/sale/staff/duty/report', 'index')->name('sale.staff.duty.report');
     });
 });
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
