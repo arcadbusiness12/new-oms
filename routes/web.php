@@ -26,6 +26,7 @@ use App\Http\Controllers\rolepermision\RolePermissionController;
 use App\Http\Controllers\performance\MarketingPerformanceController;
 use App\Http\Controllers\performance\SalePerformancaeController;
 use App\Http\Controllers\performance\StockPerformanceController;
+use App\Http\Controllers\performance\OperationPerformanceController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
@@ -414,7 +415,13 @@ Route::prefix('performance')->middleware('auth')->group(function() {
     });
     Route::controller(SalePerformancaeController::class)->group(function() {
         Route::get('/sale/staff/duty/report', 'index')->name('sale.staff.duty.report');
+        Route::any('/sale/save/daily/progress', 'saveDailyProgress')->name('performance.sale.save.daily.progress');
+    });
+
+    Route::controller(OperationPerformanceController::class)->group(function() {
+        Route::any('/operation/save/conversation', 'saveConversation')->name('performance.operation.save.conversation');
     });
 });
+
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);

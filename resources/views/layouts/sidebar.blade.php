@@ -377,7 +377,7 @@
                                     <i class="icon icon-add_shopping_cart"></i>Sales<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html">Today Sale</a>
+                                        <li><a href="{{route('performance.sale.save.daily.progress')}}">Today Sale</a>
                                         </li>
                                         <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false) active @endif">
                                             <a href="{{route('sale.staff.duty.report')}}">Report</a>
@@ -390,6 +390,20 @@
                                     </ul>
                                 </li>
 
+                                    <li class="@if(strpos(Request::url(), '/performance/operation') !== false) active @endif">
+                                        <a href="#"><i class="icon icon-picture_in_picture"></i>Operation<i
+                                        class=" icon-angle-left  pull-right"></i></a>
+                                        <ul class="treeview-menu">
+                                            <li class="class="@if(strpos(Request::url(), '/performance/operation/save/conversation') !== false) active @endif"">
+                                                <a href="{{route('performance.operation.save.conversation')}}">Sale Team</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html">Courier Areas</a>
+                                            </li>
+                                            <li><a href="panel-page-users.html">Commission Report</a>
+                                            </li>
+                                        </ul>
+                                 </li>
+                                
                                 <li><a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">

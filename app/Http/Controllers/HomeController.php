@@ -180,4 +180,8 @@ class HomeController extends Controller
         }
         return $dateWhereClause;
     }
+
+    public function Testing() {
+        dd("Yessss Ok");
+    }
 }
