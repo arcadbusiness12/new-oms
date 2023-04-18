@@ -301,8 +301,11 @@
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li class="@if(strpos(Request::url(), '/product/group') !== false) active @endif">
+                                {{-- <li class="@if(strpos(Request::url(), '/product/group') !== false) active @endif">
                                     <a href="{{route('promotion.product', 'group_page')}}">Group Page</a>
+                                </li> --}}
+                                <li class="">
+                                    <a href="panel-page-blank-tabs.html">Group Page</a>
                                 </li>
                                 <li class="@if(strpos(Request::url(), '/promotion/organic/organicPost') !== false) active @endif">
                                     <a href="#"><i class="icon icon-shopping-cart"></i>
@@ -310,8 +313,11 @@
                                         <i class="icon-angle-left pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        <li class="@if(strpos(Request::url(), '/organic/organicPost') !== false) active @endif">
+                                        {{-- <li class="@if(strpos(Request::url(), '/organic/organicPost') !== false) active @endif">
                                             <a href="{{route('promotion.organic', 'organicPost')}}"><i class="icon icon-more"></i>Product List</a>
+                                        </li> --}}
+                                        <li class="">
+                                            <a href="panel-page-blank-tabs.html"><i class="icon icon-more"></i>Product List</a>
                                         </li>
                                         <li>
                                             <a href="panel-page-blank-tabs.html"><i class="icon icon-tasks"></i>BA Work <i
@@ -461,7 +467,9 @@
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
+                                        {{-- <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
+                                        </li> --}}
+                                        <li class=""><a href="panel-page-users.html">Save Ads Chat</a>
                                         </li>
                                         <li><a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>
