@@ -97,15 +97,14 @@
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.pack') ) active @endif"><a href="{{ route('exchange.pack') }}">Pack</a>
                                         </li>
-                                        {{-- <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
+                                        <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
                                         </li>
-                                        <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
+                                        {{-- <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
                                         </li>
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.return') ) active @endif"><a href="{{ route('exchange.return') }}">Return</a>
                                         </li> --}}
-                                        <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="panel-page-blank-tabs.html">Generate & Print AWB</a>
-                                        </li>
+                                        
                                         <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="panel-page-blank-tabs.html">Ship</a>
                                         </li>
                                         </li>
