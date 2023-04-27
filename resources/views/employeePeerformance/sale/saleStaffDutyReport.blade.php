@@ -90,7 +90,7 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="card no-b">
                         <div class="panel-heading">
-                            Attributes
+                            Report
                           </div>
                           <div class="table-responsive">
                            <div id="status_changed_msg" style="display: none"></div>

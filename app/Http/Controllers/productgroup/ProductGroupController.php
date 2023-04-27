@@ -25,6 +25,7 @@ use App\Models\Oms\PromotionScheduleSettingMainModel;
 use App\Models\Oms\PromotionProductPaidPostModel;
 use App\Models\Oms\PromotionSchedulePaidAdsCampaignTemplateModel;
 use App\Models\Oms\PaidAdsCampaign;
+use App\Models\Oms\PromotionScheduleSettingModel;
 use Carbon\Carbon;
 use Session;
 
@@ -756,4 +757,46 @@ class ProductGroupController extends Controller
             
             return $product_pro_posts;
         }
+
+
+
+        public function promotionOrganicSettings(Request $request, $type) {
+            // dd($request->all());
+            $whereClause = 0;
+            if($request->status) {
+                $whereClause= $request->status;
+            }
+            // dd($whereClause);
+            $types_for_organic = PromotionTypeModel::where('status', 1)->where('product_status', 1)->orderBy('name', 'ASC')->get();
+            $types_for_setting = PromotionTypeModel::where('status', 1)->orderBy('name', 'ASC')->get();
+            $stores = storeModel::where('status', 1)->get();
+            $socials = SocialModel::where('status', 1)->get();
+            $categories = ProductGroupModel::select('*',DB::raw('GROUP_CONCAT(DISTINCT id) AS group_ids'))->groupBY(DB::raw("substr(name,1,2)"))->get();
+            $promotion_orginaic_setting = PromotionScheduleSettingModel::where('is_deleted', 0)->get();
+            $promotion_paid_ad_setting = PromotionScheduleSettingModel::where('is_deleted', 0)->get();
+            $mainCategories = GroupCategoryModel::all();
+            $ba_paid_promotion_main_setting = PromotionScheduleSettingMainModel::with('adsType','user')->where('posting_type', $type)->where('store_id', 1)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
+            $df_promotion_main_setting = PromotionScheduleSettingMainModel::with('adsType','user')->where('posting_type', $type)->where('store_id', 2)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
+            // dd($ba_paid_promotion_main_setting);
+           
+            foreach($categories as $g) {
+                if(strpos($g->name, '-') !== false) {
+                    $ar = explode('-', $g->name);
+                    $name = $ar[0];
+                }else {
+                    $name = $g->name;
+                }
+                $g['name'] = $name;
+            }
+            if($type == 1) {
+                $page = '.promotion_organic_settings';
+            }else {
+                $page = '.paid_ads.promotion_paid_ads_settings'; 
+            }
+            $old_input = $whereClause;
+            // dd($request->status);
+            return view(SELF::VIEW_DIR. $page)->with(compact('types_for_organic','types_for_setting', 'socials', 'stores', 'promotion_orginaic_setting', 'promotion_paid_ad_setting','ba_paid_promotion_main_setting','df_promotion_main_setting','categories','mainCategories', 'old_input'));
+        }
+
+        
 }

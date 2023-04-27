@@ -36,4 +36,8 @@ class OrderedProductModel extends AbstractOpenCartModel
     return $this->hasMany(__NAMESPACE__ . '\OrderOptionsModel', OrderOptionsModel::FIELD_ORDER_PRODUCT_ID, self::FIELD_ORDER_PRODUCT_ID);
   }
 
+  public function order() {
+    return $this->belongsTo(OrdersModel::class, 'order_id', 'order_id');
+  }
+
 }

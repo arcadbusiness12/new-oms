@@ -97,14 +97,15 @@
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.pack') ) active @endif"><a href="{{ route('exchange.pack') }}">Pack</a>
                                         </li>
-                                        <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
+                                        {{-- <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="{{ route('exchange.generate.awb') }}">Generate & Print AWB</a>
                                         </li>
-                                        {{-- <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
+                                        <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="{{ route('exchange.ship.to.courier') }}">Ship</a>
                                         </li>
                                         </li>
                                         <li class="@if( Request::url() == route('exchange.return') ) active @endif"><a href="{{ route('exchange.return') }}">Return</a>
                                         </li> --}}
-                                        
+                                        <li class="@if( Request::url() == route('exchange.generate.awb') ) active @endif"><a  href="panel-page-blank-tabs.html">Generate & Print AWB</a>
+                                        </li>
                                         <li class="@if( Request::url() == route('exchange.ship.to.courier') ) active @endif"><a href="panel-page-blank-tabs.html">Ship</a>
                                         </li>
                                         </li>
@@ -300,40 +301,55 @@
                                 <i class=" icon-angle-left  pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                {{-- <li class="@if(strpos(Request::url(), '/product/group') !== false) active @endif">
+                                <li class="@if(strpos(Request::url(), '/product/group') !== false) active @endif">
                                     <a href="{{route('promotion.product', 'group_page')}}">Group Page</a>
-                                </li> --}}
-                                <li class="">
-                                    <a href="panel-page-blank-tabs.html">Group Page</a>
                                 </li>
+                                
                                 <li class="@if(strpos(Request::url(), '/promotion/organic/organicPost') !== false) active @endif">
                                     <a href="#"><i class="icon icon-shopping-cart"></i>
                                         Organic Post
                                         <i class="icon-angle-left pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        {{-- <li class="@if(strpos(Request::url(), '/organic/organicPost') !== false) active @endif">
+                                        <li class="@if(strpos(Request::url(), '/organic/organicPost') !== false) active @endif">
                                             <a href="{{route('promotion.organic', 'organicPost')}}"><i class="icon icon-more"></i>Product List</a>
-                                        </li> --}}
-                                        <li class="">
-                                            <a href="panel-page-blank-tabs.html"><i class="icon icon-more"></i>Product List</a>
                                         </li>
                                         <li>
                                             <a href="panel-page-blank-tabs.html"><i class="icon icon-tasks"></i>BA Work <i
                                                 class=" icon-angle-left  pull-right"></i></a>
                                             <ul class="treeview-menu">
-                                                <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
-                                                </li>
+                                                <?php $baList = json_decode(session('ba_main_setting_list'));
+                                                        // print_r($baList);
+                                                        foreach(@$baList as $li) {
+                                                            $path = "promotion/ba/work/".$li->id."/1";
+                                                ?>
+                                                    <li class="<?php if(Request::path() == $path){ ?> active <?php } ?>">
+                                                        <a href="{{route('ba.work',[$li->id, 1, 1])}}"><span><BAse></BAse> {{$li->title}}</span></a>
+                                                    </li>
+                                                    <?php } ?>
                                             </ul>
                                         </li>
-                                        <li>
-                                            <a href="panel-page-blank-tabs.html"><i class="icon icon-tasks"></i>DF Work <i
-                                                class=" icon-angle-left  pull-right"></i></a>
+
+                                        <?php if((session('role') == 'ADMIN' || (array_key_exists('promotion/dressf/work', json_decode(session('access'),true))))) { ?>
+                                            <li class="<?php if(strpos(Request::path(), 'promotion/dressf/work') !==false){ ?> active <?php } ?>">
+                                                        <a href="javascript:void(0)">
+                                                            <i class="icon icon-tasks"></i>DF Work <i class=" icon-angle-left  pull-right"></i></a>
+                                                        </a>
+                                                    
                                             <ul class="treeview-menu">
-                                                <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
+                                            <?php $dfList = json_decode(session('df_main_setting_list'));
+                                                        // print_r($baList);
+                                                        foreach($dfList as $li) {
+                                                            $path = "promotion/dressf/work/".$li->id."/2";
+                                                ?>
+                                                    <li class="<?php if(Request::path() == $path ){ ?> active <?php } ?>">
+                                                        <a href="{{route('df.work',[$li->id, 2, 1])}}"><span>{{$li->title}}</span></a>
+                                                    </li>
+                                                    
+                                                    <?php } ?>
+                                                </ul>
                                                 </li>
-                                            </ul>
-                                        </li>
+                                            <?php } ?>
 
                                     </ul>
                                 </li>
@@ -346,26 +362,34 @@
                                         <li class="@if(strpos(Request::url(), '/promotion/paid/ad/product/list/productList') !== false) active @endif">
                                             <a href="{{route('promotion.paid.ad.product.list', 'productList')}}"><i class="icon icon-more"></i>Product List</a>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a href="panel-page-blank-tabs.html"> <i class="icon icon-tasks"></i>Work <i
                                                 class=" icon-angle-left  pull-right"></i></a>
                                             <ul class="treeview-menu">
-                                                <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
+                                                <?php $dfList = json_decode(session('df_paid_main_setting_list'));
+                                                    // print_r($baList);
+                                                    foreach($dfList as $li) {
+                                                        $path = "promotion/ba/paid/ads/work/".$li->id."/".$li->store_id."/2/current";
+                                                    ?>
+                                                <li class="<?php if(Request::path() == $path ){ ?> active <?php } ?>">
+                                                    <a href="{{route('ba.paid.ads.work',[$li->id, $li->store_id, 2, 'current'])}}"><span>{{$li->setting_name}}</span></a>
                                                 </li>
-                                                <li><a href="panel-page-blank-tabs.html"> Facebook/Instagram </a>
-                                                </li>
+                                                
+                                                <?php } ?>
                                             </ul>
-                                        </li>
+                                        </li> --}}
 
                                     </ul>
                                 </li>
 
-                                <li class="@if(strpos(Request::url(), '/promotion/paid/ads/template/settings') !== false) active @endif"><a href="#">
+                                <li class="@if(strpos(Request::url(), '/promotion/paid/ads/template/settings') !== false || strpos(Request::url(), '/promotion/settings') !== false) active @endif"><a href="#">
                                     <i class="icon icon-buysellads"></i>Promotion Setting<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html">Organic Setting</a>
+                                        <li class="@if(strpos(Request::url(), '/promotion/settings') !== false) active @endif">
+                                            <a href="{{route('promotion.settings', 1)}}">Organic Setting</a>
                                         </li>
+                                        
                                         <li class="@if(strpos(Request::url(), '/promotion/paid/ads/template/settings') !== false) active @endif">
                                             <a href="{{route('promotion.paid.ads.template', 2)}}">Paid Ads Template</a>
                                         </li>
@@ -377,7 +401,8 @@
 
 
 
-                        <li class="treeview @if(str_contains(Request::url(), '/performance')) active @endif">
+                        <li class="treeview @if(str_contains(Request::url(), '/performance') || strpos(Request::url(), '/Settings/chat/sale/order/report') !== false || strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false 
+                        || strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
                             <a href="#">
                                 <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -385,7 +410,7 @@
                             <ul class="treeview-menu">
                                 <li><a href="{{route('stock.performance')}}"><i class="icon icon-store_mall_directory"></i>Stock</a>
                                 </li>
-                                <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false) active @endif"><a href="#">
+                                <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false || strpos(Request::url(), '/Settings/chat/sale/order/report') !== false) active @endif"><a href="#">
                                     <i class="icon icon-add_shopping_cart"></i>Sales<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
@@ -394,36 +419,44 @@
                                         <li class="@if(strpos(Request::url(), '/performance/sale/staff/duty/report') !== false) active @endif">
                                             <a href="{{route('sale.staff.duty.report')}}">Report</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Sale Report</a>
+                                        <li class="@if(strpos(Request::url(), '/Settings/chat/sale/order/report') !== false) active @endif">
+                                            <a href="{{route('chat.sale.order.report')}}">Chat Report</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Courier Report</a>
+                                        <li><a href="{{route('commission.sale.saleOnTotalDeliveredAmount')}}">Sale Report</a>
+                                        </li>
+                                        <li><a href="{{route('commission.sale.courierSummary')}}">Courier Report</a>
                                         </li>
 
                                     </ul>
                                 </li>
 
-                                    <li class="@if(strpos(Request::url(), '/performance/operation') !== false) active @endif">
+                                    <li class="@if(strpos(Request::url(), '/performance/operation') !== false || strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false) active @endif">
                                         <a href="#"><i class="icon icon-picture_in_picture"></i>Operation<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
-                                            <li class="class="@if(strpos(Request::url(), '/performance/operation/save/conversation') !== false) active @endif"">
-                                                <a href="{{route('performance.operation.save.conversation')}}">Sale Team</a>
+                                            <li class="@if(strpos(Request::url(), '/performance/operation/save/conversation') !== false) active @endif">
+                                                <a href="">Sale Team</a>
                                             </li>
-                                            <li><a href="panel-page-users.html">Courier Areas</a>
-                                            </li>
-                                            <li><a href="panel-page-users.html">Commission Report</a>
+                                            <li class="@if(strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false) active @endif">
+                                                <a href=""><span>Courier Areas</span></a>
+                                              </li>
+                                            <li><a href="">Commission Report</a>
                                             </li>
                                         </ul>
                                  </li>
                                 
-                                <li><a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
+                                <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false || strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                                    <a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
-                                        <li><a href="panel-page-users.html">Daily Work</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false) active @endif">
+                                            <a href="">Daily Work</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Assigned Custom Duties</a>
+                                        <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                                            <a href="">Assigned Custom Duties</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Custom Duties Report</a>
+                                        <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                                            <a href="">Custom Duties Report</a>
                                         </li>
                                         <li><a href="panel-page-users.html">New Product Image</a>
                                         </li>
@@ -466,10 +499,10 @@
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        {{-- <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="{{route('performance.marketing.save.add.chat', 'current')}}">Save Ads Chat</a>
-                                        </li> --}}
-                                        <li class=""><a href="panel-page-users.html">Save Ads Chat</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="">Save Ads Chat</a>
                                         </li>
+                                        {{-- <li class=""><a href="panel-page-users.html">Save Ads Chat</a>
+                                        </li> --}}
                                         <li><a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                             <ul class="treeview-menu">

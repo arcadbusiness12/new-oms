@@ -110,4 +110,8 @@ class OmsUserModel extends Model
     public function bankDetails() {
         return $this->hasMany(ResellerBankDetailModel::class, 'reseller_id');
     }
+
+    public function campaigns() {
+        return $this->belongsToMany(PaidAdsCampaign::class, 'campaign_users', 'user_id', 'campaign_id');
+    } 
 }

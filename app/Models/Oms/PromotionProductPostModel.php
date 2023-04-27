@@ -40,5 +40,13 @@ class PromotionProductPostModel extends Model
  public function campaign() {
    return $this->belongsTo(PaidAdsCampaign::class, 'campaign_id');
  }
+
+ public function setting() {
+  return $this->belongsTo(PromotionScheduleSettingModel::class, 'setting_id');
+}
+
+public function chats() {
+  return $this->hasMany(DailyAdResult::class, 'post_id')->whereIn('duration', ['current','schedule']);
+}
          
 }

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Oms\DoneDutyHistroryModel;
 use App\Models\Oms\EmployeePerformanceModel;
 use App\Models\Oms\OmsUserModel;
+use App\Models\Oms\PromotionScheduleSettingMainModel;
 use App\Models\OpenCart\Customers\CustomersModel;
 use App\Models\OpenCart\Orders\OrdersModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Session;
 
 class HomeController extends Controller
 {
@@ -31,6 +33,13 @@ class HomeController extends Controller
     public function index()
     {
         // dd(session());
+        $ba_promotion_main_setting = PromotionScheduleSettingMainModel::where('store_id', 1)->where('posting_type', 1)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
+        $df_promotion_main_setting = PromotionScheduleSettingMainModel::where('store_id', 2)->where('posting_type', 1)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
+        $ba_paid_ads_promotion_main_setting = PromotionScheduleSettingMainModel::whereIn('store_id', [1,2])->where('posting_type', 2)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
+       
+        Session::put('ba_main_setting_list', json_encode($ba_promotion_main_setting));
+        Session::put('df_main_setting_list', json_encode($df_promotion_main_setting));
+        Session::put('df_paid_main_setting_list', json_encode($ba_paid_ads_promotion_main_setting));
         if(session('role') == 'ADMIN') {
             $delived_orders = OrdersModel::where(OrdersModel::FIELD_ORDER_STATUS_ID, 25)
                             // ->whereDate('date_added', '>=', date('2022-07-'))->whereDate('date_added', '<=', date('Y-m-d'))

@@ -25,5 +25,8 @@ class PaidAdsCampaign extends Model
      }
      public function user() {
         return $this->belongsTo(OmsUserModel::class, 'user_id');
-    } 
+    }
+    public function users() {
+        return $this->belongsToMany(OmsUserModel::class, 'campaign_users', 'campaign_id', 'user_id');
+    }  
 }

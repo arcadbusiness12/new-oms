@@ -41,6 +41,7 @@ use App\Models\OpenCart\Products\OptionValueDescriptionModel;
 use App\Models\OpenCart\Products\ProductSkuModel;
 use App\Models\OpenCart\Products\ProductsModel;
 use App\Platform\Helpers\ToolImage;
+use App\Models\Oms\ShippingProvidersModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -2964,5 +2965,75 @@ protected function get_oms_product_image($image = '', $width = 0, $height = 0){
             OmsWithdrawRequestModel::where('request_id', $request->request_id)->update(array('status' => 2));
         }
         return redirect('/PurchaseManagement/withdraw/requests')->with('message','Status changed successfully.');
+    }
+
+    public function shipping_providers(Request $request){
+        // dd("Ok");
+    	if($request->isMethod("POST")){
+    		if(Input::get('deactive_shipping_provider')){
+    			$shipping_provider_id = Input::get('deactive_shipping_provider');
+    			ShippingProvidersModel::where('shipping_provider_id', $shipping_provider_id)->update(array('is_active' => 0));
+
+				Session::flash('message', 'Shipping provider ID # '.$shipping_provider_id.' has been deactive.');
+				Session::flash('alert-class', 'alert-success');
+				return redirect()->route('shipping.providers')->with('message', 'Shipping provider ID # '.$shipping_provider_id.' has been deactive.');
+    		}else if(Input::get('active_shipping_provider')){
+    			$shipping_provider_id = Input::get('active_shipping_provider');
+    			ShippingProvidersModel::where('shipping_provider_id', $shipping_provider_id)->update(array('is_active' => 1));
+
+    			Session::flash('message', 'Shipping provider ID # '.$shipping_provider_id.' has been active.');
+				Session::flash('alert-class', 'alert-success');
+				return redirect()->route('shipping.providers')->with('message', 'Shipping provider ID # '.$shipping_provider_id.' has been active.');
+    		}else{
+    			Session::flash('message', 'Something went wrong, please try again.');
+				Session::flash('alert-class', 'alert-danger');
+    			return redirect('/shipping_providers');
+    		}
+    	}else{
+        if( $request->by_status == "" ){
+          $by_status = 1;
+          $request['by_status'] = 1;
+        }else{
+          $by_status = $request->by_status;
+        }
+	    	$data['shipping_providers'] = ShippingProvidersModel::where('is_active',$by_status)->get()->toArray();
+        $data['zones'] = DB::connection("opencart")->table('zone')->where('country_id',221)->get();
+        if( $data['zones'] ){
+          foreach($data['zones'] as $key=>$zone){
+            $zone->areas = DB::connection("opencart")->table('area')->where('zone_id',$zone->zone_id)->orderBy('name','ASC')->get();
+          }
+        }
+        $data['old_input'] = $request->all();
+	    	return view(self::VIEW_DIR . '.shipping_providers', $data);
+    	}
+    }
+
+    public function updateShippingProvider(Request $request){
+        if( $request->isMethod('POST') ){
+            // dd($request->all());
+          $this->validate($request, [
+              'password' => 'confirmed'
+          ]);
+          // $computedPassword = sha1(sha1($password));
+           $shippingObj = ShippingProvidersModel::where("shipping_provider_id",$request->shipping_id)->first();
+           if( isset($request->charges) && $request->charges > 0 ){
+            $shippingObj->shipping_charges = $request->charges;
+           }
+           $shippingObj->payment_type     = $request->payment_type;
+           $shippingObj->mobile_number = $request->contact;
+           $shippingObj->pickup_start_time = $request->pickup_start_time;
+           $shippingObj->pickup_end_time = $request->pickup_end_time;
+           $shippingObj->shipment_print = $request->shipment_print;
+           if($request->password) {
+              $shippingObj->password = sha1(sha1($request->password));
+          }
+           $shippingObj->ba_areas         = json_encode($request->ba_areas);
+           if( $shippingObj->save() ){
+             $msg = ['status'=>1,"msg"=>"Updated Successfully"];
+           }else{
+            $msg = ['status'=>0,"msg"=>"error"];
+           }
+           echo json_encode($msg);
+        }
     }
 }

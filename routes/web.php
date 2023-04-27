@@ -27,6 +27,8 @@ use App\Http\Controllers\performance\MarketingPerformanceController;
 use App\Http\Controllers\performance\SalePerformancaeController;
 use App\Http\Controllers\performance\StockPerformanceController;
 use App\Http\Controllers\performance\OperationPerformanceController;
+use App\Http\Controllers\performance\DesignerPerformanceeController;
+use App\Http\Controllers\Settings\CommissionController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
 use Illuminate\Support\Facades\Route;
@@ -307,6 +309,8 @@ Route::prefix('PurchaseManagement')->middleware('auth')->group(function() {
         Route::get('/update/withdraw/request/status', 'updateWithdrawRequestStatus')->name('update.withdraw.request.status');
         Route::any('/withdraw/money', 'withdrawMoney')->name('withdraw.money');
         Route::get('/supplier/account/summary', 'accountSummary')->name('account.summary');
+        Route::any('/shipping_providers', 'shipping_providers')->name('shipping.providers');
+        Route::post('/purchase_manage/updateShippingProvider', 'updateShippingProvider')->name('purchase_manage.updateShippingProvider');
     });
     Route::controller(PurchaseManagementAjaxController::class)->group(function() {
         Route::post('/get/purchase/product/order/option', 'getPurchaseProductOrderOption')->name('get.purchase.product.order.option');
@@ -354,6 +358,8 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::get('/promotion/paid/ads/template/settings/{type}', 'promotionPaidAdsTemplateSettings')->name('promotion.paid.ads.template');
         Route::get('/get/setting/template/{store}/{group}/{type}/{cate}', 'getSettingTemplate')->name('get.setting.template');
         Route::get('/get/template/schedules/{schedule}/{type}/{group_id}/{store}/{selected_cate}', 'getTemplateSchedules')->name('get.template.schedules');
+        Route::any('/promotion/settings/{type}', 'promotionOrganicSettings')->name('promotion.settings');
+        Route::any('/group/product/by/type/', 'groupProductByType')->name('get.product.type');
     });
     Route::controller(PromotionScheduleSettingController::class,)->group(function() {
         Route::get('/get/paid/ads/setting/template/form/{setting?}', 'paidAdsSettingTemplateForm')->name('paid.ads.setting.template.form');
@@ -371,7 +377,15 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
         Route::get('/promotion/get/new/schedule/{main_setting_id}/{setting}/{type}/{category}/{group_type}/{group_code}/{group_id}/{post_id}/{socials}/{date}/{store}/{post_type}/{time?}/{action?}/{sub_category?}', 'getnewschedulesGroups')->name('promotion.get.new.schedule');
         Route::get('/destroy/setting/{setting}', 'destroySetting')->name('destroy.setting');
         Route::get('/get/schedule/group/detail/{group}/{posting_type?}', 'scheduleGroupDetail')->name('promotion.schedule.group.detail');
-        
+        Route::get('/promotion/ba/work/{setting}/{store}/{post_type}', 'getBaWorkReports')->name('ba.work');
+        Route::get('/promotion/ba/work-history/{setting}/{store}/{post_type}', 'getBaWorkReportsHistory')->name('ba.work.history');
+        Route::get('/promotion/ba/paid/ads/work/{setting}/{store}/{post_type}/{action}', 'getPaidWorkReports')->name('ba.paid.ads.work');
+        Route::get('/organic/promotion/new/schedule/For/empty/day/{row}/{main_setting_id}/{setting}/{type}/{category}/{category_ids}/{group_type}/{socials}/{date}/{store}/{post_type}/{time?}', 'getOrganicschedulesGroupForNewDays')->name('organic.promotion.get.new.schedule');
+        Route::post('/svae/change/schedule', 'saveChangedScheduleOr')->name('svae.change.schedule');
+        Route::get('/promotion/dressf/work/{setting}/{store}/{post_type}', 'getBaWorkReports')->name('df.work');
+        Route::get('/get/setting/template/form/{setting?}', 'settingTemplateForm')->name('setting.template.form');
+        Route::post('/svae/promotion/setting', 'savsSetting')->name('svae.promotion.setting');
+       
     });
     
     Route::controller(AttributeController::class)->group(function() {
@@ -408,8 +422,9 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::post('/marketing/save/paid/ad/chat/', 'savePaidAdChat')->name('marketing.save.ad.chat');
         Route::post('/save/paid/post/remark/', 'saveRemark')->name('save.paid.post.remark');
         Route::get('/change/status/paid/ad/setting/{setting}/{status}', 'changePaidAdsSettingStatus')->name('change.status.paid.ad.setting');
+        Route::any('/employee-performance/operation/commission/report', 'OperationPerformanceController@commissionReport')->name('employee-performance.commission.report');
     });
-
+    
     Route::controller(StockPerformanceController::class)->group(function() {
         Route::get('stock', 'index')->name('stock.performance');
     });
@@ -420,8 +435,22 @@ Route::prefix('performance')->middleware('auth')->group(function() {
 
     Route::controller(OperationPerformanceController::class)->group(function() {
         Route::any('/operation/save/conversation', 'saveConversation')->name('performance.operation.save.conversation');
+        Route::any('/employee-performance/operation/commission/report', 'commissionReport')->name('employee-performance.commission.report');
+    });
+    Route::controller(DesignerPerformanceeController::class)->group(function() {
+        Route::any('/employee-performance/designer/save-daily-work/{id?}', 'saveDailyWork')->name('employee-performance.designer.save-daily-work');
+        Route::any('/employee-performance/designer/change-post-status/{id}/{action}/{page?}', 'changePostStatus')->name('employee-performance.designer.changePostStatus');
+    });
+});
+
+Route::prefix('Settings')->middleware('auth')->group(function() {
+    Route::controller(CommissionController::class)->group(function() {
+        Route::any('/sale/on-total-delivered-amount', 'saleOnTotalDeliveredAmount')->name('commission.sale.saleOnTotalDeliveredAmount');
+        Route::any('/sale/courier-summary', 'courierSummary')->name('commission.sale.courierSummary'); 
+        Route::any('/chat/sale/order/report', 'chatSaleOrderReport')->name('chat.sale.order.report');
     });
 });
 
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);
+Route::get('/custom/duty/report', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDutiesReport'])->name('custom.duties.report');

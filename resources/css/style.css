@@ -365,3 +365,36 @@ td .icon {
 .modal-title {
     color: white !important;
 }
+
+.tui-timepicker-body .tui-timepicker-colon, .tui-timepicker-footer .tui-timepicker-colon {
+    width: 6px !important;
+    padding-left: 2px !important;
+}
+
+[type="radio"]+label {
+    padding-left: 12px !important;
+    height: 22px !important;
+    line-height: 18px !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+}
+
+.add-more-page {
+    margin-top: 24px;
+    float: right;
+    margin-right: 41px;
+    padding: 7px 10px;
+}
+.setting-form-row {
+    margin-bottom: 14px;
+}
+.social-lable {
+    cursor: pointer;
+    font-weight: bold;
+}
+.tui-timepicker-checkbox {
+    width: 50% !important;
+}
+.tui-timepicker-input-radio {
+    margin-left: 25px !important;
+}
