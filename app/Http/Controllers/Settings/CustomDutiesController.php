@@ -315,7 +315,7 @@ class CustomDutiesController extends Controller
         }
      }
 
-     public function employeeCustomDuties($argc = null) {
+     public function employeeCustomDuties(Request $request, $argc = null) {
       //   $autoDuty = autoAssignDuties(session('user_id'));
       // dd(array_key_exists('employee-performance/designer/custom/duties', json_decode(session('access'),true)));
       //  dd($argc);
@@ -326,20 +326,20 @@ class CustomDutiesController extends Controller
         
         $orderField = 'end_date';
          $orderaction = 'ASC';
-        if(count(Input::all()) > 0){
-         if(Input::get('user')) {
+        if(count($request->all()) > 0){
+         if($request->user) {
             // $whereclause[] = array('user_id', Input::get('user'));
-            array_push($whereclause, ['user_id', Input::get('user')]);
+            array_push($whereclause, ['user_id', $request->user]);
             }
-            if(Input::get('duty')) {
-               array_push($whereclause, ['duty_list_id', Input::get('duty')]);
+            if($request->duty) {
+               array_push($whereclause, ['duty_list_id', $request->duty]);
             }
-            if(Input::get('sub_duty')) {
-               array_push($whereclause, ['sub_duty_list_id', Input::get('sub_duty')]);
+            if($request->sub_duty) {
+               array_push($whereclause, ['sub_duty_list_id', $request->sub_duty]);
             }
             $orderField = 'end_date';
             $orderaction = 'ASC';
-            $old_input = Input::all();
+            $old_input = $request->all();
         }
         
          // dd(json_decode(session('access'),true));
@@ -357,16 +357,21 @@ class CustomDutiesController extends Controller
          $orderaction = 'DESC';
 
         }
-        if($argc && $argc != 'marketer' && $argc != 0) {
+        if($argc && $argc != 'marketer' && $argc != 0 && $argc != 'designer') {
          $ar = explode('_', $argc);
          $argc = $ar[0];
          $orderField = 'end_date';
          $orderaction = 'DESC';
+         
+      //   dd(count($ar));
          array_push($whereclause, ['user_id', session('user_id')]);
          array_push($whereclause, ['id', $argc]);
-         $no = OmsNotificationModel::find($ar[1]);
-         $no->is_viewed = 1;
-         $no->update();
+         if(count($ar) > 1) {
+            $no = OmsNotificationModel::find($ar[1]);
+            $no->is_viewed = 1;
+            $no->update();
+         }
+         
         }
         if($argc && $argc == 'designer') {
          $user_groups = [13,14];
@@ -378,7 +383,7 @@ class CustomDutiesController extends Controller
         }else {
          $user_groups = [8,13,14,18,19];
         }
-      //   dd($user_groups);
+      //   dd($whereclause);
         $not_started = [];
         $started = [];
         $in_testing = [];
@@ -424,10 +429,11 @@ class CustomDutiesController extends Controller
          return $array;
       }else {
          if($argc && $argc == 'w_developer' || $argc == 'a_developer') {
-            $directory = 'employee_performance.it_developer'; 
+            $directory = 'employeePeerformance.it_developer'; 
          }else {
-            $directory = 'employee_performance.custom_duty'; 
+            $directory = 'employeePeerformance.custom_duty'; 
          }
+         
          return view($directory.'.custom_duties')->with(compact('not_started','started','in_testing','completed', 'extensions','users', 'old_input', 'argc', 'duty_lists', 'sub_duty_lists'));
 
       }
@@ -569,7 +575,7 @@ class CustomDutiesController extends Controller
       if($notification) {
          return $details;
       }else {
-         return view('employee_performance.custom_duty.dutyDetails')->with(compact('details','extensions', 'image_extensions', 'dable', 'action'));
+         return view('employeePeerformance.custom_duty.dutyDetails')->with(compact('details','extensions', 'image_extensions', 'dable', 'action'));
       }
         
      }
@@ -594,7 +600,7 @@ class CustomDutiesController extends Controller
       //   dd($attachment);
       $image_extensions = $this->image_extensions;
         $extensions =  $this->extensions;
-        return view('employee_performance.custom_duty.attachmentComments')->with(compact('attachment', 'extensions'));
+        return view('employeePeerformance.custom_duty.attachmentComments')->with(compact('attachment', 'extensions'));
      }
 
      public function saveDutyDescription(Request $request) {
@@ -650,13 +656,21 @@ class CustomDutiesController extends Controller
      }
      
      public function addAttachment(Request $request) {
+      // dd("Ok");
       if($request->hasFile('attachment')) {
          $comment = new EmployeeCustomDutyCommentModel();
          $comment->user_id = session('user_id');
          $comment->employee_custom_duty_id = $request->duty_id;
          if($comment->save()) {
             $filee = new EmployeeCustomDutyFileModel();
-            $filePath = Storage::putFile('public/uploads/custom_duties_file', $request->file('attachment'));
+
+            // $file = $request->attachment;
+            // $extension = $file->getClientOriginalExtension();
+            // $filename = md5(uniqid(rand(), true)).'.'.$extension;
+            // $file->move(public_path('uploads/'), $filename);
+            // $image = $filename;
+            // dd($request->file('attachment'));
+            $filePath = Storage::putFile('public/uploads', $request->file('attachment'));
             $filee->custom_duty_id = $request->duty_id;
             $filee->comment_id = $comment->id;
             $filee->file = $filePath;
@@ -665,6 +679,7 @@ class CustomDutiesController extends Controller
             $filee->extension = $request->file('attachment')->extension();
             $filee->save();
          }
+         
          $filee->file = Storage::url($filee->file);
          $comment_data = array(
             'user' => ucwords(session('firstname'))." ".ucwords(session('lastname')),
@@ -690,7 +705,7 @@ class CustomDutiesController extends Controller
         $filee = null;
         if($request->hasFile('comment_file')) {
             $filee = new EmployeeCustomDutyFileModel();
-            $filePath = Storage::putFile('public/uploads/custom_duties_file', $request->file('comment_file'));
+            $filePath = Storage::putFile('public/uploads', $request->file('comment_file'));
             $filee->custom_duty_id = $request->duty_id;
             $filee->file = $filePath;
             $filee->cover = 0;
@@ -719,7 +734,7 @@ class CustomDutiesController extends Controller
             'date' => date('Y-m-d'),
         ];
         $u = (session('user_id') == $comment->custom_duty->user->user_id) ? null : $comment->custom_duty->user->user_id;
-        createNotification('comment', $enttity, $u);
+      //   createNotification('comment', $enttity, $u);
            return response()->json([
               'status' => true,
                'file' => $filee,
@@ -840,9 +855,9 @@ class CustomDutiesController extends Controller
                'user' => $duty->user_id,
                'date' => date('Y-m-d'),
            ];
-           if($status == 0) {
-            createNotification('assgined_custom_duty', $enttity, $duty->user_id);
-           } 
+         //   if($status == 0) {
+         //    createNotification('assgined_custom_duty', $enttity, $duty->user_id);
+         //   } 
           
             return response()->json([
                'status' => true

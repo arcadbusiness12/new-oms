@@ -440,6 +440,9 @@ Route::prefix('performance')->middleware('auth')->group(function() {
     Route::controller(DesignerPerformanceeController::class)->group(function() {
         Route::any('/employee-performance/designer/save-daily-work/{id?}', 'saveDailyWork')->name('employee-performance.designer.save-daily-work');
         Route::any('/employee-performance/designer/change-post-status/{id}/{action}/{page?}', 'changePostStatus')->name('employee-performance.designer.changePostStatus');
+        Route::get('/employee-performance/designer/new/product/image/{action?}', 'newProductImage')->name('new.designer.product.image');
+        Route::get('/view/new/arrival/product/detail/{group}', 'detailOfNewArrivalProduct')->name('detail.of.new.arrival.product');
+        Route::get('/employee-performance/designer/design/new/arrival/product/image/{id}', 'designNewArrivalProductImage')->name('design.new.arrival.product.image');
     });
 });
 
@@ -454,3 +457,18 @@ Route::prefix('Settings')->middleware('auth')->group(function() {
 // Route::post('/add/inventory/product', [InventoryManagementController::class, 'addInventoryProduct']);
 Route::get('/employee-performance/operation/records/{user_id}/{filter}', [HomeController::class, 'employeeOperationRecords']);
 Route::get('/custom/duty/report', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDutiesReport'])->name('custom.duties.report');
+Route::get('/designer/custom/duties/{arg}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('assigned.custom.duties.designer');
+Route::get('/add/irregular/duty/{action}/{duty?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'irregularDutyForm'])->name('add.irregular.duty.form');
+Route::get('/get/irregular/group/users/{user_group}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getGroupUsers'])->name('get.irregular.user.irregular.duties');
+Route::get('/get/custom/duty/details/{duty}/{action?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getCustomDutyDetails'])->name('get.custom.duty.detail');
+Route::post('/add/attachment/to/duty', [App\Http\Controllers\Settings\CustomDutiesController::class, 'addAttachment'])->name('add.duty.attachment');
+Route::post('/save/duty/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveComment'])->name('save.duty.comment');
+Route::post('/save/attachment/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveAttachmentComment'])->name('save.duty.comment');
+Route::post('/save/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveCommentReply'])->name('save.duty.comment.reply');
+Route::get('/duty/attachment/comments/{file}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getAttachmentComment'])->name('get.attachment.comments');
+Route::get('/count/duty/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'countOfDutyComment'])->name('count.duty.comment');
+Route::post('/update/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateComment'])->name('update.duty.comment');
+Route::post('/update/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateCommentReply'])->name('update.duty.comment.reply');
+Route::get('/change/duty/active/actin/{duty}/{action}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'changeDutyActiveAction'])->name('change.duty.active.action');
+Route::post('/save/duty/description/content', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveDutyDescription'])->name('save.duty.description');
+Route::get('/remove/duty/attachment/{attachment}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'removeAttachment'])->name('remove.duty.attachment');

@@ -173,7 +173,7 @@ a{
                                 </div>
                                 <div class="row">
                                     <div class="form-line col-sm-12" style="">
-                                        @if($comment['file']['file']) 
+                                        @if(@$comment['file']['file']) 
                                         @php $file = Storage::url($comment['file']['file']); @endphp
                                         <div class="row" style="padding-left: 58px">
                                         <a href='javascript:;' onclick='popupImg("{{$k}}{{$comment['id']}}")'><img id='img-src{{$k}}{{$comment['id']}}' style="width:16%; max-height:100px;" src="{{asset($file)}}"></a>
@@ -358,5 +358,13 @@ function editComment(section) {
     $('.comment-text-section'+section).css('display', 'none');
     $('.comment-form'+section).css('display', 'block');
 }
+
+$('.close-attachment-comment-modal').on('click', function() {
+    console.log("Ok");
+    $('#attachmentCommentmodal').modal('toggle');
+    $(document).find('#attachmentCommentmodal').on('hidden.bs.modal', function() {
+        $('body').addClass('modal-open');
+    })
+});
 
 </script>

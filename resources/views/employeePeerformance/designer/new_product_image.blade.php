@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
   .success-fs{
@@ -18,7 +18,7 @@
     height: 25px !important;
   }
   .group-name{
-    width: 116%;
+    /* width: 102%; */
     margin-top: -11px;
     padding: 11px;
     margin-bottom: 4px;
@@ -30,9 +30,9 @@
     background:#ffa5003d;
   }
   .light-green{
-    background:#00800021;
+    background:#bde3bd21;
   }
-  }
+  
   .tab-links a.active {
     color:green;
     border:1px solid green;
@@ -77,7 +77,7 @@
         </div>
         <div class="row">
           <div class="col-sm-12 tab-links">
-            <!-- <a href="{{ route('df.orders') }}" target="_blank"><div class="tab-box">DressFair</div></a> -->
+            
        
         </div>
         </div>
@@ -120,11 +120,11 @@
                             <button type="submit" name="current" value="current" class="btn btn-info previous-btn {{($active_tab == 'current') ? 'btn-month-active' : ''}}">Current Month</button>
                           </form> --}}
                           <div class="row">
-                            <div class="col-12 month-row">
-                              <div class="col-2 form-div">
-                                <a href="{{URL::to('employee-performance/designer/new/product/image/pending')}}" class="<?php if(stripos(Request::path(), 'employee-performance/designer/new/product/image/pending') === 0) {?> btn-month-active <?php } ?> link-tabs btn btn-info"><div class="tab-box">Pending</div></a>
+                            <div class="col-12 month-row m-2">
+                              <div class="col-xs-2 form-div">
+                                <a href="{{URL::to('/performance/employee-performance/designer/new/product/image/pending')}}" class="<?php if(stripos(Request::path(), 'performance/employee-performance/designer/new/product/image/pending') === 0) {?> btn-month-active <?php } ?> link-tabs btn btn-info"><div class="tab-box">Pending</div></a>
                               </div>
-                              <div class="col-2 form-div">
+                              <div class="col-xs-2 form-div">
                                 <form method="get" action="{{route('new.designer.product.image')}}">
                                   <input type="hidden" name="previous_month" value="{{$previousMonth}}">
                                   <input type="hidden" name="current_month" value="{{$currentMonth}}">
@@ -134,7 +134,7 @@
                                 </form>
                               </div>
                               @foreach($previousMonths as $k => $month)
-                              <div class="col-2 form-div">
+                              <div class="col-xs-2 form-div">
                                 <form method="get" action="{{route('new.designer.product.image')}}">
                                   <input type="hidden" name="previous_month" value="{{$month['month']}}">
                                   <input type="hidden" name="current_month" value="{{$currentMonth}}">
@@ -161,7 +161,7 @@
                                           @else 
                                           @if(@$days)
                                           @foreach($days as $k => $day)
-                                          <th scope="col" class="calendar-col" style="width:7% !important"><center>{{$day['display_date']}}</center></th>
+                                          <th scope="col" class="calendar-col" style="width:7% !important;font-weight: 700;"><center>{{$day['display_date']}}</center></th>
                                           @endforeach
                                           @endif
                                           @endif
@@ -209,7 +209,7 @@
                                                   @endif
                                               
                                              @endforeach 
-                                                  <td class="argn-popup-td posting-status" style="vertical-align: middle;">
+                                                  <td class="argn-popup-td posting-status" style="vertical-align: middle;border-right: 1px solid #2296f3;">
                                                     <center>
                                                   
                                                   @if($pending_exist)
@@ -327,8 +327,6 @@
             Please wait while image is loading..
             
           </div>
-        <div class="modal-footer">
-        </div>
       </div>
     </div>
   </div>
@@ -392,7 +390,7 @@ function viewProductDetails(group, name) {
   $('.loader-tag').css('display', 'block');
   if(group) {
     $.ajax({
-        url: "{{url('/view/new/arrival/product/detail')}}/"+ group,
+        url: "{{url('/performance/view/new/arrival/product/detail')}}/"+ group,
         type: "GET",
         cache: false,
         success: function(resp) {
@@ -408,7 +406,7 @@ function viewProductDetails(group, name) {
               var url = '';
               url = APP_URL + "/uploads/inventory_products/"
               url = url + v.image;
-              html += '<div class="col-xs-4 product-block post-title">' +'\n'+
+              html += '<div class="col-xs-4 col-grid product-block post-title">' +'\n'+
                                     '<img id="uploadable" src="'+url+'" class="img-thumbnail '+cl+'" width="100%" height="150px">' +'\n'+
                                     '<strong></strong>' +'\n'+
                                     '<div class="row">' +'\n'+
@@ -453,7 +451,7 @@ function viewProductDetails(group, name) {
     $('.btn-designed').prop('disabled', true);
     if(id) {
       $.ajax({
-        url: "{{url('/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
+        url: "{{url('/performance/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
         type: "GET",
         cache: false,
         success: function(resp) {

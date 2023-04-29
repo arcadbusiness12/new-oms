@@ -435,30 +435,31 @@
                                         class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
                                             <li class="@if(strpos(Request::url(), '/performance/operation/save/conversation') !== false) active @endif">
-                                                <a href="">Sale Team</a>
+                                                <a href="{{route('performance.operation.save.conversation')}}">Sale Team</a>
                                             </li>
                                             <li class="@if(strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false) active @endif">
-                                                <a href=""><span>Courier Areas</span></a>
+                                                <a href="{{route('shipping.providers')}}"><span>Courier Areas</span></a>
                                               </li>
                                             <li><a href="">Commission Report</a>
                                             </li>
                                         </ul>
                                  </li>
                                 
-                                <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false || strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                                <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false || strpos(Request::url(), '/custom/duty/report') !== false 
+                                || strpos(Request::url(), '/designer/custom/duties') !== false) active @endif">
                                     <a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false) active @endif">
                                             <a href="">Daily Work</a>
                                         </li>
-                                        <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                                        <li class="@if(strpos(Request::url(), '/designer/custom/duties') !== false) active @endif">
                                             <a href="">Assigned Custom Duties</a>
                                         </li>
                                         <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
                                             <a href="">Custom Duties Report</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">New Product Image</a>
+                                        <li><a href="">New Product Image</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -567,7 +568,7 @@
                             <ul class="treeview-menu">
                                 <li><a href=""><i class="icon icon-vcard"></i>Supplier</a>
                                 </li>
-                                <li  class="@if( Request::url() == route('setting.users') ) active  @endif"><a href="{{ route('setting.users') }}"><i class="icon icon-user-circle-o"></i>Staff</a>
+                                <li  class="@if( Request::url() == route('setting.users') ) active  @endif"><a href=""><i class="icon icon-user-circle-o"></i>Staff</a>
                                 </li>
                                 <li><a href="panel-page-profile.html"><i class="icon icon-phonelink_off"></i>Public Holiday </a>
                                 </li>

@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
     /* .duty-box {
@@ -31,6 +31,17 @@
 }
 .duty-block {
     padding-right: 4px !important;
+    display: inline-block !important;
+    float: left !important;
+    height: 520px;
+    max-height: 520px;
+}
+.card {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    margin-bottom: 30px;
+    border-radius: 2px;
 }
 .close-second-btn,.close-second-crousel-btn,.close-attachment-comment-modal,.main-modale-dismiss {
     float: right;
@@ -98,6 +109,35 @@ a:hover{
 .duties-count {
     float: right;
 }
+.form-label {
+    font-weight: 600;
+}
+.assign-duty-div {
+    max-height: 520px;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    overflow-y: auto;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+.assign-duty-div {
+    position: relative;
+    overflow-x: hidden;
+}
+.duty-section {
+    margin-bottom: 5px;
+}
+.duty-title {
+    color: #172b4d;
+}
+.badge {
+    display: inline-block;
+    font-size: 47%;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
 @keyframes blink { 50% { border-color:#fff ; }  }
 </style>
 <section class="content">
@@ -106,9 +146,18 @@ a:hover{
     || (array_key_exists('employee-performance/web/developer/smart/look',  json_decode(session('access'),true))) || (array_key_exists('employee-performance/app/developer/smart/look',  json_decode(session('access'),true))))
     <div class="row">
                   <div class="col-xs-12">
-                      <div class="card">
-                          <div class="panel panel-default">
-                              <div class="panel-body">
+                      
+                    <div class="row mb-4">
+                        <div class="col-md-12 col-sm-12">
+        
+                            <div class="card no-b form-box">
+                                @if(session()->has('success'))
+                                    <div class="alert alert-success">
+                                        {{ session()->get('success') }}
+                                    </div>
+                                @endif
+        
+                                <div class="card-header white">
                                 @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || (array_key_exists('employee-performance/designer/custom/duties',  json_decode(session('access'),true))) 
                                 || (array_key_exists('employee-performance/web/developer/smart/look',  json_decode(session('access'),true))))
                                 <div class="row">
@@ -217,8 +266,8 @@ a:hover{
                         <div class="col-12" id="custom_list">
                           <div class="col-sm-3 col-sm-3 col-xs-12 duty-block" >
                               <div class="card" id="pending-duties-box" style="padding: 10px;overflow: hidden;">
-                                          <label class="form-label">To Do</label>
-                                          <label class="form-label duties-count">({{count($not_started)}})</label>
+                                          <label class="form-label" style="border-bottom: 1px solid gainsboro;">To Do</label>
+                                          {{-- <label class="form-label duties-count">({{count($not_started)}})</label> --}}
                                           <div class="assign-duty-div {{count($not_started) > 0 ? 'box-extend': '' }}">
                                           @forelse($not_started as $k => $duty)
                                             <div class="row duty-box">
@@ -269,7 +318,7 @@ a:hover{
                                                  </a>
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                                                     <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN')
@@ -280,8 +329,9 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
-                                                    <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
+                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
+                                                    <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" >
+                                                        <i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
                                                 </div>
@@ -301,8 +351,8 @@ a:hover{
                           
                           <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
                               <div class="card" style="padding: 10px;overflow: hidden;">
-                                          <label class="form-label">Doing</label>
-                                          <label class="form-label duties-count">({{count($started)}})</label>
+                                          <label class="form-label" style="border-bottom: 1px solid gainsboro;">Doing</label>
+
                                           <div class="assign-duty-div {{count($started) > 0 ? 'box-extend' : '' }}">
                                           @forelse($started as $k => $duty)
                                             <div class="row duty-box">
@@ -350,7 +400,7 @@ a:hover{
                                               </a>
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                            <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                            <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                                                 <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                             </div>
                                             @if(session('role') == 'ADMIN')
@@ -361,7 +411,7 @@ a:hover{
                                                 <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                             </div> -->
                                             
-                                            <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                            <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
                                                 <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                             </div>
                                             @endif
@@ -381,8 +431,7 @@ a:hover{
                           <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
                               <div class="card" id="testing-duties-box" style="padding: 10px;overflow: hidden;">
                                   
-                                          <label class="form-label">Testing</label>
-                                          <label class="form-label duties-count">({{count($in_testing)}})</label>
+                                          <label class="form-label" style="border-bottom: 1px solid gainsboro;">Testing</label>
                                           <div class="assign-duty-div {{count($in_testing) > 0 ? 'box-extend' : '' }}">
                                           @forelse($in_testing as $k => $duty)
                                             <div class="row duty-box">
@@ -427,7 +476,7 @@ a:hover{
                                                 
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                                                     <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)) )
@@ -438,7 +487,7 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
                                                     <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
@@ -457,8 +506,7 @@ a:hover{
 
                           <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
                               <div class="card" style="padding: 10px;overflow: hidden;">
-                                          <label class="form-label">Completed</label>
-                                          <label class="form-label duties-count">({{count($completed)}})</label>
+                                          <label class="form-label" style="border-bottom: 1px solid gainsboro;">Completed</label>
                                           <div class="assign-duty-div {{count($completed) > 0 ? 'box-extend' : '' }}">
                                           @forelse($completed as $k => $duty)
                                           <div class="row duty-box">
@@ -503,7 +551,7 @@ a:hover{
                                                 
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                                                     <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN')
@@ -514,7 +562,7 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
                                                     <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
@@ -608,14 +656,13 @@ a:hover{
 
                 <!-- Details Modal -->
              @push('scripts')    
-<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+             
            @endpush
                 <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                     <div class="modal-content">
                     <div class="modal-body">
-                    <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    {{-- <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> --}}
 
                         <div class="modal-content-loader"></div>
                         <div class="duty-details"></div>
@@ -644,7 +691,9 @@ a:hover{
                     <div class="modal-footer">
                             <span class="text-right" id="error_mesge" style="color:red;">  </span>
                             <span class="m_success text-right" id="m_success" style="color:green; font-weight: bold;"></span>
-                        <!--<button type="button" class="btn btn-primary change-btn">Save changes</button> -->  
+                        <!--<button type="button" class="btn btn-primary change-btn">Save changes</button> --> 
+                        <button type="button" class="btn btn-secondary close-attachment-comment-modal" data-dismiss="modal">Close</button>
+                         
                     </div>
                     </div>
                     </div>
@@ -691,6 +740,8 @@ a:hover{
     $('.delete-user').click(function(){
     if(!confirm('Are you sure to delete duty?')) return false;
 });
+
+
      function popupImg(index) {
      console.log($('#img-src'+index).attr('src'));
      $('.imagepreview').attr('src', $('#img-src'+index).attr('src'));
@@ -857,6 +908,7 @@ $('.close-second-crousel-btn').on('click', function() {
 });
 
 $('.close-attachment-comment-modal').on('click', function() {
+    console.log("Ok");
     $('#attachmentCommentmodal').modal('toggle');
     $(document).find('#attachmentCommentmodal').on('hidden.bs.modal', function() {
         $('body').addClass('modal-open');
@@ -941,6 +993,12 @@ function getIrregularDuties(user) {
      }
  }
 
+ $('main-modale-dismiss').on('cick', function() {
+    console.log("OK");
+    var myModalEl = document.getElementById('detailModal');
+    var modal = bootstrap.Modal.getInstance(myModalEl)
+    modal.hide();
+ })
 
 </script>
 

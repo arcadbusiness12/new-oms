@@ -138,6 +138,13 @@ a{
 .status-history {
     margin: 0 0 5px !important;
 }
+[type="radio"]:checked+label {
+    padding-left: 26px;
+    height: 25px;
+    line-height: 25px;
+    font-size: 13px;
+    font-weight: normal;
+}
 </style>
             <div class="sub-setting-loop col-md-12" >
                       <div class="row">
@@ -176,7 +183,7 @@ a{
                                 <div class="form-line col-sm-12">
                                     <h5><i class="fa fa-file-text" aria-hidden="true"></i> Description 
                                         @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)))
-                                        <a href="javascript:;" onclick="addDescription()"><button type="button" class="btn btn-secondary">Edit</button></a>
+                                        <a href="javascript:;" onclick="addDescription()"><button type="button" class="btn btn-success btn-xs">Edit</button></a>
                                     @endif
                                     </h5>
 
@@ -273,7 +280,7 @@ a{
                                 <form name="attachment_form" id="attachment_form" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="duty_idd" id="duty_idd" value="{{$details['id']}}">
                                     <input type="hidden" name="file" value="sadasdasdasdas">
-                                 <span type="button" class="btn btn-secondary attachment-input">Add an attachment <i class="fa fa-spinner fa-pulse" id="attachment-loader" style="display: none;"></i></span>
+                                 <span type="button" class="btn btn-default attachment-input">Add an attachment <i class="fa fa-spinner fa-pulse" id="attachment-loader" style="display: none;"></i></span>
                                  <input type="file" name="attachment" id="attachment-input">
                                  <div id="error-worning"></div>
                                 </form>
@@ -309,7 +316,7 @@ a{
                                                         <input type="file" name="comment_file" id="attachment-input" class="form-control comment-file"
                                                         onchange="$('#upload-file-info').html(
                                                                 (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                       <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
+                                                       <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
                                                     <span class='labe' id="upload-file-info"></span>
                                             </div>
                                             </div>
@@ -496,7 +503,7 @@ a{
                                                                 <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$reply['id']}}{{$k}}"
                                                                 onchange="$('#upload-file-info{{$reply['id']}}{{$k}}').html(
                                                                         (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                            <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
+                                                            <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
                                                             <span class="labe choose_file{{$reply['id']}}{{$k}}" id="upload-file-info{{$reply['id']}}{{$k}}"></span>
                                                     </div>
                                                     </div>
@@ -537,7 +544,7 @@ a{
                                                         <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$comment['id']}}{{$k}}"
                                                         onchange="$('#upload-file-info{{$comment['id']}}{{$k}}').html(
                                                                 (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                       <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
+                                                       <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
                                                     <span class="labe choose_file{{$comment['id']}}{{$k}}" id="upload-file-info{{$comment['id']}}{{$k}}"></span>
                                             </div>
                                             </div>
@@ -560,7 +567,11 @@ a{
                                 </div>
                                 <div class="row" style="padding: 12px;">
                                         @if($details->duty_list)
-                                            <i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true"></i>  <label for="active">{{$details->duty_list->name}}</label>
+                                            <i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true" style="max-width: 10%;
+                                            display: inline-block;
+                                            float: left;padding-top: 4px;"></i>  
+                                            <label for="active" style="max-width: 90%;
+                                            font-weight: 700;">{{$details->duty_list->name}}</label>
                                         @endif
                                         @if($details->sub_duty_list)
                                             <i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true"></i> 
@@ -576,10 +587,18 @@ a{
                                     <h5><i class="fa fa-exchange fa-lg" aria-hidden="true"></i> Active/In-Active</h5>
                                 </div>
                                 <div class="row" style="">
-                                        <input type="radio" id="active" name="budget_type" value="0" onchange="changeActiveStatus('{{$details->id}}','0')" {{($details->is_close == 0) ? 'checked' : ''}}>
-                                        <label for="active">Active</label>
-                                        <input type="radio" id="inactive" name="budget_type" value="1" onchange="changeActiveStatus('{{$details->id}}','1')" {{($details->is_close == 1) ? 'checked' : ''}}>
-                                        <label for="inactive">In-Active</label>  
+                                    <div class="col-12">
+                                        <div class="col-6">
+                                            <input type="radio" id="active" name="budget_type" value="0" onchange="changeActiveStatus('{{$details->id}}','0')" {{($details->is_close == 0) ? 'checked' : ''}}>
+                                            <label for="active">Active</label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="radio" id="inactive" name="budget_type" value="1" onchange="changeActiveStatus('{{$details->id}}','1')" {{($details->is_close == 1) ? 'checked' : ''}}>
+                                            <label for="inactive">In-Active</label> 
+                                        </div>
+                                         
+                                    </div>
+                                        
                                 </div>
                             </div>
                             @endif
@@ -620,7 +639,7 @@ a{
                                 $d_access = array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true));
                                 $designer_access = array_key_exists('employee-performance/designer', json_decode(session('access'),true));
                              @endphp
-                             <div class="row" style="padding-top: 12px;">
+                             {{-- <div class="row" style="padding-top: 12px;">
                              <form name="move_duty_form" id="move_duty_form" action="post">
                                  {{csrf_field()}}
                                 <div class="col-sm-8" >
@@ -646,15 +665,9 @@ a{
                                     </select>
                                 </div>
                                 <div class="col-sm-4" >
-                                    {{-- @if(session('role') == 'ADMIN' || $details->end_date >= date('Y-m-d') || $details->progress == 2 || $details->progress == 5) --}}
-                                     <button type="submit" class="btn btn-info btn-move" disabled>Move</button>
-                                     {{-- @else 
-                                     <p style="padding-top: 6px; color:red;">Expired</p>
-                                    @endif --}}
-                                            
                                 </div>
                             </form>
-                             </div>
+                             </div> --}}
 
                              <div class="row move-history" style="padding-top: 12px;">
                              @if(count($details->statusHistories) > 0)
@@ -876,10 +889,12 @@ function popupImg(index, duty = null) {
 //     console.log("Okkkkkkkkkkk");
 //     $('#attachmentCommentmodal').modal('show');   
 // }
+
+
 $('.save-change-btn').on('click', function() {
     // event.preventDefault();
     $.ajax({
-        url: "{{url('/save/duty/description/content')}}/",
+        url: "{{url('/save/duty/description/content')}}",
         type: "POST",
         data: $('.description_form').serialize(),
         cache: false,
@@ -981,8 +996,8 @@ $('#attachment-input').on('change', function() {
         formData.append('duty_id', $('#duty_idd').val());
         formData.append('_token', CSRF_TOKEN);
         $.ajax({
-            type: 'POST',
-                url: "{{url('/add/attachment/to/duty')}}/",
+                url: "{{url('/add/attachment/to/duty')}}",
+                type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,

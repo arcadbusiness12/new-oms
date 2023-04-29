@@ -420,7 +420,7 @@ class DesignerPerformanceeController extends Controller
     return $days;
 }  
 
-public function newProductImage($action = null) {
+public function newProductImage(Request $request, $action = null) {
   $whereCluase = [];
   // dd($action);
   $active_tab = '';
@@ -440,19 +440,19 @@ public function newProductImage($action = null) {
                   ->groupBy('oms_inventory_product.group_id')
                   ->get();
     $new_arrivals_data = [];
-
+    // dd($new_arrivals);
     foreach($new_arrivals as $val) {
       $new_arrivals_data[$val->confirm_date][] = $val;
     }
-    if(count(Input::all()) > 0) {
-      if(Input::get('current')) {
+    if(count($request->all()) > 0) {
+      if($request->current) {
         $today = date('Y-m-01');
         $list_date = date('Y-m-d', strtotime("+1 day"));
-        $active_tab = Input::get('current');
+        $active_tab = $request->current;
       }else {
-        $today = Input::get('previous_month');
-        $list_date = Input::get('current_month');
-        $active_tab = Input::get('previous');
+        $today = $request->previous_month;
+        $list_date = $request->current_month;
+        $active_tab = $request->previous;
       }
     }else{
       $today = date('Y-m-01');
@@ -471,8 +471,8 @@ public function newProductImage($action = null) {
     for ($i = 0; $i <= 5; $i++) {
       if(date('Y-m-01', strtotime(-$i . 'month')) != date('Y-m-01')) {
         $m = [
-          'name' => date('M-Y', strtotime(-$i . 'month')),
-          'month' => date('Y-m-01', strtotime(-$i . 'month'))
+          'name' => date('M-Y', strtotime(+$i . 'month')),
+          'month' => date('Y-m-01', strtotime(+$i . 'month'))
         ];
         array_push($previousMonths, $m);
       }
@@ -482,9 +482,9 @@ public function newProductImage($action = null) {
     $currentMonth = date('Y-m-d');
     $previousMonth = date('Y-m-01', strtotime('-1 month', time()));
     // echo $new_arrivals_data['2021-11-25'][0] ;
-    
+    // dd($new_arrivals_data);
    $days = $this->calculate_week_Days($today, $list_date);
-  
+    
   return view(self::VIEW_DIR.'.new_product_image', compact('new_arrivals','days','new_arrivals_data','row_num','currentMonth','previousMonth','previousMonths','active_tab','action'));
 }
 
