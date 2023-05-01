@@ -446,7 +446,7 @@
                                             <li class="@if(strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false) active @endif">
                                                 <a href="{{route('shipping.providers')}}"><span>Courier Areas</span></a>
                                               </li>
-                                            <li><a href="">Commission Report</a>
+                                            <li><a href="{{route('employee-performance.commission.report')}}">Commission Report</a>
                                             </li>
                                         </ul>
                                  </li>
