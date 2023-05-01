@@ -40,6 +40,7 @@ class HomeController extends Controller
         Session::put('ba_main_setting_list', json_encode($ba_promotion_main_setting));
         Session::put('df_main_setting_list', json_encode($df_promotion_main_setting));
         Session::put('df_paid_main_setting_list', json_encode($ba_paid_ads_promotion_main_setting));
+        // dd(session('ba_main_setting_list'));
         if(session('role') == 'ADMIN') {
             $delived_orders = OrdersModel::where(OrdersModel::FIELD_ORDER_STATUS_ID, 25)
                             // ->whereDate('date_added', '>=', date('2022-07-'))->whereDate('date_added', '<=', date('Y-m-d'))

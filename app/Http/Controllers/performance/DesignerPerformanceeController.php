@@ -122,7 +122,8 @@ class DesignerPerformanceeController extends Controller
     // dd($templates->toArray());
     return view(self::VIEW_DIR.'.save_daily_work',compact('product_pro_posts', 'pro_posts', 'days', 'socials', 'templates', 'template_socials', 'store', 'id','all_lists'));
   }
-  
+ 
+ 
   public function saveDailyWorkQuery(){
 
   }

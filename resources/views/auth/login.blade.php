@@ -59,7 +59,7 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
-                            <div class="row mb-6 ">
+                            {{-- <div class="row mb-6 ">
                                 <div class="col-md-6 mb-2">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
@@ -69,7 +69,7 @@
                                         </label>
                                     </div>
                                 </div>
-                            </div> 
+                            </div>  --}}
                             
                             <div class="col-lg-12">
                                 <input type="submit" class="btn btn-success btn-lg btn-block" value="Let me enter">

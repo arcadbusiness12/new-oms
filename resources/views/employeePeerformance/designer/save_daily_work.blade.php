@@ -2,7 +2,24 @@
 
 @section('content')
 <style>
-  .success-fs{
+  .tab-links a.active {
+    color:green;
+    border:2px solid green;
+    -webkit-box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
+    -moz-box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
+    box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
+  }
+  .tab-links a {
+    text-decoration: none;
+    border: 1px solid gray;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 13px;
+    float: left;
+    margin-right: 5px;
+}
+.success-fs{
     font-size: 15px;
   }
   .green{
@@ -32,14 +49,6 @@
   .light-green{
     background:#00800021 !important;
   }
-  
-  .tab-links a.active {
-    color:green;
-    border:1px solid green;
-    -webkit-box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
-    -moz-box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
-    box-shadow: 2px 2px 8px 2px rgba(165,165,165,1);
-  }
   .page-name {
     font-size: 12px;
   }
@@ -47,16 +56,7 @@
     box-shadow: 0px 0px 4px 2px;
     font-size: 13px !important;
   }
-.tab-links a {
-    text-decoration: none;
-    border: 1px solid gray;
-    padding: 5px 10px;
-    text-transform: uppercase;
-    text-align: center;
-    font-size: 13px;
-    float: left;
-    margin-right: 5px;
-}
+
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
@@ -65,7 +65,8 @@
 
             <div class="row mb-4">
                 <div class="col-md-12 col-sm-12">
-
+                  
+                  <div class="card no-b">
                     <div class="card no-b form-box">
                         @if(session()->has('message'))
                             <div class="alert alert-success">
@@ -76,11 +77,12 @@
                         <div class="card-header white">
                             <div class="panel-body">
                               <div class="col-sm-12 tab-links">
-                              @include('employeePeerformance.designer.tab_links')
+                                @include('employeePeerformance.designer.tab_links')
+                              </div>
                             </div>
-                          </div>
                         </div>
                 </div>
+                  </div>
                 </div>
             </div>
             
@@ -93,7 +95,7 @@
                           <table class="table"  style="border: 1px solid #2196f3; width:100%;">
                             <input type="hidden" name="main_id" value="{{$id}}">
                                 <thead >
-                                  <tr id="head_row" style="background-color:lightgray">
+                                  <tr id="head_row" style="background-color: #3f51b5;color:white">
                           
                                     <th scope="col" class="sticky-col first-col" style="width:3%"><center>Post</center></th>
                                     <th scope="col" class="sticky-col second-col" style="width:4%"><center>Type </center></th>

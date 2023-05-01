@@ -44,7 +44,7 @@
                         @endif
 
                         <div class="card-header white">
-                            <form name="filter_reports" id="filter_reports" method="get" action="{{ URL::to('/performance/stock') }}">
+                            <form name="filter_reports" id="filter_reports" method="get" action="{{ URL::to('/performance/sale/staff/duty/report') }}">
                                 {{csrf_field()}}
                                 <div class="row">
                                     <div class="col-sm-4">

@@ -320,13 +320,17 @@
                                             <ul class="treeview-menu">
                                                 <?php $baList = json_decode(session('ba_main_setting_list'));
                                                         // print_r($baList);
-                                                        foreach(@$baList as $li) {
+                                                        if(isset($baList)) {
+                                                            foreach(@$baList as $li) {
                                                             $path = "promotion/ba/work/".$li->id."/1";
-                                                ?>
-                                                    <li class="<?php if(Request::path() == $path){ ?> active <?php } ?>">
-                                                        <a href="{{route('ba.work',[$li->id, 1, 1])}}"><span><BAse></BAse> {{$li->title}}</span></a>
-                                                    </li>
-                                                    <?php } ?>
+                                                        ?>
+                                                            <li class="<?php if(Request::path() == $path){ ?> active <?php } ?>">
+                                                                <a href="{{route('ba.work',[$li->id, 1, 1])}}"><span><BAse></BAse> {{$li->title}}</span></a>
+                                                            </li>
+                                                            <?php } ?>
+
+                                                       <?php } ?>
+                                                        
                                             </ul>
                                         </li>
 
@@ -339,6 +343,7 @@
                                             <ul class="treeview-menu">
                                             <?php $dfList = json_decode(session('df_main_setting_list'));
                                                         // print_r($baList);
+                                                    if(isset($baList)) {
                                                         foreach($dfList as $li) {
                                                             $path = "promotion/dressf/work/".$li->id."/2";
                                                 ?>
@@ -346,6 +351,7 @@
                                                         <a href="{{route('df.work',[$li->id, 2, 1])}}"><span>{{$li->title}}</span></a>
                                                     </li>
                                                     
+                                                    <?php } ?>
                                                     <?php } ?>
                                                 </ul>
                                                 </li>
@@ -451,7 +457,7 @@
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false) active @endif">
-                                            <a href="">Daily Work</a>
+                                            <a href="{{route("employee-performance.designer.save-daily-work")}}">Daily Work</a>
                                         </li>
                                         <li class="@if(strpos(Request::url(), '/designer/custom/duties') !== false) active @endif">
                                             <a href="">Assigned Custom Duties</a>

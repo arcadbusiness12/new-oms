@@ -439,6 +439,7 @@ Route::prefix('performance')->middleware('auth')->group(function() {
     });
     Route::controller(DesignerPerformanceeController::class)->group(function() {
         Route::any('/employee-performance/designer/save-daily-work/{id?}', 'saveDailyWork')->name('employee-performance.designer.save-daily-work');
+        // Route::any('/employee-performance/designer/save-daily-work/{id?}', 'saveDailyWork')->name('employee-performance.designer.save-daily-work');
         Route::any('/employee-performance/designer/change-post-status/{id}/{action}/{page?}', 'changePostStatus')->name('employee-performance.designer.changePostStatus');
         Route::get('/employee-performance/designer/new/product/image/{action?}', 'newProductImage')->name('new.designer.product.image');
         Route::get('/view/new/arrival/product/detail/{group}', 'detailOfNewArrivalProduct')->name('detail.of.new.arrival.product');
