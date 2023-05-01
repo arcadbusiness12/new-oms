@@ -128,8 +128,8 @@
                                       @php $group = ''; @endphp
                                     <tr id="" style="border-top: 1px solid gray !important;">
                                             <td class="argn-popup-td" style="vertical-align: top; width:3%;    border-right: 1px solid darkgray;"><center><label style="font-weight: 700;">{{ date('h:i a', strtotime($product_pro_post->schedule_time)) }}</label></center></td>
-                                            <td class="argn-popup-td" style="vertical-align: top; width:4%;    border-right: 1px solid darkgray;"><center><label style="font-weight: 700;">{{$product_pro_post->type->name}}</label></center></td>
-                                            <td class="argn-popup-td" style="vertical-align: top; width:4%;    border-right: 1px solid darkgray;"><center><label style="font-weight: 700;">{{$product_pro_post->category}}</label></center></td>
+                                            <td class="argn-popup-td" style="vertical-align: top; width:4%;    border-right: 1px solid darkgray;"><center><label style="font-weight: 700;">{{@$product_pro_post->type->name}}</label></center></td>
+                                            <td class="argn-popup-td" style="vertical-align: top; width:4%;    border-right: 1px solid darkgray;"><center><label style="font-weight: 700;">{{@$product_pro_post->category}}</label></center></td>
                                            
                                             @foreach(@$days as $k => $day)
                                             @php
