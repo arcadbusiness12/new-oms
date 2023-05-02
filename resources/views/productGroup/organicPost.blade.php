@@ -122,7 +122,7 @@
                                     <td class="td-valign"><center><b>{{$product->sku}}<br>{{$product->option_name}}</b></center></td>-->
                                     
                                     <td class="col-sm-2 text-center">
-                                        <div class="internal-sec {{(@$product->producType['name'] =='Best Sellers') ? 'td-bg-green' : ($product->producType['name'] =='Normal' ? 'td-bg-orange' : ($product->producType['name'] =='Clearance' ? 'td-bg-red' : 'td-bg-empty'))}}" style="width: 75%;
+                                        <div class="internal-sec {{(@$product->producType['name'] =='Best Sellers') ? 'td-bg-green' : (@$product->producType['name'] =='Normal' ? 'td-bg-orange' : (@$product->producType['name'] =='Clearance' ? 'td-bg-red' : 'td-bg-empty'))}}" style="width: 75%;
                                             margin: 0px auto;
                                             text-align: -webkit-center;">
                                     <table class="table table-hover group-title">

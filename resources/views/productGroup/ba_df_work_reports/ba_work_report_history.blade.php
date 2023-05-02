@@ -6,10 +6,10 @@
     /* background: #ff00002b; */
   }
   .light-orange{
-    background:#ffa5003d;
+    background:#ffa5003d !important;
   }
   .light-green{
-    background:#00800021;
+    background:#00800021 !important;
   }
   .view {
     margin: auto;
@@ -162,7 +162,7 @@
                             }
                             $scheduled_id = $post->id;
                                                        
-                             $group_name = $post->group['name'];
+                             $group_name = ($post->group) ? $post->group['name'] : '';
                              $post_id = $post->id;
                              $group_id = $post->group_id;
                              if(count($post->promo_cate_posts) > 0) {

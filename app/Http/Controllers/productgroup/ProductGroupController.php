@@ -263,7 +263,7 @@ class ProductGroupController extends Controller
                 if($page == 'productList') {
                     $page = 'paidAds.'.$page;
                 }
-                // dd($groupProducts);
+                dd($groupProducts->toArray);
                 return view(SELF::VIEW_DIR. '.'.$page)->with(compact('groupProducts', 'types_for_organic','types_for_setting', 'socials', 'stores', 'categories','old_input','main_categories'));
                 
           }
