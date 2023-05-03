@@ -139,11 +139,14 @@ a{
     margin: 0 0 5px !important;
 }
 [type="radio"]:checked+label {
-    padding-left: 26px;
+    /* padding-left: 26px; */
     height: 25px;
     line-height: 25px;
     font-size: 13px;
     font-weight: normal;
+}
+.move-history p {
+    font-size: 12px !important;
 }
 </style>
             <div class="sub-setting-loop col-md-12" >
@@ -639,35 +642,35 @@ a{
                                 $d_access = array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true));
                                 $designer_access = array_key_exists('employee-performance/designer', json_decode(session('access'),true));
                              @endphp
-                             {{-- <div class="row" style="padding-top: 12px;">
-                             <form name="move_duty_form" id="move_duty_form" action="post">
-                                 {{csrf_field()}}
-                                <div class="col-sm-8" >
-                                    <input type="hidden" name="duty_id" value="{{$details->id}}">
-                                    <input type="hidden" name="duty_list_id" value="{{$details->duty_list_id}}">
-                                    <input type="hidden" name="detail_move" value="1">
-                                    <input type="hidden" name="action_by" value="{{$action}}">
-                                    
-                                    @if($details->is_close == 0 || session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)) 
-                                    || array_key_exists('employee-performance/designer', json_decode(session('access'),true)) || $m_access == 1 || $d_access == 1 || $designer_access == 1)
-                                        @php $disable = ''; @endphp
-                                    @else
-                                        @php $disable = 'disabled'; @endphp
-                                    @endif
-                                    <select name="status" {{$disable}} class="form-control move-select" onchange="enableMove(this.value,{{$details->duty_list_id}})">
-                                        <option value="">Select Stage</option>
-                                        <option value="0" <?php  if($details->progress == 0) { echo 'selected';} ?>>To Do</option>
-                                        <option value="1" <?php  if($details->progress == 1) { echo 'selected';} ?>>Doing</option>
-                                        <option value="2" <?php  if($details->progress == 2) { echo 'selected';}elseif($details->progress == 0) { echo 'disabled';} ?>>Testing</option>
-                                        @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)))
-                                        <option value="5" <?php  if($details->progress == 5) { echo 'selected';}elseif($details->progress == 0 || $details->progress == 1) { echo 'disabled';} ?>>Completed</option>
-                                        @endif
-                                    </select>
+                             <div class="row" style="padding-top: 12px;">
+                                <form name="move_duty_form" id="move_duty_form" action="post">
+                                    {{csrf_field()}}
+                                   <div class="col-sm-8 col-grid" >
+                                       <input type="hidden" name="duty_id" value="{{$details->id}}">
+                                       <input type="hidden" name="detail_move" value="1">
+                                       <input type="hidden" name="action_by" value="{{$action}}">
+                                       
+                                       @if($details->is_close == 0 || session('role') == 'ADMIN')
+                                           @php $disable = ''; @endphp
+                                       @else
+                                           @php $disable = 'disabled'; @endphp
+                                       @endif
+                                       <select name="status" {{$disable}} {{$dable}} class="form-control move-select" onchange="enableMove(this.value)">
+                                           <option value="">Select Stage</option>
+                                           <option value="0" <?php  if($details->progress == 0) { echo 'selected';} ?>>To Do</option>
+                                           <option value="1" <?php  if($details->progress == 1) { echo 'selected';} ?>>Doing</option>
+                                           <option value="2" <?php  if($details->progress == 2) { echo 'selected';}elseif($details->progress == 0) { echo 'disabled';} ?>>Testing</option>
+                                           @if(session('role') == 'ADMIN')
+                                           <option value="5" <?php  if($details->progress == 5) { echo 'selected';}elseif($details->progress == 0 || $details->progress == 1) { echo 'disabled';} ?>>Completed</option>
+                                           @endif
+                                       </select>
+                                   </div>
+                                   <div class="col-sm-4 col-grid" >
+                                       <button type="submit" class="btn btn-info btn-move" disabled>Move</button>
+   
+                                   </div>
+                               </form>
                                 </div>
-                                <div class="col-sm-4" >
-                                </div>
-                            </form>
-                             </div> --}}
 
                              <div class="row move-history" style="padding-top: 12px;">
                              @if(count($details->statusHistories) > 0)
@@ -686,7 +689,7 @@ a{
                                         @else
                                             <span class="user-history">Completed</span>
                                         @endif
-                                        <span style="font-size: 11px;
+                                        <span style="font-size: 10px;
                                         color: darkgrey;"> - {{date('d M', strtotime($history->created_at))}}</span>
                                     </p>
                                    </li>

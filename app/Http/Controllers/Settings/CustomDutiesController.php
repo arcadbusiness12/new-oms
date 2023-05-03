@@ -47,11 +47,13 @@ use Illuminate\Contracts\Cache\Store;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 // use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request as Input;
 use Illuminate\Support\Facades\Storage;
 use DB;
 use DateTime;
 use DatePeriod;
 use DateInterval;
+use finfo;
 use function Symfony\Component\VarDumper\Dumper\esc;
 
 class CustomDutiesController extends Controller
@@ -316,10 +318,10 @@ class CustomDutiesController extends Controller
         }
      }
 
-     public function employeeCustomDuties(Request $request, $argc = null) {
+     public function employeeCustomDuties($argc = null) {
       //   $autoDuty = autoAssignDuties(session('user_id'));
       // dd(array_key_exists('employee-performance/designer/custom/duties', json_decode(session('access'),true)));
-      //  dd($argc);
+      //  dd($request);
         $old_input = '';
         $whereclause = [];
         
@@ -327,122 +329,116 @@ class CustomDutiesController extends Controller
         
         $orderField = 'end_date';
          $orderaction = 'ASC';
-        if(count($request->all()) > 0){
-         if($request->user) {
-            // $whereclause[] = array('user_id', Input::get('user'));
-            array_push($whereclause, ['user_id', $request->user]);
-            }
-            if($request->duty) {
-               array_push($whereclause, ['duty_list_id', $request->duty]);
-            }
-            if($request->sub_duty) {
-               array_push($whereclause, ['sub_duty_list_id', $request->sub_duty]);
-            }
+         if(count(Input::all()) > 0){
+            if(Input::get('user')) {
+               // $whereclause[] = array('user_id', Input::get('user'));
+               array_push($whereclause, ['user_id', Input::get('user')]);
+               }
+               if(Input::get('duty')) {
+                  array_push($whereclause, ['duty_list_id', Input::get('duty')]);
+               }
+               if(Input::get('sub_duty')) {
+                  array_push($whereclause, ['sub_duty_list_id', Input::get('sub_duty')]);
+               }
+               $orderField = 'end_date';
+               $orderaction = 'ASC';
+               $old_input = Input::all();
+           }
+           
+            // dd(json_decode(session('access'),true));
+           if(session('role') != 'ADMIN' && !array_key_exists('employee-performance/designer/custom/duties', json_decode(session('access'),true)) 
+           && !array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) && !array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)) 
+           && !array_key_exists('employee-performance/app/developer/custom/duties', json_decode(session('access'),true))) {
+            // dd("ok");
+            array_push($whereclause, ['user_id', session('user_id')]);
+            array_push($whereclause, ['is_close', 0]);
             $orderField = 'end_date';
             $orderaction = 'ASC';
-            $old_input = $request->all();
-        }
-        
-         // dd(json_decode(session('access'),true));
-        if(session('role') != 'ADMIN' && !array_key_exists('employee-performance/designer/custom/duties', json_decode(session('access'),true)) 
-        && !array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) && !array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)) 
-        && !array_key_exists('employee-performance/app/developer/custom/duties', json_decode(session('access'),true))) {
-         // dd("ok");
-         array_push($whereclause, ['user_id', session('user_id')]);
-         array_push($whereclause, ['is_close', 0]);
-         $orderField = 'end_date';
-         $orderaction = 'ASC';
-        }
-        if($argc == 'marketer') {
-         $orderField = 'start_date';
-         $orderaction = 'DESC';
-
-        }
-        if($argc && $argc != 'marketer' && $argc != 0 && $argc != 'designer') {
-         $ar = explode('_', $argc);
-         $argc = $ar[0];
-         $orderField = 'end_date';
-         $orderaction = 'DESC';
-         
-      //   dd(count($ar));
-         array_push($whereclause, ['user_id', session('user_id')]);
-         array_push($whereclause, ['id', $argc]);
-         if(count($ar) > 1) {
+           }
+           if($argc == 'marketer') {
+            $orderField = 'start_date';
+            $orderaction = 'DESC';
+   
+           }
+           if($argc && $argc != 'marketer' && $argc != 'designer' && $argc != 0) {
+            $ar = explode('_', $argc);
+            $argc = $ar[0];
+            $orderField = 'end_date';
+            $orderaction = 'DESC';
+            array_push($whereclause, ['user_id', session('user_id')]);
+            array_push($whereclause, ['id', $argc]);
             $no = OmsNotificationModel::find($ar[1]);
             $no->is_viewed = 1;
             $no->update();
-         }
-         
-        }
-        if($argc && $argc == 'designer') {
-         $user_groups = [13,14];
-        }elseif($argc && $argc == 'w_developer') {
-         $user_groups = [18];
-
-        }elseif($argc && $argc == 'a_developer') {
-         $user_groups = [19];
-        }else {
-         $user_groups = [8,13,14,18,19];
-        }
-      //   dd($whereclause);
-        $not_started = [];
-        $started = [];
-        $in_testing = [];
-        $completed = [];
-        $duty_users = EmployeeCustomeDutiesModel::whereIn('user_group_id', $user_groups)->groupBy('user_id')->select('user_id')->get();
-        $users = OmsOmsUserModel::whereIn('user_id', $duty_users->toArray())->get();
-        $duty_lists = DutyListsModel::where('status', 1)->get();
-        $sub_duty_lists = OmsSubDutyListModel::where('is_active', 1)->get();
-      //   $customDuties = EmployeeCustomeDutiesModel::with('attachmentFiles')->where($whereclause)->where('is_close', 0)->get();
-        $customDuties = EmployeeCustomeDutiesModel::with('attachmentFiles')->whereIn('user_group_id', $user_groups)->where($whereclause)->orderby($orderField, $orderaction)->get();
-      //   dd($customDuties->toArray());
-        foreach($customDuties as $duty) {
-         foreach($duty->attachmentFiles as $file) {
-            $file->file = Storage::url($file->file);
+           }
+           if($argc && $argc == 'designer') {
+            $user_groups = [13,14];
+           }elseif($argc && $argc == 'w_developer') {
+            $user_groups = [18];
+   
+           }elseif($argc && $argc == 'a_developer') {
+            $user_groups = [19];
+           }else {
+            $user_groups = [8,13,14,18,19];
+           }
+         //   dd($user_groups);
+           $not_started = [];
+           $started = [];
+           $in_testing = [];
+           $completed = [];
+           $duty_users = EmployeeCustomeDutiesModel::whereIn('user_group_id', $user_groups)->groupBy('user_id')->select('user_id')->get();
+           $users = OmsOmsUserModel::whereIn('user_id', $duty_users->toArray())->get();
+           $duty_lists = DutyListsModel::where('status', 1)->get();
+           $sub_duty_lists = OmsSubDutyListModel::where('is_active', 1)->get();
+         //   $customDuties = EmployeeCustomeDutiesModel::with('attachmentFiles')->where($whereclause)->where('is_close', 0)->get();
+           $customDuties = EmployeeCustomeDutiesModel::with('attachmentFiles')->whereIn('user_group_id', $user_groups)->where($whereclause)->orderby($orderField, $orderaction)->get();
+         //   dd($customDuties->toArray());
+           foreach($customDuties as $duty) {
+            foreach($duty->attachmentFiles as $file) {
+               $file->file = Storage::url($file->file);
+               }
+            if($duty->progress == 0) {
+               array_push($not_started, $duty);
             }
-         if($duty->progress == 0) {
-            array_push($not_started, $duty);
-         }
-         if($duty->progress == 1) {
-            array_push($started, $duty);
-         }
-         if($duty->progress == 2) {
-            array_push($in_testing, $duty);
-            $keys = array_column($in_testing, 'end_date');
-		      array_multisort($keys, SORT_DESC, $in_testing);
-         }
-         if($duty->progress == 5) {
-            array_push($completed, $duty);
-            $keys = array_column($completed, 'end_date');
-		      array_multisort($keys, SORT_DESC, $completed);
-         }
-         
-        }
-      $extensions = $this->image_extensions;
-      if($argc && $argc == 0 && $argc != 'marketer' && $argc != 'designer' && $argc != 'w_developer' && $argc != 'a_developer') {
-         $array = [
-            'not_started' => $not_started,
-            'started' => $started,
-            'in_testing' => $in_testing,
-            'completed' => $completed,
-            'extensions' => $extensions
-         ];
-         return $array;
-      }else {
-         if($argc && $argc == 'w_developer' || $argc == 'a_developer') {
-            $directory = 'employeePeerformance.it_developer'; 
+            if($duty->progress == 1) {
+               array_push($started, $duty);
+            }
+            if($duty->progress == 2) {
+               array_push($in_testing, $duty);
+               $keys = array_column($in_testing, 'end_date');
+               array_multisort($keys, SORT_DESC, $in_testing);
+            }
+            if($duty->progress == 5) {
+               array_push($completed, $duty);
+               $keys = array_column($completed, 'end_date');
+               array_multisort($keys, SORT_DESC, $completed);
+            }
+            
+           }
+         $extensions = $this->image_extensions;
+         if($argc && $argc == 0 && $argc != 'marketer' && $argc != 'designer' && $argc != 'w_developer' && $argc != 'a_developer') {
+            $array = [
+               'not_started' => $not_started,
+               'started' => $started,
+               'in_testing' => $in_testing,
+               'completed' => $completed,
+               'extensions' => $extensions
+            ];
+            return $array;
          }else {
-            $directory = 'employeePeerformance.custom_duty'; 
+            if($argc && $argc == 'w_developer' || $argc == 'a_developer') {
+               $directory = 'employeePeerformance.it_developer'; 
+            }else {
+               $directory = 'employeePeerformance.custom_duty'; 
+            }
+            return view($directory.'.custom_duties')->with(compact('not_started','started','in_testing','completed', 'extensions','users', 'old_input', 'argc', 'duty_lists', 'sub_duty_lists'));
+   
          }
-         
-         return view($directory.'.custom_duties')->with(compact('not_started','started','in_testing','completed', 'extensions','users', 'old_input', 'argc', 'duty_lists', 'sub_duty_lists'));
-
-      }
         
      }
      
      public function changeDutyStatus(Request $request) {
-      //   dd($request->status);
+      //   dd($request);
         $this->validate($request, [
            'status' => 'required'
         ]);
@@ -491,7 +487,9 @@ class CustomDutiesController extends Controller
            $statusHistory->user_id = session('user_id');
            $statusHistory->created_at = date('Y-m-d');
            $statusHistory->save();
+         //   dd($request->action_by);
          //   if($request->detail_move) {
+            // dd($request);
             $view = $this->employeeCustomDuties($request->action_by ? $request->action_by : 0);
             $not_started = $view['not_started'];
             $started = $view['started'];
@@ -511,7 +509,7 @@ class CustomDutiesController extends Controller
             //   createNotification('custom_duty', $enttity, $duty->user_id);
             }
             $argc = $request->action_by; 
-            return view('employee_performance.custom_duty.custom_duties_ajax')->with(compact('not_started','started','in_testing','completed', 'extensions', 'argc'));
+            return view('employeePeerformance.custom_duty.custom_duties_ajax')->with(compact('not_started','started','in_testing','completed', 'extensions', 'argc'));
             
          //   }else {
          //    return response()->json([
@@ -931,8 +929,9 @@ class CustomDutiesController extends Controller
       OrdersModel::truncate();
       DFOrders::truncate();
    }
-   public function employeeCustomDutiesReport(Request $request, $user = null) {
+   public function employeeCustomDutiesReport($user = null) {
       // dd(Input::all());
+      $request = Request::$request;
       $filterWhereClause = [];
       if($request->user_id) {
          $filterWhereClause[] = array('user_id', $request->user_id);

@@ -50,7 +50,7 @@
                        </a>
                   </div>
                   <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                           <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                       </div>
                       @if(session('role') == 'ADMIN')
@@ -61,8 +61,8 @@
                           <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                       </div> -->
                       
-                      <div class="col-sm-4" style="margin-top: 2px;text-align:right">
-                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1') ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
+                      <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
+                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                       </div>
                       @endif
                       </div>
@@ -129,7 +129,7 @@
                     </a>
                   </div>
                   <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                  <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                  <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                       <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                   </div>
                   @if(session('role') == 'ADMIN')
@@ -140,8 +140,8 @@
                       <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                   </div> -->
                   
-                  <div class="col-sm-4" style="margin-top: 2px;text-align:right">
-                      <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1') ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
+                  <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
+                      <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                   </div>
                   @endif
                   </div>
@@ -204,7 +204,7 @@
                       
                   </div>
                   <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                           <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                       </div>
                       @if(session('role') == 'ADMIN')
@@ -215,8 +215,8 @@
                           <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                       </div> -->
                       
-                      <div class="col-sm-4" style="margin-top: 2px;text-align:right">
-                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1') ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
+                      <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
+                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                       </div>
                       @endif
                       </div>
@@ -278,7 +278,7 @@
                       
                   </div>
                   <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                      <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;display: inline-block;">
                           <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                       </div>
                       @if(session('role') == 'ADMIN')
@@ -289,8 +289,8 @@
                           <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                       </div> -->
                       
-                      <div class="col-sm-4" style="margin-top: 2px;text-align:right">
-                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1') ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
+                      <div class="col-sm-4" style="margin-top: 2px;text-align:right;float: right;">
+                          <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                       </div>
                       @endif
                       </div>

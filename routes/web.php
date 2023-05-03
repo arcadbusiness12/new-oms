@@ -478,3 +478,4 @@ Route::get('/get/user/irregular/duties/{user?}', [App\Http\Controllers\Settings\
 Route::get('/get/user/irregular/sub/duties/{user?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getIrregularSubDuties'])->name('get.user.irregular.sub.duties');
 Route::post('/save/assigned/custom/duty', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveAssignCustomDuty'])->name('save.custom.duties');
 Route::any('/marketer/custom/duties/{arg?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('update.assign.custom.duties');
+Route::post('/changes/duty/status', [App\Http\Controllers\Settings\CustomDutiesController::class, 'changeDutyStatus'])->name('change.duty.status');
