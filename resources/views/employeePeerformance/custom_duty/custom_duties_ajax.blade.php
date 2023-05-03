@@ -1,7 +1,7 @@
 <div class="col-sm-3 col-sm-3 col-xs-12 duty-block" >
     <div class="card" id="pending-duties-box" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">To Do</label>
-                <label class="form-label duties-count">({{count($not_started)}})</label>
+                {{-- <label class="form-label duties-count">({{count($not_started)}})</label> --}}
                 <div class="assign-duty-div {{count($not_started) > 0 ? 'box-extend': '' }}">
                 @forelse($not_started as $k => $duty)
                   <div class="row duty-box">
@@ -83,7 +83,7 @@
 <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
     <div class="card" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">Doing</label>
-                <label class="form-label duties-count">({{count($started)}})</label>
+                {{-- <label class="form-label duties-count">({{count($started)}})</label> --}}
                 <div class="assign-duty-div {{count($started) > 0 ? 'box-extend' : '' }}">
                 @forelse($started as $k => $duty)
                   <div class="row duty-box">
@@ -161,7 +161,7 @@
     <div class="card" id="testing-duties-box" style="padding: 10px;overflow: hidden;">
         
                 <label class="form-label">Testing</label>
-                <label class="form-label duties-count">({{count($in_testing)}})</label>
+                {{-- <label class="form-label duties-count">({{count($in_testing)}})</label> --}}
                 <div class="assign-duty-div {{count($in_testing) > 0 ? 'box-extend' : '' }}">
                 @forelse($in_testing as $k => $duty)
                   <div class="row duty-box">
@@ -235,7 +235,7 @@
 <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
     <div class="card" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">Completed</label>
-                <label class="form-label duties-count">({{count($completed)}})</label>
+                {{-- <label class="form-label duties-count">({{count($completed)}})</label> --}}
                 <div class="assign-duty-div {{count($completed) > 0 ? 'box-extend' : '' }}">
                 @forelse($completed as $k => $duty)
                 <div class="row duty-box">

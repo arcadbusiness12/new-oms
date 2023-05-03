@@ -929,9 +929,8 @@ class CustomDutiesController extends Controller
       OrdersModel::truncate();
       DFOrders::truncate();
    }
-   public function employeeCustomDutiesReport($user = null) {
+   public function employeeCustomDutiesReport(Request $request, $user = null) {
       // dd(Input::all());
-      $request = Request::$request;
       $filterWhereClause = [];
       if($request->user_id) {
          $filterWhereClause[] = array('user_id', $request->user_id);

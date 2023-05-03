@@ -463,7 +463,7 @@
                                             <a href="{{route('assigned.custom.duties.designer', 'designer')}}">Assigned Custom Duties</a>
                                         </li>
                                         <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
-                                            <a href="">Custom Duties Report</a>
+                                            <a href="{{route('custom.duties.report')}}">Custom Duties Report</a>
                                         </li>
                                         <li><a href="">New Product Image</a>
                                         </li>

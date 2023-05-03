@@ -1222,7 +1222,7 @@ class LandingController extends Controller
                 'date' => date("Y-m-d"),
                 'addmin_comments' => [],
             ];
-            createNotification('work_ending_request', $enttity, session('user_id'));
+            // createNotification('work_ending_request', $enttity, session('user_id'));
             $todaytime->request_approval = 0;
             $todaytime->update();
             // $new_request = new OmsNotificationModel();
@@ -1263,7 +1263,7 @@ class LandingController extends Controller
                 'date' => date("Y-m-d"),
                 'addmin_comments' => [],
             ];
-            createNotification('work_start_request', $enttity, session('user_id'));
+            // createNotification('work_start_request', $enttity, session('user_id'));
             $todaytime->request_approval = 0;
             $todaytime->update();
             return response()->json([
@@ -1831,6 +1831,163 @@ class LandingController extends Controller
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 
 
@@ -1839,6 +1996,15 @@ class LandingController extends Controller
 
     public function checkDesgnerPendingDutiesEndDate() {
         DB::table('oms_inventory_product')->delete();
+         DB::table('oms_orders')->delete();
+        DB::table('oms_purchase_order')->delete();
+        DB::table('oms_purchase_order_product')->delete();
+        DB::table('oms_purchase_product')->delete();
+        DB::table('oms_purchase_shipped_order_product')->delete();
+        DB::table('oms_options')->delete();
+        DB::table('airwaybill_tracking')->delete();
+        DB::table('oms_options_details')->delete();
+        DB::table('reseller_products')->delete();
         DB::table(DB::raw($this->DB_BAOPENCART_DATABASE . '.oc_product'))->delete();
         DB::table(DB::raw($this->DB_DFOPENCART_DATABASE . '.oc_product'))->delete();
         DB::table(DB::raw($this->DB_BAOPENCART_DATABASE . '.oc_product_description'))->delete();
@@ -1855,14 +2021,6 @@ class LandingController extends Controller
         DB::table(DB::raw($this->DB_DFOPENCART_DATABASE . '.oc_order'))->delete();
         DB::table(DB::raw($this->DB_BAOPENCART_DATABASE . '.oc_order_product'))->delete();
         DB::table(DB::raw($this->DB_DFOPENCART_DATABASE . '.oc_order_product'))->delete();
-        DB::table('oms_orders')->delete();
-        DB::table('oms_purchase_order')->delete();
-        DB::table('oms_purchase_order_product')->delete();
-        DB::table('oms_purchase_product')->delete();
-        DB::table('oms_purchase_shipped_order_product')->delete();
-        DB::table('oms_options')->delete();
-        DB::table('airwaybill_tracking')->delete();
-        DB::table('oms_options_details')->delete();
-        DB::table('reseller_products')->delete();
+       
     }
 }

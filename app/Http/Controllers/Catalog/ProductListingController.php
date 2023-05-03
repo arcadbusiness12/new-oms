@@ -64,7 +64,7 @@ class ProductListingController extends Controller
         $store = storeModel::find($store);
         $weightClasses = ProductWeightClassModel::orderBy('title')->get();
         $stock_statuses = OmsStockStatus::where('language_id', 1)->get();
-        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses', 'store', 'stock_statuses'));
+        return view(self::VIEW_DIR. '.productListDetails')->with(compact('productList', 'weightClasses', 'store', 'stock_statuses','product'));
     }
 
     public function ProductListing(Request $request) {

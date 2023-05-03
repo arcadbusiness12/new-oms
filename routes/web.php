@@ -467,6 +467,7 @@ Route::post('/save/duty/comment', [App\Http\Controllers\Settings\CustomDutiesCon
 Route::post('/save/attachment/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveAttachmentComment'])->name('save.duty.comment');
 Route::post('/save/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveCommentReply'])->name('save.duty.comment.reply');
 Route::get('/duty/attachment/comments/{file}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getAttachmentComment'])->name('get.attachment.comments');
+Route::get('/check/pending/desginer/duties/end/date', [App\Http\Controllers\Landing\LandingController::class, 'checkDesgnerPendingDutiesEndDate'])->name('check.pending.designer.duties.end.date');
 Route::get('/count/duty/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'countOfDutyComment'])->name('count.duty.comment');
 Route::post('/update/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateComment'])->name('update.duty.comment');
 Route::post('/update/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateCommentReply'])->name('update.duty.comment.reply');

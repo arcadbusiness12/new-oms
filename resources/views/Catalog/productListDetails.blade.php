@@ -21,6 +21,12 @@
 
             <div class="row">
                 <div class="col-md-12 col-sm-12">
+                    <div class="align-self-center text-right">
+                    <a href="{{route('product.listing')}}" type="button" class="btn btn-secondary">
+                       <i class="fa fa-backward"></i> Back
+                    </a>
+                </div>
+
                     <div class="card no-b">
                         <div class="card-header white">
                             <div class="d-flex justify-content-between">
@@ -61,6 +67,7 @@
                                 <div class="align-self-center">
                                    <span style="text-shadow: 2px 4px 6px #00bef3;"> <strong>{{@$store->name}}</strong></span>
                                 </div>
+                                
                             </div>
                         </div>
                         <div class="card-body no-p">
