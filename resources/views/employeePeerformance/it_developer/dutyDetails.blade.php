@@ -121,7 +121,7 @@ a{
     padding-top: 12px;
 }
 .left-padding {
-    padding-left: 46px;
+    padding-left: 24px;
 }
 .carousel-control{
     width: 8% !important;
@@ -137,13 +137,6 @@ a{
 }
 .status-history {
     margin: 0 0 5px !important;
-}
-[type="radio"]:checked+label {
-    padding-left: 26px;
-    height: 25px;
-    line-height: 25px;
-    font-size: 13px;
-    font-weight: normal;
 }
 </style>
             <div class="sub-setting-loop col-md-12" >
@@ -183,7 +176,7 @@ a{
                                 <div class="form-line col-sm-12">
                                     <h5><i class="fa fa-file-text" aria-hidden="true"></i> Description 
                                         @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)))
-                                        <a href="javascript:;" onclick="addDescription()"><button type="button" class="btn btn-info btn-xs">Edit</button></a>
+                                        <a href="javascript:;" onclick="addDescription()"><button type="button" class="btn btn-secondary">Edit</button></a>
                                     @endif
                                     </h5>
 
@@ -207,7 +200,7 @@ a{
                                             </div>
                                             <div class="form-group">
                                                 <button type="button" class="btn btn-primary save-change-btn">Save</button> 
-                                                <button type="button" class="btn btn-default close-form" onclick="closeDescriptionForm()">X</button>
+                                                <button type="button" class="btn btn-secondary close-form" onclick="closeDescriptionForm()">X</button>
                                             </div>  
                                         </form>
                                     </div>
@@ -280,7 +273,7 @@ a{
                                 <form name="attachment_form" id="attachment_form" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="duty_idd" id="duty_idd" value="{{$details['id']}}">
                                     <input type="hidden" name="file" value="sadasdasdasdas">
-                                 <span type="button" class="btn btn-default attachment-input">Add an attachment <i class="fa fa-spinner fa-pulse" id="attachment-loader" style="display: none;"></i></span>
+                                 <span type="button" class="btn btn-secondary attachment-input">Add an attachment <i class="fa fa-spinner fa-pulse" id="attachment-loader" style="display: none;"></i></span>
                                  <input type="file" name="attachment" id="attachment-input">
                                  <div id="error-worning"></div>
                                 </form>
@@ -300,7 +293,7 @@ a{
                                             {{csrf_field()}}
                                         <div class="row">
                                          <input type="hidden" name="coment_duty_id" id="coment_duty_id" value="{{$details['id']}}">
-                                            <div class="form-line col-sm-12" style="padding-top: 15px;margin-left: 14px; padding-right: 32px;">
+                                            <div class="form-line col-sm-12" style="padding-top: 15px;margin-left: 14px; ">
                                                 <!-- <input type="text" class="form-control"> -->
                                                 <textarea name="comment" rows="2" class="form-control textarea-box" id="comment-box"></textarea>
                                                 
@@ -316,7 +309,7 @@ a{
                                                         <input type="file" name="comment_file" id="attachment-input" class="form-control comment-file"
                                                         onchange="$('#upload-file-info').html(
                                                                 (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                       <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
+                                                       <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
                                                     <span class='labe' id="upload-file-info"></span>
                                             </div>
                                             </div>
@@ -345,7 +338,7 @@ a{
                                 </div>
                                 <div class="row">
                                     <div class="form-line col-sm-12" style="">
-                                        @if(@$comment['file']['file']) 
+                                        @if($comment['file']['file']) 
                                         <div class="row" style="padding-left: 58px">
                                         <a href='javascript:;' onclick='popupImg("{{$k}}{{$comment['id']}}")'><img id='img-src{{$k}}{{$comment['id']}}' style="width:16%; max-height:100px;" src="{{asset($comment['file']['file'])}}"></a>
                                            
@@ -503,7 +496,7 @@ a{
                                                                 <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$reply['id']}}{{$k}}"
                                                                 onchange="$('#upload-file-info{{$reply['id']}}{{$k}}').html(
                                                                         (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                            <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
+                                                            <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
                                                             <span class="labe choose_file{{$reply['id']}}{{$k}}" id="upload-file-info{{$reply['id']}}{{$k}}"></span>
                                                     </div>
                                                     </div>
@@ -544,7 +537,7 @@ a{
                                                         <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$comment['id']}}{{$k}}"
                                                         onchange="$('#upload-file-info{{$comment['id']}}{{$k}}').html(
                                                                 (this.files.length > 1) ? this.files.length + ' files' : this.files[0].name)">                     
-                                                       <span type="button" class="btn btn-default attachment-input">Attachment</span>&hellip;
+                                                       <span type="button" class="btn btn-secondary attachment-input">Attachment</span>&hellip;
                                                     <span class="labe choose_file{{$comment['id']}}{{$k}}" id="upload-file-info{{$comment['id']}}{{$k}}"></span>
                                             </div>
                                             </div>
@@ -561,44 +554,17 @@ a{
                          @endif
                          </div>
                          <div class="col-sm-4" >
-                            <div class="status-action">
-                                <div class="row right-heading">
-                                    <h5>Duty</h5>
-                                </div>
-                                <div class="row" style="padding: 12px;">
-                                        @if($details->duty_list)
-                                            <i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true" style="max-width: 10%;
-                                            display: inline-block;
-                                            float: left;padding-top: 4px;"></i>  
-                                            <label for="active" style="max-width: 90%;
-                                            font-weight: 700;">{{$details->duty_list->name}}</label>
-                                        @endif
-                                        @if($details->sub_duty_list)
-                                            <i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true"></i> 
-                                            <label for="inactive">{{$details->sub_duty_list->name}}</label> 
-                                        @endif 
-                                </div>
-                            </div>
-
                              <!-- Active inactive box -->
                              @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)))
                             <div class="status-action">
                                 <div class="row right-heading">
                                     <h5><i class="fa fa-exchange fa-lg" aria-hidden="true"></i> Active/In-Active</h5>
                                 </div>
-                                <div class="row" style="">
-                                    <div class="col-12">
-                                        <div class="col-6">
-                                            <input type="radio" id="active" name="budget_type" value="0" onchange="changeActiveStatus('{{$details->id}}','0')" {{($details->is_close == 0) ? 'checked' : ''}}>
-                                            <label for="active">Active</label>
-                                        </div>
-                                        <div class="col-6">
-                                            <input type="radio" id="inactive" name="budget_type" value="1" onchange="changeActiveStatus('{{$details->id}}','1')" {{($details->is_close == 1) ? 'checked' : ''}}>
-                                            <label for="inactive">In-Active</label> 
-                                        </div>
-                                         
-                                    </div>
-                                        
+                                <div class="row" style="padding: 12px;">
+                                        <input type="radio" id="active" name="budget_type" value="0" onchange="changeActiveStatus('{{$details->id}}','0')" {{($details->is_close == 0) ? 'checked' : ''}}>
+                                        <label for="active">Active</label>
+                                        <input type="radio" id="inactive" name="budget_type" value="1" onchange="changeActiveStatus('{{$details->id}}','1')" {{($details->is_close == 1) ? 'checked' : ''}}>
+                                        <label for="inactive">In-Active</label>  
                                 </div>
                             </div>
                             @endif
@@ -634,49 +600,42 @@ a{
                              <div class="row right-heading">
                                 <h5><i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true"></i> Action</h5>
                              </div>
-                             @php 
-                                $m_access = array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true));
-                                $d_access = array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true));
-                                $designer_access = array_key_exists('employee-performance/designer', json_decode(session('access'),true));
-                             @endphp
-                             {{-- <div class="row" style="padding-top: 12px;">
+                             <div class="row" style="padding-top: 12px;">
                              <form name="move_duty_form" id="move_duty_form" action="post">
                                  {{csrf_field()}}
                                 <div class="col-sm-8" >
                                     <input type="hidden" name="duty_id" value="{{$details->id}}">
-                                    <input type="hidden" name="duty_list_id" value="{{$details->duty_list_id}}">
                                     <input type="hidden" name="detail_move" value="1">
                                     <input type="hidden" name="action_by" value="{{$action}}">
                                     
-                                    @if($details->is_close == 0 || session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)) 
-                                    || array_key_exists('employee-performance/designer', json_decode(session('access'),true)) || $m_access == 1 || $d_access == 1 || $designer_access == 1)
+                                    @if($details->is_close == 0 || session('role') == 'ADMIN')
                                         @php $disable = ''; @endphp
                                     @else
                                         @php $disable = 'disabled'; @endphp
                                     @endif
-                                    <select name="status" {{$disable}} class="form-control move-select" onchange="enableMove(this.value,{{$details->duty_list_id}})">
+                                    <select name="status" {{$disable}} {{$dable}} class="form-control move-select" onchange="enableMove(this.value)">
                                         <option value="">Select Stage</option>
                                         <option value="0" <?php  if($details->progress == 0) { echo 'selected';} ?>>To Do</option>
                                         <option value="1" <?php  if($details->progress == 1) { echo 'selected';} ?>>Doing</option>
                                         <option value="2" <?php  if($details->progress == 2) { echo 'selected';}elseif($details->progress == 0) { echo 'disabled';} ?>>Testing</option>
-                                        @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || array_key_exists('employee-performance/web/developer/custom/duties', json_decode(session('access'),true)))
+                                        @if(session('role') == 'ADMIN')
                                         <option value="5" <?php  if($details->progress == 5) { echo 'selected';}elseif($details->progress == 0 || $details->progress == 1) { echo 'disabled';} ?>>Completed</option>
                                         @endif
                                     </select>
                                 </div>
                                 <div class="col-sm-4" >
+                                    <button type="submit" class="btn btn-info btn-move" disabled>Move</button>
+
                                 </div>
                             </form>
-                             </div> --}}
+                             </div>
 
                              <div class="row move-history" style="padding-top: 12px;">
                              @if(count($details->statusHistories) > 0)
                                <ul>
                              @foreach($details->statusHistories as $history)
                                    <li>
-                                     <p class="status-history">
-                                         {{-- Moved By  --}}
-                                         <span class="user-history">{{$history->user->firstname}} {{$history->user->lastname}}</span> Moved to 
+                                     <p class="status-history">Moved By <span class="user-history">{{$history->user->firstname}} {{$history->user->lastname}}</span> to 
                                      @if($history->status == 0)
                                             <span class="user-history">To Do</span> 
                                         @elseif($history->status == 1)
@@ -686,8 +645,6 @@ a{
                                         @else
                                             <span class="user-history">Completed</span>
                                         @endif
-                                        <span style="font-size: 11px;
-                                        color: darkgrey;"> - {{date('d M', strtotime($history->created_at))}}</span>
                                     </p>
                                    </li>
                              @endforeach
@@ -705,73 +662,7 @@ a{
 
             </div>
            
-              <!-- Image Preview Crousel Modal -->
-
-           <div class="modal fade skuDetailsmodal" id="skuDetailsmodal" tabindex="-1" role="dialog" aria-labelledby="DetailsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" style="width: 60%">
-              <div class="modal-content" style="top:180px;">
-                <div class="modal-header text-center">
-                  <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;"> <span id="changed-group" style="color: green;"></span></h5>
-                   
-                  <button type="button" class="close close-sku-second-modal-btn"  aria-label="Close">
-                     <span aria-hidden="true">&times;</span>
-                  </button>
-                  <span id="top-title">
-                    <p>Please enter all the listed products sku by comma separate like (S-05BL,S-05GR,....)</p>  
-                  </span>
-                </div>
-                <div class="modal-body" >
-                  <div class="detail-div">
-                      <form name="check_sku_form" id="check_sku_form" action="post">
-                          {{csrf_field()}}
-                        <div class="col-sm-12">
-                            <div class="form-group form-float">
-                                 <input type="text" name="sku" class="form-control" placeholder="S-05BL,S-05GR,....." style="border: 1px solid rgb(172, 165, 165)">
-                                 <span class="alert-error alert-error-sku"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="form-group form-float text-right">
-                                 <button type="submit" class="btn btn-info check-sku-btn">Submit</button>
-                            </div>
-                        </div>
-                      </form>
-                  </div>
-                  
-                
-              </div>
-              <div class="modal-footer" style="padding-top: 88px;text-align: left;">
-                <div class="alert alert-warning" style="display: none;background-color: #ff5500 !important;">
-                   
-                </div>
-            </div>
-            </div>
-          </div>
-          </div>
-
-          <div class="modal fade pendingChatsModal" id="pendingChatsModal" tabindex="-1" role="dialog" aria-labelledby="pendingChatsModal" data-backdrop="static" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content" style="border: 5px solid grey;top:180px;text-align:center">
-                <div class="modal-header text-center">
-                    <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;"> <span id="changed-group" style="color: green;"></span></h5>
-                     
-                    <button type="button" class="close close-pending-chat-second-modal-btn"  aria-label="Close">
-                       <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <p class="stop-p text-center" id="stopb-text">First update today chats of all paid ads then you can perfom next action</p> <br>
-                  {{-- <span>In-active duties: </span> <strong><span id="inactive"></span></strong><br>
-                  <span>In Testing duties: </span> <strong><span id="testing"></span></strong><br> --}}
-                  <a href="{{url('/employee-performance/marketing/save-add-chat')}}" onclick="closeModal()" target="_blank">click here and add chat</a>
-                  {{-- <div class="text-center">
-                  <i class="fa fa-cutlery" style="font-size:80px;color:green"></i>
-                  </div> --}}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+           
             <!-- <link rel="stylesheet" type="text/css" href="{{URL::asset('assets/css/timePicker/bootstrap-clockpicker.min.css') }}">
             <script type="text/javascript" src="{{URL::asset('assets/js/timePicker/bootstrap-clockpicker.min.js') }}"></script> -->
             
@@ -889,12 +780,10 @@ function popupImg(index, duty = null) {
 //     console.log("Okkkkkkkkkkk");
 //     $('#attachmentCommentmodal').modal('show');   
 // }
-
-
 $('.save-change-btn').on('click', function() {
     // event.preventDefault();
     $.ajax({
-        url: "{{url('/save/duty/description/content')}}",
+        url: "{{url('/save/duty/description/content')}}/",
         type: "POST",
         data: $('.description_form').serialize(),
         cache: false,
@@ -996,8 +885,8 @@ $('#attachment-input').on('change', function() {
         formData.append('duty_id', $('#duty_idd').val());
         formData.append('_token', CSRF_TOKEN);
         $.ajax({
-                url: "{{url('/add/attachment/to/duty')}}",
-                type: 'POST',
+            type: 'POST',
+                url: "{{url('/add/attachment/to/duty')}}/",
                 data: formData,
                 processData: false,
                 contentType: false,
@@ -1304,14 +1193,7 @@ $('#move_duty_form').submit(function(event) {
         }
     }).then(function(resp) {
         var title = '';
-        if(resp.status == 5) {
-            console.log(resp);
-            $('#pendingChatsModal').modal('toggle');
-            $(document).find('#pendingChatsModal').on('hidden.bs.modal', function () {
-                $('body').addClass('modal-open');
-            });
-            // $("#pendingChatModal").modal("show");
-        }else {
+        // if(resp.status) {
             var icon = '<i class="fa fa-eye"></i>';
             if(status == 0) {
              title = 'In list To Do';
@@ -1324,97 +1206,8 @@ $('#move_duty_form').submit(function(event) {
             }
             $('.progress-title').html(title+' '+icon);
             $('#custom_list').html(resp);
-        }
-            
+        // }
         
-    });
-});
-
-$('#check_sku_form').submit(function(event) {
-    event.preventDefault();
-    console.log($(this).serialize());
-    $.ajax({
-        url: "{{url('/check/listed/products/sku')}}",
-        type: "POST",
-        data: $(this).serialize(),
-        cache: false,
-        beforeSend: function() {
-            $('.check-sku-btn').html('<i class="fa fa-spin fa-circle-o-notch"></i>');
-            $('.check-sku-btn').prop('disabled', true);
-        },
-        complete: function() {
-            $('.check-sku-btn').html('Submit');
-            $('.check-sku-btn').prop('disabled', false);
-        },
-        error: function(error) {
-            $('.check-sku-btn').prop('disabled', false);
-            if(error.responseText.indexOf('sku') !== -1) {
-            $('.check-sku-btn').prop('disabled', false);
-            $('.alert-error-sku').text('The SKU field is required.');
-            setTimeout(() => {
-            $('.alert-error').text('');
-            },5000);
-          }
-        },
-    }).then(function(resp) {
-        $('.check-sku-btn').prop('disabled', false);
-        var title = '';
-        if(resp.status) {
-            $('.btn-move').attr('disabled', false);
-            $('#skuDetailsmodal').modal('toggle');
-            $(document).find('#skuDetailsmodal').on('hidden.bs.modal', function () {
-                $('body').addClass('modal-open');
-            });
-        }else {
-            var w_megs = '';
-            if(!resp.ba_flag || !resp.df_flag) {
-                ba = '';
-                df = '';
-                // $('.alert-warning').text('Somethings went wrong please try again.');
-                if(!resp.ba_flag && !resp.df_flag) {
-                var mesge = 'In Business Arcade <strong style="color:#151615;">'+resp.bamissing_products.join()+'</strong> and in Dressfair <strong style="color:#151615;">'+resp.dfmissing_products.join()+'</strong>';
-                }
-                if(!resp.ba_flag && resp.df_flag) {
-                var mesge = 'In Business Arcade <strong style="color:#151615;">'+resp.bamissing_products.join()+'</strong>';
-                }
-                if(!resp.df_flag && resp.ba_flag) {
-                var mesge = 'In Dressfair <strong style="color:#151615;">'+resp.dfmissing_products.join()+'</strong>';
-                }
-                var is_are = (!resp.ba_flag && !resp.df_flag || (resp.bamissing_products.length > 1 || resp.dfmissing_products.length > 1)) ? 'are' : 'is';
-            
-                w_megs = mesge +' '+is_are+' not found, please make sure these products are listed or the sku '+is_are+' connected.';
-            }else {
-                var r_url = window.location.origin+'/oms/employee-performance/marketer/product/listing';
-                mesge = 'Please first list the products <strong style="color:#151615;">'+resp.oms_product_list.join()+'</strong> then complete duty, click on the link <br> <a href="'+r_url+'" style="background: white;">Click Here</a>';
-                w_megs = mesge;
-            }
-            
-            $('.alert-warning').css('display', 'block');
-            console.log(w_megs);
-            $('.alert-warning').html(w_megs);
-            if(!resp.ba_flag || !resp.df_flag) {
-                setTimeout(() => {
-                $('.alert-warning').css('display', 'none');
-                $('.alert-warning').text('');
-                }, 10000)
-            }
-        }
-        
-    });
-});
-$('.close-sku-second-modal-btn').on('click', function() {
-    $('#skuDetailsmodal').modal('toggle');
-    $(document).find('#skuDetailsmodal').on('hidden.bs.modal', function () {
-        console.log('hiding child modal');
-        $('body').addClass('modal-open');
-    });
-});
-
-$('.close-pending-chat-second-modal-btn').on('click', function() {
-    $('#pendingChatsModal').modal('toggle');
-    $(document).find('#pendingChatsModal').on('hidden.bs.modal', function () {
-        console.log('hiding child modal');
-        $('body').addClass('modal-open');
     });
 });
 
@@ -1486,17 +1279,11 @@ function closeEditCommentReplyForm(v) {
     $('.reply-text-section'+v).css('display', 'block');
     $('.edit-reply-form'+v).css('display', 'none');
 }
-function enableMove(option, duty) {
-    if(duty == 49 && option == 5 ) {
-        $('.btn-move').attr('disabled', true);
-        $('#skuDetailsmodal').modal({backdrop: "static"});
+function enableMove(option) {
+    if(option) {
+        $('.btn-move').attr('disabled', false);
     }else {
-        if(option) {
-            $('.btn-move').attr('disabled', false);
-        }else {
-            $('.btn-move').attr('disabled', true);
-        }
+        $('.btn-move').attr('disabled', true);
     }
-    
 }
 </script>

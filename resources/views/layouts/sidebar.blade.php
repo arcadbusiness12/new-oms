@@ -408,7 +408,7 @@
 
 
                         <li class="treeview @if(str_contains(Request::url(), '/performance') || strpos(Request::url(), '/Settings/chat/sale/order/report') !== false || strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false 
-                        || strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
+                        || strpos(Request::url(), '/custom/duty/report') !== false || strpos(Request::url(), '/designer/custom/duties/designer') !== false) active @endif">
                             <a href="#">
                                 <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -452,15 +452,15 @@
                                  </li>
                                 
                                 <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false || strpos(Request::url(), '/custom/duty/report') !== false 
-                                || strpos(Request::url(), '/designer/custom/duties') !== false) active @endif">
+                                || strpos(Request::url(), '/designer/custom/duties/designer') !== false) active @endif">
                                     <a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false) active @endif">
                                             <a href="{{route("employee-performance.designer.save-daily-work")}}">Daily Work</a>
                                         </li>
-                                        <li class="@if(strpos(Request::url(), '/designer/custom/duties') !== false) active @endif">
-                                            <a href="">Assigned Custom Duties</a>
+                                        <li class="@if(strpos(Request::url(), '/designer/custom/duties/designer') !== false) active @endif">
+                                            <a href="{{route('assigned.custom.duties.designer', 'designer')}}">Assigned Custom Duties</a>
                                         </li>
                                         <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
                                             <a href="">Custom Duties Report</a>

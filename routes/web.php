@@ -473,3 +473,8 @@ Route::post('/update/comment/reply', [App\Http\Controllers\Settings\CustomDuties
 Route::get('/change/duty/active/actin/{duty}/{action}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'changeDutyActiveAction'])->name('change.duty.active.action');
 Route::post('/save/duty/description/content', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveDutyDescription'])->name('save.duty.description');
 Route::get('/remove/duty/attachment/{attachment}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'removeAttachment'])->name('remove.duty.attachment');
+Route::get('/duty/delete/{duty}/{action}/{redirectUrl}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'destroyCustomDuty'])->name('destroy.custom.duty');
+Route::get('/get/user/irregular/duties/{user?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getUserIrregularDuties'])->name('get.user.irregular.duties');
+Route::get('/get/user/irregular/sub/duties/{user?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getIrregularSubDuties'])->name('get.user.irregular.sub.duties');
+Route::post('/save/assigned/custom/duty', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveAssignCustomDuty'])->name('save.custom.duties');
+Route::any('/marketer/custom/duties/{arg?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('update.assign.custom.duties');

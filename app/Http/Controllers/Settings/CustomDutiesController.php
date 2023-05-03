@@ -172,7 +172,7 @@ class CustomDutiesController extends Controller
                   'user' => $customDuty->user_id,
                   'date' => $customDuty->created_at,
               ];
-               createNotification('custom_duty', $enttity, $request->user);
+               // createNotification('custom_duty', $enttity, $request->user);
             }
             
          }
@@ -243,11 +243,12 @@ class CustomDutiesController extends Controller
       }elseif($action && $action == 'designer') {
          $userGroups = OmsUserGroupModel::whereIn('id', [13,14])->get();
          // dd($userGroups);
-         $directory = 'employee_performance.it_developer';
+         $directory = 'employeePeerformance.it_developer';
       }else {
          $userGroups = OmsUserGroupModel::all();
-         $directory = 'employee_performance.custom_duty'; 
+         $directory = 'employeePeerformance.custom_duty'; 
       }
+      // dd($userGroups);
       return view($directory.'.irregularDutyForm')->with(compact('userGroups', 'users', 'user', 'irregularDutyLists', 'action'));
      }
 
@@ -507,7 +508,7 @@ class CustomDutiesController extends Controller
                   'user' => $duty->user_id,
                   'date' => date('Y-m-d'),
               ];
-              createNotification('custom_duty', $enttity, $duty->user_id);
+            //   createNotification('custom_duty', $enttity, $duty->user_id);
             }
             $argc = $request->action_by; 
             return view('employee_performance.custom_duty.custom_duties_ajax')->with(compact('not_started','started','in_testing','completed', 'extensions', 'argc'));
@@ -811,7 +812,7 @@ class CustomDutiesController extends Controller
             'user' => session('user_id'),
             'date' => date('Y-m-d'),
         ];
-        createNotification('comment_reply', $enttity, $u);
+      //   createNotification('comment_reply', $enttity, $u);
          return response()->json([
             'status' => true,
              'file' => $filee,
