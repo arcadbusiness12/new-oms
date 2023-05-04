@@ -22,6 +22,7 @@
     margin-top: -11px;
     padding: 11px;
     margin-bottom: 4px;
+    margin: -10px;
   }
   .light-red{
     background: #ff00002b;
@@ -316,7 +317,7 @@
     <div class="modal-dialog modal-lg" style="width: 60%">
       <div class="modal-content" >
         <div class="modal-header text-center">
-          <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;">Product Details <span id="changed-group" style="color: green;"></span></h5>
+          <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;">Product Details <span id="changed-group" style="color: green;"></span></h5>
           <button type="button" class="close close-modal close-product-details-modale" aria-label="Close">
              <span aria-hidden="true">&times;</span>
           </button>
