@@ -266,7 +266,7 @@
                                                     @endif
 
                                                   @endforeach
-                                                  <td class="argn-popup-td posting-status" style="vertical-align: middle; width:7% !important">
+                                                  <td class="argn-popup-td posting-status" style="vertical-align: middle; width:7% !important;border-right: 1px solid darkgray;">
                                                     <center>
                                                   
                                                   @if($exist)
