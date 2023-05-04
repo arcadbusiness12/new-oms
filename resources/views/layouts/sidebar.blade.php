@@ -452,9 +452,9 @@
                                  </li>
                                 
                                 <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false || strpos(Request::url(), '/custom/duty/report') !== false 
-                                || strpos(Request::url(), '/designer/custom/duties/designer') !== false) active @endif">
+                                || strpos(Request::url(), '/designer/custom/duties/designer') !== false || strpos(Request::url(), '/performance/employee-performance/designer/new/product/image') !== false) active @endif">
                                     <a href="#"><i class="icon icon-picture_in_picture"></i>Designer<i
-                                        class=" icon-angle-left  pull-right"></i></a>
+                                        class=" icon-angle-left pull-right"></i></a>
                                     <ul class="treeview-menu">
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/save-daily-work') !== false) active @endif">
                                             <a href="{{route("employee-performance.designer.save-daily-work")}}">Daily Work</a>
@@ -465,7 +465,8 @@
                                         <li class="@if(strpos(Request::url(), '/custom/duty/report') !== false) active @endif">
                                             <a href="{{route('custom.duties.report')}}">Custom Duties Report</a>
                                         </li>
-                                        <li><a href="">New Product Image</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/employee-performance/designer/new/product/image') !== false) active @endif">
+                                            <a href="{{route('new.designer.product.image')}}">New Product Image</a>
                                         </li>
                                     </ul>
                                 </li>

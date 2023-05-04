@@ -32,7 +32,7 @@
   .light-green{
     background:#bde3bd21;
   }
-  
+
   .tab-links a.active {
     color:green;
     border:1px solid green;
@@ -62,6 +62,7 @@
     animation: blink 1s;
     animation-iteration-count: 5;
 }
+
 @keyframes blink { 50% { border-color:#fff ; }  }
 </style>
 <section class="content">
@@ -346,22 +347,7 @@
     console.log(left);
     $('.wrapper').scrollLeft(3225);
   });
-  {{-- $(document).on('mouseover','.posting-status',function(){
-    console.log("fired");
-    $(this).find('span').show();
-  })
-  $(document).on('mouseout','.posting-status',function(){
-    console.log("fired");
-    $(this).find('span').hide();
-  }) --}}
-  function showOption(uid){
-    //$('#option'+uid).show();
-    console.log(uid);
-  }
-  function hideOption(uid){
-    console.log(uid);
-    //$('#option'+uid).hide();
-  }
+  
   function showUserProgress(user_id){
     console.log();
     $('.all-user-progress').hide();
@@ -369,9 +355,7 @@
     $('.all-user-progress-button').removeClass('active');
     $('#sale_person_name'+user_id).addClass('active');
   }
-  {{--  function confirmDailyProgress(user_id){
-    //console.log();
-  }  --}}
+  
   $(document).ready(function() {
     $("#status_published").select2({
         placeholder: "-Select Product-",
@@ -385,7 +369,6 @@
   });
 
 function viewProductDetails(group, name) {
-  console.log(group+" "+name);
   $('#new_product_detail_modal').modal('toggle');
   $('.loader-tag').css('display', 'block');
   if(group) {
@@ -394,15 +377,12 @@ function viewProductDetails(group, name) {
         type: "GET",
         cache: false,
         success: function(resp) {
-          console.log(resp);
           if(resp.status) {
-
           $('.loader-tag').css('display', 'none');
             var html = '';
             html += '<div class="col-xs-12">';
             resp.products.forEach(function callback(v, k) {
               var cl = (v.designed == 0) ? 'alerts-border' : '';
-              console.log(v.sku);
               var url = '';
               url = APP_URL + "/uploads/inventory_products/"
               url = url + v.image;
@@ -418,17 +398,7 @@ function viewProductDetails(group, name) {
             });
             html += '</div>';
             $('.detail-div').html(html);
-            // $('.alert-success').css('display', 'block');
-            // $('.alert-success').text(resp.mesg);
-            // $('.post-title'+id).addClass(bgColor);
-            // $('.btn-'+action+id).remove();
-            // $('.btn-'+action+'-icon'+id).html('<i class="fa fa-check-circle green success-fs " title="'+action+'"></i>');
-            // $('.btn-'+action).prop('disabled', false);
-
-            // setTimeout(() => {
-            //   $('.alert-success').css('display', 'none');
-            //   $('.alert-success').text('');
-            // }, 4000)
+            
           }else {
             $('.alert-warning').css('display', 'block');
             $('.alert-warning').text('Somethings went wrong please try again.');
@@ -443,42 +413,40 @@ function viewProductDetails(group, name) {
   }
 }
  function postOrDesign(id, action) {
-    console.log(action);
     var middelText = '';
     var btn = '';
     $('.btn-designed'+id).html('<i class="fa fa-spin fa-circle-o-notch"></i>');
     $('.btn-designed'+id).prop('disabled', true);
     $('.btn-designed').prop('disabled', true);
     if(id) {
-      $.ajax({
-        url: "{{url('/performance/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
-        type: "GET",
-        cache: false,
-        success: function(resp) {
-          console.log(resp);
-          if(resp.status) {
-            $('.alert-success').css('display', 'block');
-            $('.alert-success').text(resp.mesg);
-            $('.post-title'+id).addClass('light-green');
-            $('.btn-designed'+id).remove();
-            $('.btn-designed-icon'+id).html('<i class="fa fa-check-circle green success-fs " title="'+action+'"></i>');
-            $('.btn-designed').prop('disabled', false);
+      // $.ajax({
+      //   url: "{{url('/performance/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
+      //   type: "GET",
+      //   cache: false,
+      //   success: function(resp) {
+      //     if(resp.status) {
+      //       $('.alert-success').css('display', 'block');
+      //       $('.alert-success').text(resp.mesg);
+      //       $('.post-title'+id).addClass('light-green');
+      //       $('.btn-designed'+id).remove();
+      //       $('.btn-designed-icon'+id).html('<i class="fa fa-check-circle green success-fs " title="'+action+'"></i>');
+      //       $('.btn-designed').prop('disabled', false);
 
-            setTimeout(() => {
-              $('.alert-success').css('display', 'none');
-              $('.alert-success').text('');
-            }, 4000)
-          }else {
-            $('.alert-warning').css('display', 'block');
-            $('.alert-warning').text('Somethings went wrong please try again.');
-            setTimeout(() => {
-              $('.alert-warning').css('display', 'none');
-              $('.alert-warning').text('');
-            }, 4000)
-          }
+      //       setTimeout(() => {
+      //         $('.alert-success').css('display', 'none');
+      //         $('.alert-success').text('');
+      //       }, 4000)
+      //     }else {
+      //       $('.alert-warning').css('display', 'block');
+      //       $('.alert-warning').text('Somethings went wrong please try again.');
+      //       setTimeout(() => {
+      //         $('.alert-warning').css('display', 'none');
+      //         $('.alert-warning').text('');
+      //       }, 4000)
+      //     }
           
-        }
-      });
+      //   }
+      // });
     }
   }
 </script> 

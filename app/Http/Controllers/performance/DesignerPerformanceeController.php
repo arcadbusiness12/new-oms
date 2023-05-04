@@ -423,7 +423,6 @@ class DesignerPerformanceeController extends Controller
 
 public function newProductImage(Request $request, $action = null) {
   $whereCluase = [];
-  // dd($action);
   $active_tab = '';
   if(session('role') != 'ADMIN') {
     $whereCluase[] = array('npi.user_id', '=', session('user_id'));
@@ -479,13 +478,13 @@ public function newProductImage(Request $request, $action = null) {
       }
       
     }
-    // dd($previousMonths);
+    
     $currentMonth = date('Y-m-d');
     $previousMonth = date('Y-m-01', strtotime('-1 month', time()));
     // echo $new_arrivals_data['2021-11-25'][0] ;
-    // dd($new_arrivals_data);
-   $days = $this->calculate_week_Days($today, $list_date);
     
+   $days = $this->calculate_week_Days($today, $list_date);
+   
   return view(self::VIEW_DIR.'.new_product_image', compact('new_arrivals','days','new_arrivals_data','row_num','currentMonth','previousMonth','previousMonths','active_tab','action'));
 }
 
