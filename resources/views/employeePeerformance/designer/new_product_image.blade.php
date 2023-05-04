@@ -317,7 +317,7 @@
       <div class="modal-content" >
         <div class="modal-header text-center">
           <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;">Product Details <span id="changed-group" style="color: green;"></span></h5>
-          <button type="button" class="close close-modal" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close close-bs-modal" data-dismiss="modal" aria-label="Close">
              <span aria-hidden="true">&times;</span>
           </button>
           <span id="top-title"></span>
@@ -419,34 +419,34 @@ function viewProductDetails(group, name) {
     $('.btn-designed'+id).prop('disabled', true);
     $('.btn-designed').prop('disabled', true);
     if(id) {
-      // $.ajax({
-      //   url: "{{url('/performance/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
-      //   type: "GET",
-      //   cache: false,
-      //   success: function(resp) {
-      //     if(resp.status) {
-      //       $('.alert-success').css('display', 'block');
-      //       $('.alert-success').text(resp.mesg);
-      //       $('.post-title'+id).addClass('light-green');
-      //       $('.btn-designed'+id).remove();
-      //       $('.btn-designed-icon'+id).html('<i class="fa fa-check-circle green success-fs " title="'+action+'"></i>');
-      //       $('.btn-designed').prop('disabled', false);
+      $.ajax({
+        url: "{{url('/performance/employee-performance/designer/design/new/arrival/product/image')}}/"+ id,
+        type: "GET",
+        cache: false,
+        success: function(resp) {
+          if(resp.status) {
+            $('.alert-success').css('display', 'block');
+            $('.alert-success').text(resp.mesg);
+            $('.post-title'+id).addClass('light-green');
+            $('.btn-designed'+id).remove();
+            $('.btn-designed-icon'+id).html('<i class="fa fa-check-circle green success-fs " title="'+action+'"></i>');
+            $('.btn-designed').prop('disabled', false);
 
-      //       setTimeout(() => {
-      //         $('.alert-success').css('display', 'none');
-      //         $('.alert-success').text('');
-      //       }, 4000)
-      //     }else {
-      //       $('.alert-warning').css('display', 'block');
-      //       $('.alert-warning').text('Somethings went wrong please try again.');
-      //       setTimeout(() => {
-      //         $('.alert-warning').css('display', 'none');
-      //         $('.alert-warning').text('');
-      //       }, 4000)
-      //     }
+            setTimeout(() => {
+              $('.alert-success').css('display', 'none');
+              $('.alert-success').text('');
+            }, 4000)
+          }else {
+            $('.alert-warning').css('display', 'block');
+            $('.alert-warning').text('Somethings went wrong please try again.');
+            setTimeout(() => {
+              $('.alert-warning').css('display', 'none');
+              $('.alert-warning').text('');
+            }, 4000)
+          }
           
-      //   }
-      // });
+        }
+      });
     }
   }
 </script> 
