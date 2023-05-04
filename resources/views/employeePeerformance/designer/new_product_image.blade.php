@@ -30,7 +30,7 @@
     background:#ffa5003d;
   }
   .light-green{
-    background:#bde3bd21;
+    background:#8ace8a21 !important;
   }
 
   .tab-links a.active {
@@ -317,7 +317,7 @@
       <div class="modal-content" >
         <div class="modal-header text-center">
           <h5 class="modal-title" id="exampleModalCenterTitle" style="display: inline-block;margin-top:18px;">Product Details <span id="changed-group" style="color: green;"></span></h5>
-          <button type="button" class="close close-bs-modal" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close close-modal close-product-details-modale" aria-label="Close">
              <span aria-hidden="true">&times;</span>
           </button>
           <span id="top-title"></span>
@@ -347,7 +347,9 @@
     console.log(left);
     $('.wrapper').scrollLeft(3225);
   });
-  
+  $('.close-product-details-modale').on('click', function() {
+    $('#new_product_detail_modal').modal('toggle');
+  })
   function showUserProgress(user_id){
     console.log();
     $('.all-user-progress').hide();
