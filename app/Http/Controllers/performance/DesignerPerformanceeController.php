@@ -471,8 +471,8 @@ public function newProductImage(Request $request, $action = null) {
     for ($i = 0; $i <= 5; $i++) {
       if(date('Y-m-01', strtotime(-$i . 'month')) != date('Y-m-01')) {
         $m = [
-          'name' => date('M-Y', strtotime(+$i . 'month')),
-          'month' => date('Y-m-01', strtotime(+$i . 'month'))
+          'name' => date('M-Y', strtotime(-$i . 'month')),
+          'month' => date('Y-m-01', strtotime(-$i . 'month'))
         ];
         array_push($previousMonths, $m);
       }
