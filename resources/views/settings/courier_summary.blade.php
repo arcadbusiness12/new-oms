@@ -20,6 +20,15 @@
   .font-red{
     color: red;
   }
+  .btn-danger {
+    background: #ec4152;
+  }
+  .btn-success {
+    background: #85f14c;
+  }
+  .btn-warning {
+    background: #f3c547;
+  }
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
@@ -262,6 +271,13 @@
 <link href="{{URL::asset('assets/plugins/sweetalert/sweetalert.css')}}" rel="stylesheet" />
 <script defer="defer" src="{{URL::asset('assets/plugins/sweetalert/sweetalert.min.js')}}"></script>
 <script>
+  $(document).ready(function() {
+    var input = <?php echo count($old_input) ?>
+    if(input == 0) {
+      $('#search_filter').click();
+    }
+    
+  });
   $(document).on('click','.more_details',function(){
     var element_html = $(this).html();
     //$('.user_det').hide();
