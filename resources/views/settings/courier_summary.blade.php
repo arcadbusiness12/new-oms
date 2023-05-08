@@ -21,13 +21,13 @@
     color: red;
   }
   .btn-danger {
-    background: #ec4152;
+    background: #ec4152 !important;
   }
   .btn-success {
-    background: #85f14c;
+    background: #85f14c !important;
   }
   .btn-warning {
-    background: #f3c547;
+    background: #f3c547 !important;
   }
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
@@ -272,7 +272,7 @@
 <script defer="defer" src="{{URL::asset('assets/plugins/sweetalert/sweetalert.min.js')}}"></script>
 <script>
   $(document).ready(function() {
-    var input = <?php echo count($old_input) ?>
+    var input = <?php echo count($old_input) ?>;
     if(input == 0) {
       $('#search_filter').click();
     }
