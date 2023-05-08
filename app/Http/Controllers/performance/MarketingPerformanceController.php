@@ -399,6 +399,7 @@ class MarketingPerformanceController extends Controller
   }
   
   public function saveSmartLookCustomDuty(Request $request) {
+    // dd($request->all());
     $this->validate($request, [
       'smart_look_title' => 'required',
       'link' => 'required',
@@ -417,8 +418,14 @@ class MarketingPerformanceController extends Controller
    if($request->user_group) {
      $ug = $request->user_group;
    }else {
-     $g = OmsUserModel::select('user_group_id')->find(session('user_id'));
-     $ug = $g->user_group_id;
+    if($request->action == 'web') {
+      $ug = 18;
+    }else if($request->action == 'app') {
+      $ug = 19;
+    }else {
+      $g = OmsUserModel::select('user_group_id')->find(session('user_id'));
+      $ug = $g->user_group_id;
+    }
    }
    $smart_look = new SmartLookModel();
    $smart_look->title = $request->smart_look_title;
@@ -426,7 +433,7 @@ class MarketingPerformanceController extends Controller
    $smart_look->link = $request->link;
    $smart_look->user_group_id = $ug;
    $smart_look->user_id = session('user_id');
-   $smart_look->created_at = date('Y-m-d');
+   $smart_look->create_at = date('Y-m-d');
    if($request->date_event) {
     $smart_look->event_date = $request->date_event;
    }

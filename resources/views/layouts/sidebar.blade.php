@@ -409,7 +409,7 @@
 
                         <li class="treeview @if(str_contains(Request::url(), '/performance') || strpos(Request::url(), '/Settings/chat/sale/order/report') !== false || strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false 
                         || strpos(Request::url(), '/custom/duty/report') !== false || strpos(Request::url(), '/designer/custom/duties/designer') !== false 
-                        || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
+                        || strpos(Request::url(), '/web/developer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
                         || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false 
                         || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
                             <a href="#">
@@ -476,7 +476,7 @@
 
                                 <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/R&D') !== false 
                                 || strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false 
-                                || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
+                                || strpos(Request::url(), '/web/developer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
                                 || strpos(Request::url(), '/performance/employee-performance/app/developer/smart/look') !== false 
                                 || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
                                     <a href="#"><i class="icon icon-document-code2"></i>IT Team<i
@@ -485,11 +485,11 @@
 
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/R&D') !== false 
                                         || strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false 
-                                        || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false) active @endif">
+                                        || strpos(Request::url(), '/web/developer/custom/duties/w_developer') !== false) active @endif">
                                             <a href="#"><i class="icon icon-document-code"></i>Web Developer<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
-                                            <li class="@if(strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false) active @endif">
+                                            <li class="@if(strpos(Request::url(), '/web/developer/custom/duties/w_developer') !== false) active @endif">
                                                 <a href="{{route('assigned.custom.duties.w_developer', 'w_developer')}}">Assigned Custom Duties</a>
                                             </li>
                                             <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false) active @endif">
@@ -537,7 +537,7 @@
                                         <li><a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                             <ul class="treeview-menu">
-                                                <li><a href="panel-page-users.html">Update & Design</a>
+                                                <li><a href="{{route('update.assign.custom.duties', 'marketer')}}">Update & Design</a>
                                                 </li>
 
                                             </ul>

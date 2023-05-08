@@ -104,6 +104,7 @@ use Symfony\Component\VarDumper\Cloner\Data;
                                 <div class="form-group form-float">
                                     <div class="form-line">
                                         <input type="hidden" name="id" value="{{@$duty_details['id']}}" class="form-control" autocomplete="off" required />
+                                        <input type="hidden" name="action" value="{{@$action}}">
                                         <label class="form-label">Link</label>
                                         <input type="text" name="link" value="<?php echo @$duty_details['title'] ?>" class="form-control" autocomplete="off" required />
                                     </div>

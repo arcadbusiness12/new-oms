@@ -24,7 +24,7 @@
     background: #ec4152 !important;
   }
   .btn-success {
-    background: #85f14c !important;
+    background: green !important;
   }
   .btn-warning {
     background: #f3c547 !important;

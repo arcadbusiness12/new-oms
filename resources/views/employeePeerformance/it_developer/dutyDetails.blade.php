@@ -328,7 +328,7 @@ a{
                             @foreach($details['comments'] as $k => $comment)
                             <div class="row attachment-row$comment['id'] comment-list">
                                 <div class="row">
-                                    <div class="form-line col-sm-6 commented_user{{$comment['id']}}">
+                                    <div class="form-line col-sm-8 commented_user{{$comment['id']}}">
                                     <a href='javascript:;' ><h4 style="display:inline-block">{{ucwords($comment->user->username)}} {{ucwords($comment->user->lastname)}}</h4></a> <span class="comment-time">{{date('d M', strtotime($comment->created_at))}} {{date('h:i A', strtotime($comment->created_at))}}</span>
                                     @if($comment->user_id == session('user_id')) 
                                     <!-- - <a href="javascript:;" onclick="openEditCommentForm('{{$comment->id}}{{$k}}')"><span>Edit</span></a> -->
@@ -378,7 +378,7 @@ a{
                                 @foreach($comment['replies'] as $k => $reply)
                                  <div class="row attachment-row{{$reply->id}} comment-reply-list">
                                     <div class="row">
-                                        <div class="form-line col-sm-6 commented_user{{$reply->id}}">
+                                        <div class="form-line col-sm-8 commented_user{{$reply->id}}">
                                         <a href='javascript:;' ><h5 style="display:inline-block">{{ucwords($reply->user->username)}} {{ucwords($reply->user->lastname)}}</h5></a> <span class="comment-time">{{date('d M', strtotime($reply->created_at))}} {{date('h:i A', strtotime($reply->created_at))}}</span>
                                         @if($reply->user_id == session('user_id')) 
                                         <!-- - <a href="javascript:;" onclick="openEditCommentReplyForm('{{$reply->id}}')"><span>Edit</span></a>  -->
@@ -425,7 +425,7 @@ a{
                                         @foreach($reply['childs'] as $k => $child_reply)
                                         <div class="row attachment-row{{$child_reply->id}} comment-reply-to-reply-list">
                                             <div class="row">
-                                                <div class="form-line col-sm-6">
+                                                <div class="form-line col-sm-8">
                                                 <a href='javascript:;' ><h5 style="display:inline-block">{{ucwords($child_reply->user->username)}} {{ucwords($child_reply->user->lastname)}}</h5></a> <span class="comment-time">{{date('d M', strtotime($child_reply->created_at))}} {{date('h:i A', strtotime($child_reply->created_at))}}</span>
                                                 @if($child_reply->user_id == session('user_id')) 
                                                 <!-- - <a href="javascript:;" onclick="openEditCommentReplyForm('{{$child_reply->id}}')"><span>Edit</span></a> -->
@@ -971,7 +971,7 @@ function checkAttachmentType(data, extensions, image_extensions) {
 function currentComment(comment, user, file, date, time) {
     var html = '<div class="row attachment-row comment-list">'+'\n'+
                                 '<div class="row">'+'\n'+
-                                    '<div class="form-line col-sm-6">'+'\n'+
+                                    '<div class="form-line col-sm-8">'+'\n'+
                                     '<a href="javascript:;" ><h4 style="display:inline-block">'+user+'</h4></a> <span class="comment-time">'+date+' '+time+'</span>'+'\n'+
                                     '</div>'+'\n'+
                                 '</div>'+'\n'+
@@ -1040,7 +1040,7 @@ function currentComment(comment, user, file, date, time) {
      }
     var html = '<div class="row attachment-row'+data.comment.id+' comment-list '+per_class+'">'+'\n'+
                                 '<div class="row">'+'\n'+
-                                    '<div class="form-line col-sm-6">'+'\n'+
+                                    '<div class="form-line col-sm-8">'+'\n'+
                                     // '<a href="javascript:;" ><h'+h_tag+' style="display:inline-block">'+data.user+'</h'+h_tag+'></a> <span class="comment-time">'+month+' '+time+ link+'</div>'+'\n'+
                                     '<a href="javascript:;" ><h'+h_tag+' style="display:inline-block">'+data.user+'</h'+h_tag+'></a> <span class="comment-time">'+month+' '+time+'</div>'+'\n'+
                                 '</div>'+'\n'+
@@ -1161,7 +1161,7 @@ function attachmentcomments(file) {
                     $('.modal-content-loader').css('display', 'block');
                 },
                 complete: function() {
-                    $('.modal-content-loader').css('display', 'none');
+                    // $('.modal-content-loader').css('display', 'none');
                 },
                 error: function(error) {
                     console.log(error);
@@ -1169,7 +1169,7 @@ function attachmentcomments(file) {
             }).then(function(resp) {
                 console.log(resp);
                 
-                $('.modal-content-loader').css('display', 'none');
+                // $('.modal-content-loader').css('display', 'none');
                 $('.attachment-details').html(resp);
             });
 }

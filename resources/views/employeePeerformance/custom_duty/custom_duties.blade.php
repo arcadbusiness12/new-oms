@@ -84,6 +84,7 @@ a:hover{
     background-color: green;
     position: absolute;
     border-radius:35%;
+    font-weight: 600 !important;
 }
 .badge-expire {
     background-color: red;

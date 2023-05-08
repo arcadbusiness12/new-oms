@@ -30,6 +30,7 @@
     }
     .modal-content-loader {
         margin-left: 265px !important;
+        padding-left: 85px;
     }
     .modal .modal-content .modal-body {
     padding: 2px 0px;
@@ -631,7 +632,11 @@ a:hover{
                     <div class="modal-body">
                     {{-- <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> --}}
 
-                        <div class="modal-content-loader"></div>
+                        <div class="col-12 modal-content-loader">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                              </div>
+                        </div>
                         <div class="duty-details"></div>
                        
                     <div class="modal-footer">
@@ -778,7 +783,6 @@ a:hover{
                     console.log(error);
                 }
             }).then(function(resp) {
-                console.log(resp);
                 
                 $('.modal-content-loader').css('display', 'none');
              $('.duty-details').html(resp);
