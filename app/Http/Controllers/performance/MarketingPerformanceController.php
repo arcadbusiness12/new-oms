@@ -19,8 +19,13 @@ use App\Providers\Reson8SmsServiceProvider;
 use App\Models\Oms\AdsTypeModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\DailyAdResult;
+use App\Models\Oms\EmployeeCustomDutyFileModel;
+use App\Models\Oms\EmployeeCustomeDutiesModel;
+use App\Models\Oms\OmsUserGroupModel;
+use App\Models\Oms\SmartLookModel;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Support\Facades\Storage;
 
 class MarketingPerformanceController extends Controller
 {
@@ -385,5 +390,104 @@ class MarketingPerformanceController extends Controller
         'status' => true
       ]);
     }
+  }
+
+  public function smartLookForm() {
+    $user_group = OmsUserGroupModel::all();
+    $dutyLists = []; 
+    return view(SELF::VIEW_DIR.'.marketting.smart_look_form')->with(compact('user_group','dutyLists'));
+  }
+  
+  public function saveSmartLookCustomDuty(Request $request) {
+    $this->validate($request, [
+      'smart_look_title' => 'required',
+      'link' => 'required',
+   ]);
+   if($request->assign_to_developer) {
+    $this->validate($request, [
+      'user' => 'required|numeric',
+      // 'duty' => 'required|numeric',
+      'title' => 'required',
+      // 'quantity' => 'required',
+      'date_from' => 'required|date',
+      'date_to' => 'required|date',
+      'date_event' => 'required|date',
+   ]);
+   }
+   if($request->user_group) {
+     $ug = $request->user_group;
+   }else {
+     $g = OmsUserModel::select('user_group_id')->find(session('user_id'));
+     $ug = $g->user_group_id;
+   }
+   $smart_look = new SmartLookModel();
+   $smart_look->title = $request->smart_look_title;
+   $smart_look->description = $request->smart_look_description;
+   $smart_look->link = $request->link;
+   $smart_look->user_group_id = $ug;
+   $smart_look->user_id = session('user_id');
+   $smart_look->created_at = date('Y-m-d');
+   if($request->date_event) {
+    $smart_look->event_date = $request->date_event;
+   }
+   $smart_look->is_emergency = $request->is_emergency ? 1 : 0;
+   if($request->assign_to_developer) {
+      $smart_look->assigned_to = $request->user;
+      $smart_look->progress = 0;
+   }
+   if($smart_look->save() && $request->assign_to_developer) {
+    $customDuty = ($request->id) ? EmployeeCustomeDutiesModel::find($request->id) : new EmployeeCustomeDutiesModel();
+     $customDuty->user_id = $request->user;
+     $customDuty->user_group_id = $request->user_group;
+     $customDuty->duty_list_id = $request->duty ? $request->duty : 0;
+     $customDuty->title = $request->title;
+    //  $customDuty->quantity = $request->quantity;
+     $customDuty->description = $request->description;
+     $customDuty->start_date = $request->date_from;
+     $customDuty->end_date = $request->date_to;
+     $customDuty->event_date = $request->date_event;
+     $customDuty->is_close = $request->is_close;
+     $customDuty->is_regular = $request->irregular;
+     $customDuty->smart_look_id = $smart_look->id;
+     $customDuty->assigned_by = session('user_id');
+     $customDuty->is_emergency = $request->is_emergency ? 1 : 0;
+     
+     if($customDuty->save()) {
+        if($request->hasFile('file')) {
+           $files = $request->file;
+           // EmployeeCustomDutyFileModel::where('custom_duty_id',$customDuty->id)->delete();
+           $i = 0;
+            foreach($files as $file) {
+                 // dd($file->originalName());
+                 $filee = new EmployeeCustomDutyFileModel();
+                 $filePath = Storage::putFile('public/uploads/custom_duties_file', $file);
+                 $filee->custom_duty_id = $customDuty->id;
+                 $filee->file = $filePath;
+                 $filee->extension = $file->extension();
+                 $filee->save();
+                 $i++;
+            }
+        }
+        if(!$request->id) {
+           $enttity = [
+              'id' => $customDuty->id,
+              'title' => $customDuty->title,
+              'user' => $customDuty->user_id,
+              'date' => $customDuty->created_at,
+          ];
+        }
+        
+     }
+   }
+     if($request->user_type) {
+       if($request->action == 'web') {
+        return redirect()->route('developerweb.smart.look', [$request->user_type, $request->action])->with('message', 'Smart look created successfully.');
+       }else {
+        return redirect()->route('employee-performance.app.developer.smart.look', [$request->user_type, $request->action])->with('message', 'Smart look created successfully.');
+       }
+      
+     }else {
+      return redirect()->route('employee-performance.smart.look.form')->with('message', 'Duty assigned successfully.');
+     }
   }
 }

@@ -28,6 +28,7 @@ use App\Http\Controllers\performance\SalePerformancaeController;
 use App\Http\Controllers\performance\StockPerformanceController;
 use App\Http\Controllers\performance\OperationPerformanceController;
 use App\Http\Controllers\performance\DesignerPerformanceeController;
+use App\Http\Controllers\performance\ItController;
 use App\Http\Controllers\Settings\CommissionController;
 use App\Http\Controllers\ShippingProvider\DiliveryPanda;
 use App\Http\Controllers\ShippingProvider\JTCourier;
@@ -423,6 +424,8 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::post('/save/paid/post/remark/', 'saveRemark')->name('save.paid.post.remark');
         Route::get('/change/status/paid/ad/setting/{setting}/{status}', 'changePaidAdsSettingStatus')->name('change.status.paid.ad.setting');
         Route::any('/employee-performance/operation/commission/report', 'OperationPerformanceController@commissionReport')->name('employee-performance.commission.report');
+        Route::post('/save/smart/look/custom/duty', 'saveSmartLookCustomDuty')->name('save.smart.look.duties');
+        Route::get('/employee-performance/smart/look/form', 'smartLookForm')->name('employee-performance.smart.look.form');
     });
     
     Route::controller(StockPerformanceController::class)->group(function() {
@@ -444,6 +447,15 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::get('/employee-performance/designer/new/product/image/{action?}', 'newProductImage')->name('new.designer.product.image');
         Route::get('/view/new/arrival/product/detail/{group}', 'detailOfNewArrivalProduct')->name('detail.of.new.arrival.product');
         Route::get('/employee-performance/designer/design/new/arrival/product/image/{id}', 'designNewArrivalProductImage')->name('design.new.arrival.product.image');
+    });
+    Route::controller(ItController::class)->group(function() {
+        Route::get('/employee-performance/web/developer/smart/look/{user?}/{action?}', 'smartLook')->name('developerweb.smart.look');
+        Route::get('/employee-performance/app/developer/smart/look/{user?}/{action?}', 'smartLook')->name('employee-performance.app.developer.smart.look');
+        Route::get('/employee-performance/developer/smart/look/form/{user?}/{action?}', 'smartLookForm')->name('employee-performance.itdeveloper.smart.look.form');
+        Route::get('/employee-performance/web/developer/R&D/{user?}/{action?}', 'RAndD')->name('webdeveloper.R&D');
+        Route::get('/employee-performance/webdeveloper/R&D/{user?}/{action?}', 'RAndD')->name('employee-performance.app.developer.R&D');
+        Route::get('/employee-performance/developer/rAndD/form/{user?}/{action?}', 'rAndDForm')->name('employee-performance.itdeveloper.rAndD.form');
+        Route::post('/save/rAndD/form', 'saveRAndDRecord')->name('save.rAndD.record');
     });
 });
 
@@ -468,6 +480,7 @@ Route::post('/save/attachment/comment', [App\Http\Controllers\Settings\CustomDut
 Route::post('/save/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveCommentReply'])->name('save.duty.comment.reply');
 Route::get('/duty/attachment/comments/{file}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getAttachmentComment'])->name('get.attachment.comments');
 Route::get('/check/pending/desginer/duties/end/date', [App\Http\Controllers\Landing\LandingController::class, 'checkDesgnerPendingDutiesEndDate'])->name('check.pending.designer.duties.end.date');
+Route::get('/admin/request/response/{notif}/{time}/{action}/{request}', [App\Http\Controllers\Landing\LandingController::class, 'adminRequestResponse'])->name('admin.request.response');
 Route::get('/count/duty/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'countOfDutyComment'])->name('count.duty.comment');
 Route::post('/update/comment', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateComment'])->name('update.duty.comment');
 Route::post('/update/comment/reply', [App\Http\Controllers\Settings\CustomDutiesController::class, 'updateCommentReply'])->name('update.duty.comment.reply');
@@ -480,3 +493,7 @@ Route::get('/get/user/irregular/sub/duties/{user?}', [App\Http\Controllers\Setti
 Route::post('/save/assigned/custom/duty', [App\Http\Controllers\Settings\CustomDutiesController::class, 'saveAssignCustomDuty'])->name('save.custom.duties');
 Route::any('/marketer/custom/duties/{arg?}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('update.assign.custom.duties');
 Route::post('/changes/duty/status', [App\Http\Controllers\Settings\CustomDutiesController::class, 'changeDutyStatus'])->name('change.duty.status');
+Route::get('/web/developer/custom/duties/{arg}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('assigned.custom.duties.w_developer');
+Route::get('/app/developer/custom/duties/{arg}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('assigned.custom.duties.a_developer');
+Route::get('/get/group/users/{user_group}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getGroupUsers'])->name('get.group.users');
+Route::get('/admin/approve/request/response/{id}/{status}/{user}/{action}', [App\Http\Controllers\performance\ItController::class, 'adminApproveRequestResponse'])->name('admin.approve.request.response');

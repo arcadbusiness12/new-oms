@@ -216,7 +216,7 @@ a{
                             @foreach($details['attachmentFiles'] as $k => $file)
                             <div class="row attachment-row{{$file->id}}">
                             @if(in_array($file->extension, $extensions))
-                                @php $file_col = 'col-sm-3'; $comment_col = 'col-sm-9'; $cover_text = true; $comment_left = ''; @endphp
+                                @php $file_col = 'col-sm-4'; $comment_col = '8'; $cover_text = true; $comment_left = ''; @endphp
                             @else
                                 @php $file_col = 'col-sm-5'; $comment_col = 'col-sm-7'; $cover_text = false; $comment_left = 'left-padding' @endphp
                             @endif
@@ -491,7 +491,7 @@ a{
                                                 </div>
                                                 <div class="row" style="padding-top: 15px;">
                                                     
-                                                    <div class="col-sm-9">
+                                                    <div class="col-sm-8">
                                                         <div class="input-group">
                                                                 <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$reply['id']}}{{$k}}"
                                                                 onchange="$('#upload-file-info{{$reply['id']}}{{$k}}').html(
@@ -500,7 +500,7 @@ a{
                                                             <span class="labe choose_file{{$reply['id']}}{{$k}}" id="upload-file-info{{$reply['id']}}{{$k}}"></span>
                                                     </div>
                                                     </div>
-                                                    <div class="col-sm-3 add-btn">
+                                                    <div class="col-sm-4 add-btn">
                                                         <button type="button" class="btn btn-success reply-save{{$reply['id']}}{{$k}}" id="reply-save{{$reply['id']}}{{$k}}"  onclick="saveReply('{{$reply['id']}}', '{{$k}}', 1)">Reply</button>
                                                         <button type="button" class="btn btn-secondary close-form" onclick="closecommentReplyForm('{{$reply['id']}}', '{{$k}}')">X</button>
 
@@ -532,7 +532,7 @@ a{
                                         </div>
                                         <div class="row" style="padding-top: 15px;">
                                             
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-8">
                                                 <div class="input-group">
                                                         <input type="file" name="comment_reply_file" id="attachment-input" class="form-control comment-reply-file{{$comment['id']}}{{$k}}"
                                                         onchange="$('#upload-file-info{{$comment['id']}}{{$k}}').html(
@@ -541,7 +541,7 @@ a{
                                                     <span class="labe choose_file{{$comment['id']}}{{$k}}" id="upload-file-info{{$comment['id']}}{{$k}}"></span>
                                             </div>
                                             </div>
-                                            <div class="col-sm-3 add-btn">
+                                            <div class="col-sm-4 add-btn">
                                                 <button type="button" class="btn btn-success reply-save{{$comment['id']}}{{$k}}" id="reply-save{{$comment['id']}}{{$k}}"  onclick="saveReply('{{$comment['id']}}', '{{$k}}')">Reply</button>
                                                 <button type="button" class="btn btn-secondary close-form" onclick="closecommentReplyForm('{{$comment['id']}}', '{{$k}}')">X</button>
 

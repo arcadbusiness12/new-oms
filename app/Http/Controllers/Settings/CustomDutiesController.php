@@ -238,10 +238,10 @@ class CustomDutiesController extends Controller
       
       if($action && $action == 'w_developer') {
          $userGroups = OmsUserGroupModel::where('id', [18])->get();
-         $directory = 'employee_performance.it_developer';
+         $directory = 'employeePeerformance.it_developer';
       }elseif($action == 'a_developer') {
          $userGroups = OmsUserGroupModel::where('id', [19])->get();
-         $directory = 'employee_performance.it_developer';
+         $directory = 'employeePeerformance.it_developer';
       }elseif($action && $action == 'designer') {
          $userGroups = OmsUserGroupModel::whereIn('id', [13,14])->get();
          // dd($userGroups);
@@ -321,7 +321,7 @@ class CustomDutiesController extends Controller
      public function employeeCustomDuties($argc = null) {
       //   $autoDuty = autoAssignDuties(session('user_id'));
       // dd(array_key_exists('employee-performance/designer/custom/duties', json_decode(session('access'),true)));
-      //  dd($request);
+      //  dd($argc);
         $old_input = '';
         $whereclause = [];
         
@@ -360,17 +360,23 @@ class CustomDutiesController extends Controller
             $orderaction = 'DESC';
    
            }
-           if($argc && $argc != 'marketer' && $argc != 'designer' && $argc != 0) {
+           
+           if($argc && $argc != 'marketer' && $argc != 'designer' && session('role') != 'ADMIN' && $argc != 0) {
             $ar = explode('_', $argc);
-            $argc = $ar[0];
+            $argcc = $ar[0];
             $orderField = 'end_date';
             $orderaction = 'DESC';
             array_push($whereclause, ['user_id', session('user_id')]);
-            array_push($whereclause, ['id', $argc]);
+            // array_push($whereclause, ['id', $argcc]);
+            
             $no = OmsNotificationModel::find($ar[1]);
-            $no->is_viewed = 1;
-            $no->update();
+            if($no) {
+               $no->is_viewed = 1;
+               $no->update();
+            }
+            
            }
+         //   dd($argc);
            if($argc && $argc == 'designer') {
             $user_groups = [13,14];
            }elseif($argc && $argc == 'w_developer') {
@@ -381,7 +387,7 @@ class CustomDutiesController extends Controller
            }else {
             $user_groups = [8,13,14,18,19];
            }
-         //   dd($user_groups);
+           
            $not_started = [];
            $started = [];
            $in_testing = [];

@@ -5184,6 +5184,7 @@ input[type=submit].btn-block {
     text-align: center;
     white-space: nowrap;
     background-color: #03a9f4;
+    background-color: #24b02b;
     transition: width .6s ease
 }
 

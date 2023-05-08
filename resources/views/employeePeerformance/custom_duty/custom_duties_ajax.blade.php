@@ -1,4 +1,4 @@
-<div class="col-sm-3 col-sm-3 col-xs-12 duty-block" >
+<div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block" >
     <div class="card" id="pending-duties-box" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">To Do</label>
                 {{-- <label class="form-label duties-count">({{count($not_started)}})</label> --}}
@@ -80,7 +80,7 @@
 </div>
 
 
-<div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+<div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
     <div class="card" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">Doing</label>
                 {{-- <label class="form-label duties-count">({{count($started)}})</label> --}}
@@ -157,7 +157,7 @@
  </div>
 </div>
 
-<div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+<div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
     <div class="card" id="testing-duties-box" style="padding: 10px;overflow: hidden;">
         
                 <label class="form-label">Testing</label>
@@ -168,7 +168,7 @@
                   <div class="duty-section col-sm-12">
                   <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                       <div class="col-sm-12">
-                         <h4 id="main">{{$duty->title}}</h4>
+                         <h4 id="main" class="title-text">{{$duty->title}}</h4>
                       </div>
                       <div class="col-sm-12">
                           <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>
@@ -232,7 +232,7 @@
       </div>
 </div>
 
-<div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+<div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
     <div class="card" style="padding: 10px;overflow: hidden;">
                 <label class="form-label">Completed</label>
                 {{-- <label class="form-label duties-count">({{count($completed)}})</label> --}}
@@ -242,7 +242,7 @@
                   <div class="duty-section col-sm-12">
                   <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                       <div class="col-sm-12">
-                       <h4 id="main">{{$duty->title}}</h4>
+                       <h4 id="main" class="title-text">{{$duty->title}}</h4>
                       </div>
                       <div class="col-sm-12">
                           <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>

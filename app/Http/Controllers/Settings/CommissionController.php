@@ -399,12 +399,10 @@ class CommissionController extends Controller
     $daysWithoutHoliday = 0;
     $all_days = 0;
     if( $date_from != "" && $date_to != "" ){
-      dd("Ok");
       $data = $data->whereDate('awbt.created_at','>=',$date_from)
               ->whereDate('awbt.created_at','<=',$date_to);
     }
     if( $search_by_courier ){
-      dd("Okkkkkkkkkkk");
       $data = $data->where('awbt.shipping_provider_id',$search_by_courier);
     }
     // $data = $data->groupBy("opo.user_id");
@@ -412,7 +410,7 @@ class CommissionController extends Controller
     // dd("Ok");
     $data = $data->get();
     
-    dd($data->toArray());
+    // dd($data->toArray());
     $old_input = $request->all();
     $couriers = ShippingProvidersModel::where('is_active',1)->get();
     // dd($couriers->toArray());

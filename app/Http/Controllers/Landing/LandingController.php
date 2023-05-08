@@ -1278,6 +1278,7 @@ class LandingController extends Controller
     }
 
     public function adminRequestResponse($notif, $time, $action, $request) {
+        // dd("Ok");
         $noti = OmsNotificationModel::find($notif);
         $todaytime = UserStartEndTimeModel::find($time);
         $entity = json_decode($noti->entity, true);

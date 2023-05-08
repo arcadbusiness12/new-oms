@@ -132,7 +132,7 @@
                                   <input type="hidden" name="current_month" value="{{$currentMonth}}">
                                   {{-- <button type="submit" name="previous" value="previous" class="btn btn-info previous-btn {{($active_tab == 'previous') ? 'btn-month-active' : ''}}">Previous Month</button> --}}
   
-                                  <button type="submit" name="current" value="current" class="btn btn-info previous-btn {{($active_tab == 'current') ? 'btn-month-active' : ''}}">Current Month</button>
+                                  <button type="submit" name="current" value="current" class="btn btn-info previous-btn active {{($active_tab == 'current') ? 'btn-month-active' : ''}}">Current Month</button>
                                 </form>
                               </div>
                               @foreach($previousMonths as $k => $month)
@@ -140,7 +140,7 @@
                                 <form method="get" action="{{route('new.designer.product.image')}}">
                                   <input type="hidden" name="previous_month" value="{{$month['month']}}">
                                   <input type="hidden" name="current_month" value="{{$currentMonth}}">
-                                  <button type="submit" name="previous" value="{{$month['name']}}" class="btn btn-info previous-btn {{($active_tab == $month['name']) ? 'btn-month-active' : ''}}">{{$month['name']}}</button>
+                                  <button type="submit" name="previous" value="{{$month['name']}}" class="btn btn-info previous-btn active {{($active_tab == $month['name']) ? 'btn-month-active' : ''}}">{{$month['name']}}</button>
   
                                 </form>
                             </div>

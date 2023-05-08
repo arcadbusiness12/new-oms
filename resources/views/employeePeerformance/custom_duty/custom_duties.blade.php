@@ -89,9 +89,12 @@ a:hover{
     background-color: red;
     position: absolute;
     border-radius:35%;
+    font-weight: 600 !important;
 }
 .title-text {
     position: relative;
+    font-weight: 500;
+    color: black;
 }
 .title-less {
 
@@ -270,7 +273,7 @@ a:hover{
                                           {{-- <label class="form-label duties-count">({{count($not_started)}})</label> --}}
                                           <div class="assign-duty-div {{count($not_started) > 0 ? 'box-extend': '' }}">
                                           @forelse($not_started as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12" style="position: relative;">
@@ -355,7 +358,7 @@ a:hover{
 
                                           <div class="assign-duty-div {{count($started) > 0 ? 'box-extend' : '' }}">
                                           @forelse($started as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                              <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                              <div class="col-sm-12" style="position: relative;">
@@ -434,11 +437,11 @@ a:hover{
                                           <label class="form-label" style="border-bottom: 1px solid gainsboro;">Testing</label>
                                           <div class="assign-duty-div {{count($in_testing) > 0 ? 'box-extend' : '' }}">
                                           @forelse($in_testing as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12">
-                                                   <h4 id="main">{{$duty->title}}</h4>
+                                                   <h4 id="main" class="title-text">{{$duty->title}}</h4>
                                                 </div>
                                                 <div class="col-sm-12">
                                                     <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>
@@ -509,11 +512,11 @@ a:hover{
                                           <label class="form-label" style="border-bottom: 1px solid gainsboro;">Completed</label>
                                           <div class="assign-duty-div {{count($completed) > 0 ? 'box-extend' : '' }}">
                                           @forelse($completed as $k => $duty)
-                                          <div class="row duty-box">
+                                          <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12">
-                                                 <h4 id="main">{{$duty->title}}</h4>
+                                                 <h4 id="main" class="title-text">{{$duty->title}}</h4>
                                                 </div>
                                                 <div class="col-sm-12">
                                                     <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>

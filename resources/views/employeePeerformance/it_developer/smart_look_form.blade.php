@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
     .file-drop-area {
@@ -52,7 +52,7 @@ img {
 
 use Symfony\Component\VarDumper\Cloner\Data;
 
-echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipart/form-data" name="form-setting">
+                echo route('save.smart.look.duties') ?>" method="post" enctype="multipart/form-data" name="form-setting">
             {{ csrf_field() }}
             <div class="block-header">
                 <div class="pull-left">
@@ -65,7 +65,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                 <div class="clearfix"></div>
             </div>
             <div class="row clearfix">
-                <div class="col-sm-12">
+                <div class="col-12">
                     <?php if(Session::has('message')) { ?>
                     <div class="alert <?php echo Session::get('alert-class', 'alert-info') ?> alert-dismissible">
                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -73,11 +73,11 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                     </div>
                     <?php } ?>
                 </div>
-                <div class="col-sm-8 col-sm-offset-2 col-xs-12">
+                <div class="col-8 col-offset-2 col-12">
                     <div class="card" style="padding: 15px;">
                         <div class="row">
                             
-                            <div class="col-sm-12">
+                            <div class="col-12">
                                 <div class="form-group form-float">
                                     <div class="form-line">
                                         <input type="hidden" name="user_type" value="{{$user}}">
@@ -123,7 +123,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
 
                         <div class="row custom-duty-form" style="display: none;padding-top: 20px;">
                          <input type="hidden" name="irregular" value="0">
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                                 <div class="form-group form-float">
                                         <label class="form-label">User Group</label>    
                                         <div class="form-line">
@@ -140,7 +140,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                             @endif 
                                 </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                                         <label class="form-label">User</label>  
                                             <span class="user_loading"></span><br> 
                                             <div class="schedule_group col-sm-12">
@@ -157,7 +157,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                             <span class="invalid-response" role="alert">{{$errors->first('user')}}</span>
                                             @endif 
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                                 <div class="form-group form-float">
                                 <label class="form-label">Duty</label>    
                                         <div class="form-line duty_box">
@@ -172,7 +172,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                         @endif
                                 </div>
                             </div>
-                            <div class="col-sm-12">
+                            <div class="col-12">
                                 <div class="form-group form-float">
                                     <div class="form-line">
                                         <input type="hidden" name="id" value="{{@$duty_details['id']}}" class="form-control" autocomplete="off" required />
@@ -184,7 +184,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                         @endif
                                 </div>
                             </div>
-                            <div class="col-sm-12">
+                            <div class="col-12">
                                 <div class="form-group">
                                     <label class="form-label">Description</label>
                                     <div class="form-line">
@@ -192,22 +192,22 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                                 <div class="form-group">
                                     <label class="form-label">From Date</label>
                                     <div class="form-line">
-                                        <input type="text" name="date_from" id="from_date" class="date datepickerr form-control" autocomplete="off" placeholder="Date From" value="{{@$duty_details['start_date']}}">
+                                        <input type="text" name="date_from" id="from_date" class="date datepicker form-control" autocomplete="off" placeholder="Date From" value="{{@$duty_details['start_date']}}">
                                     </div>
                                     @if($errors->has('date_from'))
                                         <span class="invalid-response" role="alert">{{$errors->first('date_from')}}</span>
                                         @endif
                                 </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                             <div class="form-group">
                                 <label class="form-label">Due Date</label>
                                 <div class="form-line">
-                                    <input type="text" name="date_to" id="to_date" class="date datepickerr form-control" autocomplete="off" placeholder="Date To" value="{{@$duty_details['end_date']}}">
+                                    <input type="text" name="date_to" id="to_date" class="date datepicker form-control" autocomplete="off" placeholder="Date To" value="{{@$duty_details['end_date']}}">
                                 </div>
                                 @if($errors->has('date_to'))
                                         <span class="invalid-response" role="alert">{{$errors->first('date_to')}}</span>
@@ -215,18 +215,18 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                             </div>
                             </div>
 
-                            <div class="col-sm-4">
+                            <div class="col-4 col-grid">
                             <div class="form-group">
                                 <label class="form-label">Event Date</label>
                                 <div class="form-line">
-                                <input type="text" name="date_event" id="event_event" class="date datepickerr form-control" autocomplete="off" placeholder="Date Event" value="">
+                                <input type="text" name="date_event" id="event_event" class="datepicker form-control" autocomplete="off" placeholder="Date Event" value="">
                                 </div>
                                 @if($errors->has('date_event'))
                                         <span class="invalid-response" role="alert">{{$errors->first('date_event')}}</span>
                                         @endif
                             </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-6 col-grid">
                             <div class="form-group">
                                 <label class="form-label">Active/In-Active</label>
                                 <div class="form-line">
@@ -240,7 +240,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                         @endif
                             </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-6 col-grid">
                                 <div class="form-group form-float" style="margin-top: 40px;">
                                         <input type="checkbox" name="is_emergency" id="assign_check">&nbsp;&nbsp; <strong> Emergency ? </strong>
                                     @if($errors->has('title'))
@@ -249,7 +249,7 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
                                 </div>
                             </div>
                             <hr>
-                            <div class="col-sm-12">
+                            <div class="col-12 col-grid">
                             <div class="form-group">
                                 <label class="form-label">Files</label>
                                 <div class="hidden-file">
@@ -308,15 +308,12 @@ echo URL::to('/save/smart/look/custom/duty') ?>" method="post" enctype="multipar
 <link href="{{URL::asset('assets/plugins/sweetalert/sweetalert.css')}}" rel="stylesheet" />
 <link href="{{URL::asset('assets/css/purchase.css')}}" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+
 <script defer="defer" src="{{URL::asset('assets/plugins/sweetalert/sweetalert.min.js')}}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
 <script>
-// $(document).ready(function() {
-//     $(function($){ // wait until the DOM is ready
-//             $(".datepicker1").datepicker();
-//         });
-// });
 
 $(function () {
   $(".datepickerr").datepicker({ 
@@ -339,7 +336,12 @@ $('#event_event').val(eventd).datepicker("update");
 
 function assignToDeveloper(v) {
     if($("input[type=checkbox]").is(":checked")) {
-        $('.custom-duty-form').css('display', 'block');
+        $('.custom-duty-form').css('display', 'flex');
+        $(".datepickerr").datepicker({ 
+        autoclose: true, 
+        todayHighlight: true,
+        format: 'yyyy-mm-dd'
+  });
         $('#title').val($('#smart_look_title').val());
         $('#description').val($('#smart_look_description').val());
     }else {
@@ -470,14 +472,18 @@ $(document).ready(function() {
                  if(resp.status) {
                     html += '<option value="" >Select Duty</option>';
                     resp.duties.forEach(function callback(value, index) {
-                        html += '<option value="'+value.custom_duty.id+'" >'+value.custom_duty.name+'</option>';
+                        console.log(value);
+                        if(value.custom_duty) {
+                            html += '<option value="'+value.custom_duty.id+'" >'+value.custom_duty.name+'</option>';
+                        }
+                        
                     })
                      console.log(resp);
                  }else {
                     html += '<option value="" >No duty available.</option>';
                 }
 
-                var s_html = '<select name="duty" class="form-control show-tick">';
+                var s_html = '<br><select name="duty" class="form-control show-tick">';
                 var e_html = '</select>';
                 var h = s_html+html+e_html;
                 $('.duty_box').html(h);

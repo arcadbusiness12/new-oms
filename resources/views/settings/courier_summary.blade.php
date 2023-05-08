@@ -20,15 +20,6 @@
   .font-red{
     color: red;
   }
-  .btn-success {
-    background-color: green !important;
-  }
-  .btn-danger {
-    background-color: #ed5564 !important;
-  }
-  .btn-warning {
-    background-color: #fcce54 !important;
-  }
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
@@ -47,59 +38,55 @@
 
                         <div class="card-header white">
                             <div class="panel-body">
-                                <form name="filter_reports" id="filter_reports" method="get" action="{{ route('commission.sale.saleOnTotalDeliveredAmount') }}">
-                                    {{csrf_field()}}
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                          <div class="form-group form-float">
-                                              <div class="form-line">
-                                                <select name="by_duration" id="by_duration" class="form-control show-tick" data-live-search="true" onchange="showDates()">
-                                                  <option value="today"     {{ ("today"==@$old_input['by_duration']) ? "selected" : "" }}>Today</option>
-                                                  <option value="yesterday" {{ ("yesterday"==@$old_input['by_duration']) ? "selected" : "" }}>Yesterday</option>
-                                                  <option value="thisweek"  {{ ("thisweek"==@$old_input['by_duration']) ? "selected" : "" }}>This week</option>
-                                                  <option value="lastweek"  {{ ("lastweek"==@$old_input['by_duration']) ? "selected" : "" }}>Last week</option>
-                                                  <option value="thismonth" {{ ("thismonth"==@$old_input['by_duration']) ? "selected" : "" }}>This Month</option>
-                                                  <option value="lastmonth" {{ ("lastmonth"==@$old_input['by_duration']) ? "selected" : "" }}>Last Month</option>
-                                                  <option value="custom"    {{ ("custom"==@$old_input['by_duration']) ? "selected" : "" }}>custom</option>
-                                                </select>
-                                              </div>
+                              <form name="filter_reports" id="filter_reports" method="get" action="{{ route('commission.sale.courierSummary') }}">
+                                {{csrf_field()}}
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                      <div class="form-group form-float">
+                                          <div class="form-line">
+                                            <select name="by_duration" id="by_duration" class="form-control show-tick" data-live-search="true" onchange="showDates()">
+                                              <option value="today"     {{ ("today"==@$old_input['by_duration']) ? "selected" : "" }}>Today</option>
+                                              <option value="yesterday" {{ ("yesterday"==@$old_input['by_duration']) ? "selected" : "" }}>Yesterday</option>
+                                              <option value="thisweek"  {{ ("thisweek"==@$old_input['by_duration']) ? "selected" : "" }}>This week</option>
+                                              <option value="lastweek"  {{ ("lastweek"==@$old_input['by_duration']) ? "selected" : "" }}>Last week</option>
+                                              <option value="thismonth" {{ ("thismonth"==@$old_input['by_duration']) ? "selected" : "" }}>This Month</option>
+                                              <option value="lastmonth" {{ ("lastmonth"==@$old_input['by_duration']) ? "selected" : "" }}>Last Month</option>
+                                              <option value="custom"    {{ ("custom"==@$old_input['by_duration']) ? "selected" : "" }}>custom</option>
+                                            </select>
                                           </div>
-                                        </div>
-                                        <div class="col-sm-4">
-                                          <div class="form-group form-float">
-                                              <div class="form-line">
-                                                  {{--  <label class="form-label" for="status">Status</label>  --}}
-                                                  <select name="user" id="user" class="form-control show-tick" data-live-search="true">
-                                                      <option value="">-Select user-</option>
-                                                      @forelse($staffs as $key => $value)
-                                                        <option value="{{ $value->user_id }}" {{ ($value->user_id==@$old_input['user']) ? "selected" : "" }} >{{ $value->firstname." ".$value->lastname }}</option>
-                                                      @empty
-                                                      @endforelse
-                                                  </select>
-                                              </div>
-                                          </div>
-                                        </div> 
+                                      </div>
                                     </div>
-                                    <div class="row custom_duration" <?php if(@$old_input['by_duration'] != 'custom'){ ?> style="display:none" <?php } ?> >
-                                        <div class="col-sm-4">
-                                          <div class="form-group form-float">
-                                            <div class="form-line">
-                                            <label class="form-label">From</label>
-                                                  <input type="text" name="date_from" id="date_from" class="datepicker form-control" autocomplete="off" data-dtp="dtp_igs2I" value="{{ @$old_input['date_from'] != "" ? $old_input['date_from'] : '' }}">
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="col-sm-4">
-                                          <div class="form-group form-float">
-                                            <div class="form-line">
-                                            <label class="form-label">To</label>
-                                                  <input type="text" name="date_to" id="date_to" class="datepicker form-control" autocomplete="off" data-dtp="dtp_igs2I" value="{{ @$old_input['date_to'] != "" ? $old_input['date_to'] : ''  }}">
-                                            </div>
-                                          </div>
-                                        </div>
+                                    <div class="col-sm-4">
+                                      <div class="form-group form-float">
+                                          <select name="search_by_courier">
+                                            <option value="">-Courier-</option>
+                                             @foreach( $couriers as $courier)
+                                              <option value="{{ $courier->shipping_provider_id }}">{{ $courier->name }}</option>
+                                             @endforeach
+                                          </select>
+                                      </div>
                                     </div>
-                                    <button type="submit" id="search_filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> Filter</button>
-                                </form>
+                                </div>
+                                <div class="row custom_duration" <?php if(@$old_input['by_duration'] != 'custom'){ ?> style="display:none" <?php } ?> >
+                                    <div class="col-sm-4">
+                                      <div class="form-group form-float">
+                                        <div class="form-line">
+                                        <label class="form-label">From</label>
+                                              <input type="text" name="date_from" id="date_from" class="datepicker form-control" autocomplete="off" data-dtp="dtp_igs2I" value="{{ @$old_input['date_from'] != "" ? $old_input['date_from'] : '' }}">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                      <div class="form-group form-float">
+                                        <div class="form-line">
+                                        <label class="form-label">To</label>
+                                              <input type="text" name="date_to" id="date_to" class="datepicker form-control" autocomplete="off" data-dtp="dtp_igs2I" value="{{ @$old_input['date_to'] != "" ? $old_input['date_to'] : ''  }}">
+                                        </div>
+                                      </div>
+                                    </div>
+                                </div>
+                                <button type="submit" id="search_filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> Filter</button>
+                            </form>
                             </div>
                         </div>
                 </div>

@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
     .order_progress_bar_new .circle-box .title {
@@ -45,51 +45,12 @@
                 </div>
                 <div class="clearfix"></div>
             </div>
-            <div class="row">
-                  <div class="col-xs-12">
-                      <div class="card">
-                          <div class="panel panel-default">
-                              <div class="panel-body">
-                                  <form name="filter_reports" id="filter_reports" method="get" action="{{ ($action == 'web') ? route('developerweb.smart.look', [$user, $action]) : route('employee-performance.app.developer.smart.look', [$user, $action]) }}">
-                                      {{csrf_field()}}
-                                      <div class="row">
-                                          <div class="col-sm-4">
-                                              <div class="form-group form-float">
-                                                  <div class="form-line">
-                                                      <label class="form-label" for="status">Title</label><br>
-                                                     <input type="text" name="title" class="form-control" value="{{@$old_input['title']}}">
-                                                  </div>
-                                              </div>
-                                          </div> 
-                                          <div class="col-sm-4">
-                                            <div class="form-group form-float">
-                                              <div class="form-line">
-                                                  <label class="form-label" for="user_group_id">Progress</label><br>
-                                                  <select name="progress" id="progress" class="form-control show-tick" data-live-search="true">
-                                                      <option value="">Select Stage</option>
-                                                      <option value="0" <?php  if(isset($old_input['progress']) && $old_input['progress'] == 0) { echo 'selected';} ?>>To Do</option>
-                                                      <option value="1" <?php  if(@$old_input['progress'] == 1) { echo 'selected';} ?>>Doing</option>
-                                                      <option value="2" <?php  if(@$old_input['progress'] == 2) { echo 'selected';} ?>>Testing</option>
-                                                      <option value="5" <?php  if(@$old_input['progress'] == 5) { echo 'selected';} ?>>Completed</option>
-                                                  </select>
-                                              </div>
-                                            </div>
-                                          </div>
-                                         
-                                      </div>
-
-                                      <button type="submit" id="search_filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> Filter</button>
-                                  </form>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
+            
             
          <?php if(count($rAndDs) > 0) { ?>
            <?php foreach ($rAndDs as $k => $rd) { ?>
-            <div class="card order_list">
-                <div class="row top_row">
+            <div class="card order_list mt-4">
+                <div class="row top_row m-4">
                     <div class="col-xs-6">
                         <div class="title"><b>
                            <h4> <?php echo $rd->title ?></h4>
@@ -103,42 +64,22 @@
                             <input type="text" name="supplier_link" value="{{ $rd->link }}}" class="form-control copy_to_clipboard" placeholder="Supplier Link" readonly="">
                         </div>
                      </div>
-                    <div class="col-xs-2 text-center">
+                    <div class="col-2 col-grid mt-4 text-center">
                             {{-- <b>2021-11-29</b> <br><br>
                             <b>2021-11-30</b> --}}
-                            <div class="badge"><?php echo $rd->created_at ?></div> <br><br>
-                            <div class="badge"><?php echo $rd->event_date ?></div>
+                            <div class="badge badge-secondary"><?php echo $rd->created_at ?></div> <br><br>
+                            <div class="badge badge-secondary"><?php echo $rd->event_date ?></div>
                        </div>
-                     <div class="col-xs-2 text-center">
-                            <div class="badge">
-                                <?php
-                                $progress = '';
-                                 if($rd->progress && $rd->progress == 0) {
-                                        $progress = 'In To Do';
-                                    }elseif ($rd->progress && $rd->progress == 1) {
-                                        $progress = 'In Doing';
-                                    }elseif ($rd->progress && $rd->progress == 2) {
-                                        $progress = 'In Testing';
-                                    }elseif ($rd->progress && $rd->progress == 5) {
-                                        $progress = 'In Complete';
-                                    }else {
-                                        $progress = 'Not connected with duty';
-                                    }
+                       
 
-                                    echo $progress;
-                                    ?>
-
-                            </div>
-                    </div>
-
-                    <div class="col-xs-2 text-center">
-                        <div class="label label-{{($rd->is_emergency == 1) ? 'warning' : 'success'}} col-2">
+                    <div class="col-2 mt-4 col-grid text-center">
+                        <div class="badge badge-{{($rd->is_emergency == 1) ? 'warning' : 'success'}}">
                             <td><?php if($rd->is_emergency == 1) {echo 'Urgent';} else {
                                 echo 'Normal';
                               } ?>    
                         </div>
                         <?php if( $rd->assignedUser ) {?>
-                            <div class="assiged col-xs-8">Assigned To
+                            <div class="assiged col-8 col-grid">Assigned To
                                  <?php echo $rd->assignedUser['username'] ?> 
                                 </div>
                             <?php } ?>
@@ -146,9 +87,9 @@
                     </div>
                 </div>
                   
-                <div class="row text-right">
+                <div class="row text-right mb-4 mr-5">
                     <?php if($rd->need_to_approve == 1 && session('role') == 'ADMIN') {?>
-                        <div class="assiged col-xs-12">
+                        <div class="assiged col-xs-12 btn-action{{$k}}">
                             <button class="btn btn-danger" onclick="acceptRejectRequest('{{$rd->id}}',2, {{$user}}, '{{$action}}', '{{$k}}')" tabindex="1" style="float:right;background-color: rgb(147, 5, 5);, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px inset;margin: -5px 5px 0px;font-size: 12px;">
                                 Reject
                              </button>
@@ -158,19 +99,21 @@
                         </div>
                         <?php }elseif ($rd->need_to_approve == 1 && session('role') != 'ADMIN') {?>
                             <div class="assiged col-xs-12 approve-st">
-                                 <div class="label label-danger col-2 ">Pending</div>
+                                 <div class="badge badge-warning col-2 ">Pending</div>
                             </div>
-                       <?php }elseif ($rd->need_to_approve == 2 && $rd->need_to_approve == 1) {?>
+                       <?php }elseif ($rd->need_to_approve == 2 && $rd->approved == 1) {?>
                         <div class="assiged col-xs-12 approve-st">
-                             <div class="label label-danger col-2 ">Approved</div>
+                             <div class="badge badge-success col-2 ">Approved</div>
                         </div>
-                        <?php }elseif ($rd->need_to_approve == 2 && $rd->need_to_approve == 2) {?>
+                        <?php }elseif ($rd->need_to_approve == 2 && $rd->approved == 2) {?>
                             <div class="assiged col-xs-12 approve-st">
-                                <div class="label label-danger col-2 ">Rejected</div>
+                                <div class="badge badge-danger col-2 ">Rejected</div>
                             </div>
                             <?php }else {?>
                            {{$rd->need_to_approve}}
                        <?php } ?>
+                       <span class="ap-message{{$k}}" style="color:#097d07; display:none;"></span>
+                       <span class="rj-message{{$k}}" style="color:#b6310c;display:none;"></span>
                 </div>
                          
             </div>
@@ -205,31 +148,30 @@ $('.delete-user').click(function(){
 });
 
 function acceptRejectRequest(id, status, user, action, index) {
-    console.log(id);return;
-  if(notification && time) {
+    console.log(status);
     $.ajax({
-        url: "{{url('/admin/request/response')}}/"+ id +"/"+ status +"/"+ user +"/"+ action,
+        url: "{{url('/admin/approve/request/response')}}/"+ id +"/"+ status +"/"+ user +"/"+ action,
           type: "GET",
           cache: false,
           success: function(resp) {
-            if(from_action == 1) {
-              $('.main-row'+index).remove();
+            if(resp.status) {
+              $('.btn-action'+index).remove();
+              if(status == 1) {
+                $('.ap-message'+index).css('display', 'block');
+                $('.ap-message'+index).text('Request Approved');
+              }else {
+                $('.rj-message'+index).css('display', 'block');
+                $('.rj-message'+index).text('Request Rejected');
+              }
             }else {
-              if(action == 1) {
-              $('.lable-status'+index).addClass('active btn-success');
-              $('.lable-status'+index).text('Approved');
-            }else {
-              $('.lable-status'+index).addClass('active btn-danger');
-              $('.lable-status'+index).text('Rejected');
-            }
+              
             $('.request-action-btn'+index).remove();
             }
             
             
             
           }
-    })
-  }
+    });
 }
 </script>
 <script defer="defer" src="{{URL::asset('assets/plugins/sweetalert/sweetalert.min.js')}}"></script>

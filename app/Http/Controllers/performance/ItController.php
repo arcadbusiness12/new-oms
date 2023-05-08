@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\EmployeePerformance;
+namespace App\Http\Controllers\performance;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -8,20 +8,20 @@ use App\Models\Oms\EmployeeRAndDModel;
 use App\Models\Oms\OmsUserGroupModel;
 use App\Models\Oms\OmsUserModel;
 use App\Models\Oms\SmartLookModel;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request as Input;
 use DB;
 
 class ItController extends Controller
 {
-    const VIEW_DIR = 'employee_performance.it_developer';
+    const VIEW_DIR = 'employeePeerformance.it_developer';
     private $DB_BAOPENCART_DATABASE = '';
     private $DB_DFOPENCART_DATABASE = '';
     function __construct(){
         $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
         $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
     }
-    public function smartLook($user,$action) {
-        // dd($user);
+    public function smartLook($user = null,$action = null) {
+        // dd($action);
         $whereCluase = [];
         
         if(Input::get('title')) {
@@ -50,10 +50,11 @@ class ItController extends Controller
         return view(SELF::VIEW_DIR.'.smart_look')->with(compact('smart_looks','old_input','user','action'));
       }
 
-      public function smartLookForm($user, $action) {
+      public function smartLookForm($user = null, $action = null) {
         $user_group = OmsUserGroupModel::all();
-        $dutyLists = []; 
-        return view(SELF::VIEW_DIR.'.smart_look_form')->with(compact('user_group','dutyLists', 'user', 'action'));
+        $dutyLists = [];
+        // dd($user_group);
+        return view(SELF::VIEW_DIR. '.smart_look_form')->with(compact('user_group', 'dutyLists', 'user', 'action'));
       }
 
     public function RAndD($user, $action) {
@@ -71,7 +72,7 @@ class ItController extends Controller
                 array_push($whereCluase, ['user_group_id', '=', 19]);
             }
         }
-        
+        // dd($whereCluase);
         $old_input = Input::all();
         $rAndDs = EmployeeRAndDModel::with('user','assignedUser')->where($whereCluase)->paginate(20);
 
@@ -89,7 +90,12 @@ class ItController extends Controller
             'link' => 'required',
          ]);
         $g = OmsUserModel::select('user_group_id')->find(session('user_id'));
-        $ug = $g->user_group_id;
+        if($request->action == 'web') {
+            $ug = 18;
+        }else {
+            $ug = 19;
+        }
+        // $ug = $g->user_group_id;
         $rAndD = new EmployeeRAndDModel();
         $rAndD->title = $request->smart_look_title;
         $rAndD->description = $request->smart_look_description;
@@ -100,15 +106,32 @@ class ItController extends Controller
         if($request->nedd_to_approve) {
             $rAndD->need_to_approve = 1;
         }
-
         $rAndD->save();
         if($request->action == 'web') {
             $route = 'webdeveloper.R&D';
         }else {
-            $route = 'employee-performance.app.developer.R&D';
+            $route = 'employeePeerformance.app.developer.R&D';
         }
         
         return redirect()->route($route, [$request->user_type, $request->action])->with('message', 'R&D created successfully.');
+    }
+
+    public function adminApproveRequestResponse($id, $status, $user, $action) {
+        $rAndD = EmployeeRAndDModel::find($id);
+        if($rAndD) {
+            $rAndD->need_to_approve = 2;
+            $rAndD->approved = $status;
+            $rAndD->update();
+
+            return response()->json([
+                'status' => true
+            ]);
+        }else {
+            return response()->json([
+                'status' => false
+            ]);
+        }
+        
     }
 
 

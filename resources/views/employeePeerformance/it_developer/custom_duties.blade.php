@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
     /* .duty-box {
@@ -9,6 +9,14 @@
     .assign-duty-div {
         position: relative;overflow-x: hidden;
     }
+    .assign-duty-div {
+    max-height: 520px;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    overflow-y: auto;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
     .duty-section {
         margin-bottom: 5px;
     }
@@ -31,7 +39,10 @@
 }
 .duty-block {
     padding-right: 4px !important;
+    display: inline-block !important;
+    
 }
+
 .close-second-btn,.close-second-crousel-btn,.close-attachment-comment-modal,.main-modale-dismiss {
     float: right;
     font-size: 21px;
@@ -78,9 +89,13 @@ a:hover{
     background-color: red;
     position: absolute;
     border-radius:35%;
+    font-size: 47%;
+    font-weight: 600 !important;
 }
 .title-text {
     position: relative;
+    font-weight: 500;
+    color: black;
 }
 .title-less {
 
@@ -97,11 +112,19 @@ a:hover{
     <div class="container-fluid">
     @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || (array_key_exists('employee-performance/designer/custom/duties',  json_decode(session('access'),true))) 
     || (array_key_exists('employee-performance/web/developer/smart/look',  json_decode(session('access'),true))) || (array_key_exists('employee-performance/app/developer/smart/look',  json_decode(session('access'),true))))
-    <div class="row">
-                  <div class="col-xs-12">
-                      <div class="card">
-                          <div class="panel panel-default">
-                              <div class="panel-body">
+    <div class="row ">
+                  <div class="col-md-12 col-sm-12">
+                    <div class="row mb-4">
+                        <div class="col-md-12 col-sm-12">
+        
+                            <div class="card no-b form-box">
+                                @if(session()->has('success'))
+                                    <div class="alert alert-success">
+                                        {{ session()->get('success') }}
+                                    </div>
+                                @endif
+        
+                                <div class="card-header white">
                                 @if(session('role') == 'ADMIN' || array_key_exists('marketer/custom/duties/marketer', json_decode(session('access'),true)) || (array_key_exists('employee-performance/designer/custom/duties',  json_decode(session('access'),true))) 
                                 || (array_key_exists('employee-performance/web/developer/smart/look',  json_decode(session('access'),true))))
                                 <div class="row">
@@ -178,10 +201,10 @@ a:hover{
                                   @else 
                                   <div class="col-xs-4">
                                     <form name="filter_reports" id="filter_reports" method="get" action="{{ route('add.irregular.duty.form', [$argc, isset($old_input['user']) ? $old_input['user'] : '']) }}">
-                                                 <div class="form-group form-float btn-filter">
+                                      
+                                                <div class="form-group form-float btn-filter">
                                                 <button type="submit" id="search_filter" class="btn btn-info pull-right"><i class="fa fa-plus"></i> Add Duty</button>
                                                 </div>
-                                            
                                     </form>
                                     </div>
                                     @endif
@@ -208,13 +231,13 @@ a:hover{
                           </div>
                       <div class="row ">
                         <div class="col-12" id="custom_list">
-                          <div class="col-sm-3 col-sm-3 col-xs-12 duty-block" >
+                          <div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block" >
                               <div class="card" style="padding: 10px;overflow: hidden;">
                                           <label class="form-label">To Do</label>
-                                          <label class="form-label duties-count">({{count($not_started)}})</label>
+                                          {{-- <label class="form-label duties-count">({{count($not_started)}})</label> --}}
                                           <div class="assign-duty-div {{count($not_started) > 0 ? 'box-extend': '' }}">
                                           @forelse($not_started as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12" style="position: relative;">
@@ -260,7 +283,7 @@ a:hover{
                                                  </a>
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                                <div class="col-sm-8 col-grid" style="margin-top: 5px;padding-left: 8px;">
                                                     <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN')
@@ -271,7 +294,7 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                                <div class="col-sm-4 col-grid" style="margin-top: 2px;text-align:right">
                                                     <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
@@ -290,13 +313,13 @@ a:hover{
                           </div>
 
                           
-                          <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+                          <div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
                               <div class="card" style="padding: 10px;overflow: hidden;">
                                           <label class="form-label">Doing</label>
-                                          <label class="form-label duties-count">({{count($started)}})</label>
+                                          {{-- <label class="form-label duties-count">({{count($started)}})</label> --}}
                                           <div class="assign-duty-div {{count($started) > 0 ? 'box-extend' : '' }}">
                                           @forelse($started as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                              <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                              <div class="col-sm-12" style="position: relative;">
@@ -341,8 +364,8 @@ a:hover{
                                               </a>
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                            <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
-                                                <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
+                                            <div class="col-sm-8 col-grid" style="margin-top: 5px;padding-left: 8px;">
+                                                <span class="repeat-text col-grid">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                             </div>
                                             @if(session('role') == 'ADMIN')
                                             <!-- <div class="col-sm-6">
@@ -352,7 +375,7 @@ a:hover{
                                                 <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                             </div> -->
                                             
-                                            <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                            <div class="col-sm-4 col-grid" style="margin-top: 2px;text-align:right">
                                                 <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                             </div>
                                             @endif
@@ -369,18 +392,18 @@ a:hover{
                            </div>
                           </div>
                           
-                          <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+                          <div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
                               <div class="card" style="padding: 10px;overflow: hidden;">
                                   
                                           <label class="form-label">Testing</label>
-                                          <label class="form-label duties-count">({{count($in_testing)}})</label>
+                                          {{-- <label class="form-label duties-count">({{count($in_testing)}})</label> --}}
                                           <div class="assign-duty-div {{count($in_testing) > 0 ? 'box-extend' : '' }}">
                                           @forelse($in_testing as $k => $duty)
-                                            <div class="row duty-box">
+                                            <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12">
-                                                   <h4 id="main">{{$duty->title}}</h4>
+                                                   <h4 id="main" class="title-text">{{$duty->title}}</h4>
                                                 </div>
                                                 <div class="col-sm-12">
                                                     <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>
@@ -419,7 +442,7 @@ a:hover{
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
                                                 <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
-                                                    <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
+                                                    <span class="repeat-text col-grid">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN')
                                                 <!-- <div class="col-sm-6">
@@ -429,7 +452,7 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                                <div class="col-sm-4 col-grid" style="margin-top: 2px;text-align:right">
                                                     <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
@@ -446,17 +469,17 @@ a:hover{
                                 </div>
                           </div>
 
-                          <div class="col-sm-3 col-sm-3 col-xs-12 duty-block">
+                          <div class="col-sm-3 col-sm-3 col-xs-12 col-grid duty-block">
                               <div class="card" style="padding: 10px;overflow: hidden;">
                                           <label class="form-label">Completed</label>
-                                          <label class="form-label duties-count">({{count($completed)}})</label>
+                                          {{-- <label class="form-label duties-count">({{count($completed)}})</label> --}}
                                           <div class="assign-duty-div {{count($completed) > 0 ? 'box-extend' : '' }}">
                                           @forelse($completed as $k => $duty)
-                                          <div class="row duty-box">
+                                          <div class="row duty-box mt-4">
                                             <div class="duty-section col-sm-12">
                                             <a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal"><a href="javascript:;" onclick="dutyDetails('{{$duty->id}}', '{{$argc}}')" class="duty-title" data-toggle="modal" data-target="#detailModal">
                                                 <div class="col-sm-12">
-                                                 <h4 id="main">{{$duty->title}}</h4>
+                                                 <h4 id="main" class="title-text">{{$duty->title}}</h4>
                                                 </div>
                                                 <div class="col-sm-12">
                                                     <span class="duty-date">{{date('d M, Y', strtotime($duty->start_date))}}</span> <label id="main"> To </label> <span class="duty-date">{{date('d M, Y', strtotime($duty->end_date))}}</span>
@@ -494,7 +517,7 @@ a:hover{
                                                 
                                             </div>
                                             <div class="col-sm-12" style="border: 1px solid #8080802b;background-color: #80808017">
-                                                <div class="col-sm-8" style="margin-top: 5px;padding-left: 8px;">
+                                                <div class="col-sm-8 col-grid" style="margin-top: 5px;padding-left: 8px;">
                                                     <span class="repeat-text">Repeated <span style="color: red;font-weight: 700;">{{$duty->repeated}}</span> times</span>
                                                 </div>
                                                 @if(session('role') == 'ADMIN')
@@ -505,7 +528,7 @@ a:hover{
                                                     <button type="button" class="btn btn-success btn-block action-btn" onclick="dutyDetails('{{$duty->id}}')" data-toggle="modal" data-target="#detailModal">Details</button>
                                                 </div> -->
                                                 
-                                                <div class="col-sm-4" style="margin-top: 2px;text-align:right">
+                                                <div class="col-sm-4 col-grid" style="margin-top: 2px;text-align:right">
                                                     <a href="<?php echo URL::to('duty/delete/' . $duty->id . '/1/'.$argc) ?>" type="button" class="delete-user" ><i class="fa fa-trash-o" style="font-size:22px; color:red;"></i></a>
                                                 </div>
                                                 @endif
@@ -606,7 +629,7 @@ a:hover{
                 <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                     <div class="modal-content">
                     <div class="modal-body">
-                    <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    {{-- <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> --}}
 
                         <div class="modal-content-loader"></div>
                         <div class="duty-details"></div>

@@ -408,7 +408,10 @@
 
 
                         <li class="treeview @if(str_contains(Request::url(), '/performance') || strpos(Request::url(), '/Settings/chat/sale/order/report') !== false || strpos(Request::url(), '/PurchaseManagement/shipping_providers') !== false 
-                        || strpos(Request::url(), '/custom/duty/report') !== false || strpos(Request::url(), '/designer/custom/duties/designer') !== false) active @endif">
+                        || strpos(Request::url(), '/custom/duty/report') !== false || strpos(Request::url(), '/designer/custom/duties/designer') !== false 
+                        || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
+                        || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false 
+                        || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
                             <a href="#">
                                 <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -471,30 +474,50 @@
                                     </ul>
                                 </li>
 
-                                <li><a href="#"><i class="icon icon-document-code2"></i>IT Team<i
+                                <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/R&D') !== false 
+                                || strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false 
+                                || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
+                                || strpos(Request::url(), '/performance/employee-performance/app/developer/smart/look') !== false 
+                                || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
+                                    <a href="#"><i class="icon icon-document-code2"></i>IT Team<i
                                     class=" icon-angle-left  pull-right"></i></a>
                                     <ul class="treeview-menu">
 
-                                        <li><a href="#"><i class="icon icon-document-code"></i>Web Developer<i
+                                        <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/R&D') !== false 
+                                        || strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false 
+                                        || strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false) active @endif">
+                                            <a href="#"><i class="icon icon-document-code"></i>Web Developer<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
-                                            <li><a href="panel-page-users.html">Assigned Custom Duties</a>
+                                            <li class="@if(strpos(Request::url(), '/marketer/custom/duties/w_developer') !== false) active @endif">
+                                                <a href="{{route('assigned.custom.duties.w_developer', 'w_developer')}}">Assigned Custom Duties</a>
                                             </li>
-                                            <li><a href="panel-page-users.html">Smart Look</a>
+                                            <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/smart/look') !== false) active @endif">
+                                                <a href="{{route('developerweb.smart.look', [session('user_id'), 'web'])}}">Smart Look</a>
                                             </li>
-                                            <li><a href="panel-page-users.html">R&D</a>
+                                            @if( session('role') == 'ADMIN')
+                                            <li class="@if(strpos(Request::url(), '/performance/employee-performance/web/developer/R&D') !==false) active @endif">
+                                                <a href="{{route('webdeveloper.R&D', [session('user_id'), 'web'])}}"><span>R&D</span></a>
                                             </li>
+                                            @endif
+                                            {{-- <li><a href="panel-page-users.html">R&D</a>
+                                            </li> --}}
 
                                         </ul>
                                     </li>
-                                    <li><a href="#"><i class="icon icon-document-code"></i>App Developer<i
+                                    <li class="@if(strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
+                                    || strpos(Request::url(), '/performance/employee-performance/app/developer/smart/look') !== false 
+                                    || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
+                                        <a href="#"><i class="icon icon-document-code"></i>App Developer<i
                                         class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
-                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Assigned Custom Duties</a>
+                                            <li class="@if(strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
+                                                <a href="{{route('assigned.custom.duties.a_developer', 'a_developer')}}">Assigned Custom Duties</a>
                                             </li>
-                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>Smart Look</a>
+                                            <li class="@if(strpos(Request::url(), '/performance/employee-performance/app/developer/smart/look') !== false) active @endif">
+                                                <a href="{{route('employee-performance.app.developer.smart.look', [session('user_id'), 'app'])}}">Smart Look</a>
                                             </li>
-                                            <li><a href="panel-page-users.html"><i class="icon icon-more"></i>R&D</a>
+                                            <li><a href="{{route('webdeveloper.R&D', [session('user_id'), 'app'])}}">R&D</a>
                                             </li>
 
                                         </ul>

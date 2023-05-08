@@ -1,5 +1,5 @@
-@extends('layout.theme')
-@section('title', 'Home')
+@extends('layouts.app')
+
 @section('content')
 <style>
     .order_progress_bar_new .circle-box .title {
@@ -12,6 +12,10 @@
     }
     .title {
         padding-left: 2px;
+    }
+    .title h4 {
+        font-weight: bold;
+        color: black;
     }
     .desc {
         margin-top: 16px;
@@ -28,13 +32,17 @@
     .order_list .top_row {
         border-bottom: none !important;
     } 
+    .badge {
+        font-weight: 500;
+        font-size: 13px;
+    }
     </style>
 <section class="content">
     <div class="container-fluid">
             {{ csrf_field() }}
             <div class="block-header">
                 <div class="pull-left">
-                    <h2>Custom Duties</h2>
+                    <h2>Smart Look</h2>
                 </div>
                 <div class="pull-right">
                     <a href="<?php echo route('employee-performance.itdeveloper.smart.look.form', [$user,$action]) ?>"><button type="button" class="btn btn-success"><i class="fa fa-plus"></i></button></a>
@@ -44,7 +52,7 @@
             <div class="row">
                   <div class="col-xs-12">
                       <div class="card">
-                          <div class="panel panel-default">
+                          <div class="panel panel-default m-4">
                               <div class="panel-body">
                                   <form name="filter_reports" id="filter_reports" method="get" action="{{ ($action == 'web') ? route('developerweb.smart.look', [$user, $action]) : route('employee-performance.app.developer.smart.look', [$user, $action]) }}">
                                       {{csrf_field()}}
@@ -84,9 +92,9 @@
             
          <?php if(count($smart_looks) > 0) { ?>
            <?php foreach ($smart_looks as $look) { ?>
-            <div class="card order_list">
-                <div class="row top_row">
-                    <div class="col-xs-6">
+            <div class="card order_list mt-4">
+                <div class="row top_row m-4">
+                    <div class="col-6 col-grid">
                         <div class="title"><b>
                            <h4> <?php echo $look->title ?></h4>
                         </b>
@@ -99,15 +107,15 @@
                             <input type="text" name="supplier_link" value="{{ $look->link }}}" class="form-control copy_to_clipboard" placeholder="Supplier Link" readonly="">
                         </div>
                      </div>
-                    <div class="col-xs-2 text-center">
+                    <div class="col-2 text-center col-grid">
                             {{-- <b>2021-11-29</b> <br><br>
                             <b>2021-11-30</b> --}}
-                            <div class="badge"><?php echo $look->created_at ?></div> <br><br>
-                            <div class="badge"><?php echo $look->event_date ?></div>
+                            <div class="badge badge-secondary"><?php echo $look->created_at ?></div> <br><br>
+                            <div class="badge badge-secondary"><?php echo $look->event_date ?></div>
                        </div>
-                    <div class="col-xs-2 text-center">
-                            <div class="badge">
-                                <?php
+                    <div class="col-2 text-center col-grid">
+
+                        <?php
                                 $progress = '';
                                  if($look->progress && $look->progress == 0) {
                                         $progress = 'In To Do';
@@ -117,23 +125,34 @@
                                         $progress = 'In Testing';
                                     }elseif ($look->progress && $look->progress == 5) {
                                         $progress = 'In Complete';
-                                    }else {
-                                        $progress = 'Not connected with duty';
                                     }
+                                    // else {
+                                    //     $progress = 'Not connected with duty';
+                                    // }
 
-                                    echo $progress;
+                                    if($progress) { ?>
+                                        <div class="badge badge-secondary">
+                                <?php echo $progress; ?>
+
+                                         </div>
+                                  <?php  }
+                                    
                                     ?>
 
-                            </div>
+                            
                     </div>
 
-                    <div class="col-xs-2 text-center">
-                        <div class="label label-{{($look->is_emergency == 1) ? 'warning' : 'success'}}">
+                    <div class="col-2 text-center col-grid">
+                        <div class="label badge badge-<?php if($look->is_emergency == 1) {echo 'warning';} else {
+                            echo 'success';
+                          } ?>">
                             <td><?php if($look->is_emergency == 1) {echo 'Urgent';} else {
                                 echo 'Normal';
                               } ?>    
                         </div>
+                        @if($look->user)
                             <div class="assiged">Assigned To <?php echo $look->user['username'] ?> </div>
+                        @endif
                     </div>
                 </div>
                   
@@ -141,7 +160,7 @@
             </div>
       <?php  }
     }else {?>
-        <div class="card order_list">
+        <div class="card order_list mt-4">
                 <div class="row top_row">
                     <div class="col-xs-12">
                         <div class="title text-center">

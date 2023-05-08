@@ -9,7 +9,7 @@ class SmartLookModel extends Model
     public $timestamps = false;
     protected $table = 'smart_looks';
     protected $primaryKey = "id";
-    protected $fillable = ['user_id','title','description','link','assigned_to'];
+    protected $fillable = ['user_id','title','description','link','create_at','assigned_to'];
     protected $guarded = ['id'];
 
     public function customDutiy() {
