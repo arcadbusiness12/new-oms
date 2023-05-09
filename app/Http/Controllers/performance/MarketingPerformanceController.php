@@ -403,13 +403,12 @@ class MarketingPerformanceController extends Controller
                       ->orderBy('oms_inventory_product.updated_at','DESC')
                       ->groupBy('oms_inventory_product.group_id')
                       ->get();
-        // dd($new_arrivals->toArray());
+                      
         $new_arrivals_data = [];
   
       foreach($new_arrivals as $val) {
-        // dd($val)
+        
         $new_arrivals_data[$val->confirm_date][] = $val;
-        // $whereClause[] = ['pop.model', 'REGEXP', Input::get('product_sku') . "[A-Z]"];
   
         // check listing in opencart 
         $ba_exist = ProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();

@@ -344,20 +344,20 @@
                                                               @endif
                                                               @if($action == 'enable') 
                                                               <div class="done-actions">
-                                                                <div class="col-sm-4" style="padding-right: 32px;padding-left: 0px;">
+                                                                <div class="col-4" style="padding-right: 32px;padding-left: 0px;">
                                                                   <strong>Listing</strong>
                                                                 </div>
                                                                 <div class="last-action-section listing_checked-{{$scheduled_id}}">
                                                                   @if($listing_checked == 1)
                                                                     <i class="fa fa-check" aria-hidden="true" style="font-size: 14px;"></i>
                                                                   @else 
-                                                                    <div class="col-sm-3 list-check-btn" style="padding-right: 16px;padding-left: 9px;">
+                                                                    <div class="col-sm-3 col-grid list-check-btn" style="padding-right: 16px;padding-left: 9px;">
                                                                       
                                                                       <a href="javascript:;" onclick="listNewProduct('{{$scheduled_id}}','{{$group_name}}','listing_checked','Checked')" style="margin-bottom: 12px" class="btn btn-xs btn-success btn-designed btn-list-check{{$scheduled_id}}" style="padding: 0px 5px;">
                                                                         <i class="fa fa-check" aria-hidden="true" style="font-size: 14px;"></i>
                                                                       </a>
                                                                     </div>
-                                                                    <div class="col-sm-3" style="padding-right: 0px;padding-left: 9px;">
+                                                                    <div class="col-sm-3 col-grid" style="padding-right: 0px;padding-left: 9px;">
                                                                       <a href="javascript:;" onclick="listClose('{{$scheduled_id}}','{{$group_name}}','listing_checked','list')" style="margin-bottom: 12px" class="btn btn-xs btn-danger btn-designed btn-list-close{{$scheduled_id}}" style="padding: 0px 4px;">
                                                                         <i class="fa fa-close" style="font-size:14px"></i>
                                                                       </a>
@@ -367,7 +367,7 @@
                                                              </div>
   
                                                             <div class="done-actions">
-                                                              <div class="col-sm-4" style="padding-right: 32px;padding-left: 0px;">
+                                                              <div class="col-4" style="padding-left: 0px;">
                                                                 <strong>Image</strong>
                                                               </div>
                                                               <div class="last-action-section upload_image_checked-{{$scheduled_id}}">
