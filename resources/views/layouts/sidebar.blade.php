@@ -532,8 +532,7 @@
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif">
-                                            <a href="{{route('performance.marketing.save.add.chat')}}">Save Ads Chat</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="">Save Ads Chat</a>
                                         </li>
                                         {{-- <li class=""><a href="panel-page-users.html">Save Ads Chat</a>
                                         </li> --}}
