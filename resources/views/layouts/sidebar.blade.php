@@ -411,7 +411,8 @@
                         || strpos(Request::url(), '/custom/duty/report') !== false || strpos(Request::url(), '/designer/custom/duties/designer') !== false 
                         || strpos(Request::url(), '/web/developer/custom/duties/w_developer') !== false || strpos(Request::url(), '/marketer/custom/duties/a_developer') !== false 
                         || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false 
-                        || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false) active @endif">
+                        || strpos(Request::url(), '/app/developer/custom/duties/a_developer') !== false 
+                        || strpos(Request::url(), '/marketer/custom/duties/marketer') !== false) active @endif">
                             <a href="#">
                                 <i class="icon icon-gold s-24"></i> <span>Perfomance</span>
                                 <i class=" icon-angle-left  pull-right"></i>
@@ -525,26 +526,31 @@
                                     </ul>
                                 </li>
 
-                                <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif">
+                                <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false || strpos(Request::url(), '/marketer/custom/duties/marketer') !== false 
+                                || strpos(Request::url(), '/performance/employee-performance/smart/look') !== false) active @endif">
                                     <a href="#">
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
-                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif"><a href="">Save Ads Chat</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false) active @endif">
+                                            <a href="{{route('performance.marketing.save.add.chat')}}">Save Ads Chat</a>
                                         </li>
                                         {{-- <li class=""><a href="panel-page-users.html">Save Ads Chat</a>
                                         </li> --}}
-                                        <li><a href="#">Regular Duties<i
+                                        <li class="@if(strpos(Request::url(), '/marketer/custom/duties/marketer') !== false) active @endif">
+                                            <a href="#">Regular Duties<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                             <ul class="treeview-menu">
-                                                <li><a href="{{route('update.assign.custom.duties', 'marketer')}}">Update & Design</a>
+                                                <li class="@if(strpos(Request::url(), '/marketer/custom/duties/marketer') !== false) active @endif">
+                                                    <a href="{{route('update.assign.custom.duties', 'marketer')}}">Update & Design</a>
                                                 </li>
 
                                             </ul>
                                         </li>
-                                        <li><a href="panel-page-users.html">Smart Look</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/employee-performance/smart/look') !== false) active @endif">
+                                            <a href="{{route('employee-performance.smart.look')}}">Smart Look</a>
                                         </li>
-                                        <li><a href="panel-page-users.html">Product Listing</a>
+                                        <li><a href="{{route('employee-perfomance.marketer.product.listing')}}">Product Listing</a>
                                         </li>
                                         <li><a href="#">Ads Updates<i
                                             class=" icon-angle-left  pull-right"></i></a>

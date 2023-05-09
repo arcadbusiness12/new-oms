@@ -52,9 +52,9 @@
             <div class="row">
                 <div class="col-xs-12">
                     <div class="card">
-                        <div class="panel panel-default">
+                        <div class="panel panel-default p-4">
                             <div class="panel-body">
-                                <form name="filter_reports" id="filter_reports" method="get" action="{{ route('custom.duties') }}">
+                                <form name="filter_reports" id="filter_reports" method="get" action="">
                                     {{csrf_field()}}
                                     <div class="row">
                                         <div class="col-sm-4">
@@ -98,12 +98,13 @@
                 </div>
                 <?php } ?>
             </div>
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="card" style="padding: 15px;">
+            <div class="row mt-4">
+            <div class="col-sm-12">
+                <div class="card">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #3f51b5;color:white; text-align:center;">
                                     <th>Title</th>
                                     <th>Description</th>
                                     <th>Link</th>
@@ -119,9 +120,9 @@
                                         <td><?php echo $look->title ?></td>
                                         <td><?php echo $look->description ?></td>
                                         <td ><?php echo $look->link ?></td>
-                                        <td><?php echo $look->user['username'] ?></td>
-                                        <td><?php if($look->is_emergency == 1) {echo 'Yes';} else {
-                                          echo 'No';
+                                        <td><?php echo @$look->user['username'] ?></td>
+                                        <td><?php if($look->is_emergency == 1) {echo 'Urgent';} else {
+                                          echo 'Normal';
                                         } ?></td>
                                         <td>
                                         <td>
@@ -144,9 +145,6 @@
                     </div>
                 </div>
             </div>
-    <div id="group-paginate">
-        {{$smart_looks->links()}}
-<!-- <?php echo $smart_looks->appends(@$old_input)->render(); ?> -->
     </div>
     </div>
 </section>

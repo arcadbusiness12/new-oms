@@ -23,6 +23,7 @@ use App\Models\Oms\EmployeeCustomDutyFileModel;
 use App\Models\Oms\EmployeeCustomeDutiesModel;
 use App\Models\Oms\OmsUserGroupModel;
 use App\Models\Oms\SmartLookModel;
+use App\Models\OpenCart\Products\ProductsModel;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Storage;
@@ -32,75 +33,7 @@ class MarketingPerformanceController extends Controller
     const PER_PAGE = 20;
     const VIEW_DIR = 'employeePeerformance';
     
-    public function saveChat($action, $id = null) {
-      // dd($action);
-        $post_type = 2;
-        $today = date('Y-m-d');
-        $all_lists = PromotionScheduleSettingMainModel::with('user')->where('is_deleted',0)->where('posting_type',2)->get();
-        
-        if( $id == "" && $all_lists->count() > 0 ){
-          $id = $all_lists[0]->id;
-        }
-        $next_date = strtotime("+7 days", strtotime($today));
-        $next_seven_day = date('Y-m-d',$next_date);
-        $templates = PromotionScheduleSettingMainModel::with(['chatResults'=>function($query) use ($today){
-        $query->orderBy('date','DESC')->first();
-        },'schedulechatResults' => function($q) {
-        $q->orderBy('date','DESC')->first();
-        }])->find($id);
-        $store = $templates->store_id;
-        if( $templates ){
-        $template_socials = explode(',', $templates->social_ids);
-        }else{
-        $template_socials = "";
-        }
-        $product_pro_posts = [];
-        $campaign_current = PaidAdsCampaign::with(['chatResults' => function($q) {
-          $q->orderBy('date','DESC')->first();
-          },'chatResults.user'])->where('main_setting_id', $id)->where('status', 1)->first();
-          if($campaign_current) {
-            $product_pro_posts = PromotionSchedulePaidAdsCampaignTemplateModel::with(['type','subCategory','creativeType','adResultHistories'])->where('campaign_id', $campaign_current->id)->where('is_deleted', 0)->orderBy('category')->get();
-          }
-        $product_next_pro_posts = [];
-        $campaign_next = PaidAdsCampaign::with(['schedulechatResults' => function($q) {
-          $q->orderBy('date','DESC')->first();
-          }])->where('main_setting_id', $id)->where('status', 2)->first();
-          if($campaign_next) {
-            $product_next_pro_posts = PromotionSchedulePaidAdsCampaignTemplateModel::with(['type','subCategory','creativeType','adResultHistories'])->where('campaign_id', $campaign_next->id)->where('is_deleted', 0)->orderBy('category')->get();
-          }
-          
-        $socials = SocialModel::where('status', 1)->get();
-        $pro_posts = PromotionProductPaidPostModel::with(['group.products.ProductsSizes','chatHistories'])->where('store_id', $store)->where('main_setting_id',$id)->where('posting_type', $post_type)->where('post_duration', 1)->groupBy('group_id')->get();
-         
-        $next_post_data = PromotionProductPaidPostModel::with('group','chatHistories')->where('store_id', $store)->where('main_setting_id',$id)->where('posting_type', $post_type)->where('post_duration', 2)->get();
-          // dd($next_post_data->toArray());
-        foreach($pro_posts as $post) {
-            $post['stock'] = 1; 
-            $out_products = [];
-            foreach($post->group->products as $product) {
-              if($product->status == 1){
-                foreach($product->ProductsSizes as $size) {
-                  if($size->available_quantity == 0) {
-                    $post['stock'] = 0;
-                  }
-                }
-              }
-            }
-            
-          } 
-          $days = $this->calculate_week_Days(date('Y-m-d'), 2);
-          
-          $ba_paid_ads_promotion_main_setting = PromotionScheduleSettingMainModel::where('store_id', 1)->where('posting_type', 2)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
-          $ad_types = AdsTypeModel::with(['paidAdsSettings'=>function($query){
-          $query->where('is_deleted',0);
-          }])->whereHas('paidAdsSettings')->get();
-
-          $users = OmsUserModel::whereIn('user_group_id', [12,11,8])->where('status', 1)->get();
-
-          $current_campaign_history = PaidAdsCampaign::where('main_setting_id', $id)->where('status', 0)->get();
-        //   dd($product_pro_posts);
-          return view(self::VIEW_DIR.'.marketting.paidAdsDetails',compact('product_pro_posts', 'product_next_pro_posts', 'pro_posts', 'days', 'socials', 'templates', 'template_socials', 'store', 'id','next_seven_day','all_lists','next_post_data','ad_types','campaign_current','campaign_next','users','current_campaign_history','action'));
-    }
+    
 
     public function getOutStockPaidAdsDetails($group) {
       $groupProducts = ProductGroupModel::with('producType','products')->find($group);
@@ -392,6 +325,16 @@ class MarketingPerformanceController extends Controller
     }
   }
 
+  public function smartLook() {
+    $smart_looks = SmartLookModel::with('user')->orderBy('id', 'DESC')->paginate(20);
+    $old_input = [];
+    // foreach($smart_looks as $s) {
+    //   echo $s->is_emergency. "<br>";
+    // }
+    // dd($smart_looks);
+    return view(SELF::VIEW_DIR. '.marketting.smart_look')->with(compact('smart_looks','old_input'));
+  }
+
   public function smartLookForm() {
     $user_group = OmsUserGroupModel::all();
     $dutyLists = []; 
@@ -399,7 +342,6 @@ class MarketingPerformanceController extends Controller
   }
   
   public function saveSmartLookCustomDuty(Request $request) {
-    // dd($request->all());
     $this->validate($request, [
       'smart_look_title' => 'required',
       'link' => 'required',
@@ -496,5 +438,42 @@ class MarketingPerformanceController extends Controller
      }else {
       return redirect()->route('employee-performance.smart.look.form')->with('message', 'Duty assigned successfully.');
      }
+  }
+
+  public function productListing($action = null) {
+    $whereClause = [];
+    $active_tab = '';
+    if(!$action || $action == 'pending' || $action == '') {
+      array_push($whereClause, ['oms_inventory_product.product_list', 0]);
+    }
+    if($action && $action == 'image') {
+      array_push($whereClause, ['oms_inventory_product.product_list', 1]);
+      array_push($whereClause, ['oms_inventory_product.product_image', 0]);
+    }
+    if($action && $action == 'enable') {
+      array_push($whereClause, ['oms_inventory_product.product_list', 1]);
+      array_push($whereClause, ['oms_inventory_product.product_image', 1]);
+      array_push($whereClause, ['oms_inventory_product.enable_product', 0]);
+    }
+    if(!$action) {
+      $active_tab = 'current';
+    }
+    $new_arrivals = OmsInventoryProductModel::select('oms_inventory_product.*','pop.model','pop.order_id','po.order_status_id','po.order_id','po.total','ipg.id as group_id','ipg.name as group_name','pp.id as photo_shoot_id','pp.photo_shoot','listing_checked','upload_image_checked')
+              ->leftJoin('oms_purchase_order_product as pop', 'pop.model', '=', 'oms_inventory_product.sku')
+              ->leftJoin('oms_purchase_order as po', 'po.order_id', '=', 'pop.order_id')
+              ->leftJoin('oms_inventory_product_group as ipg', 'ipg.id', '=', 'oms_inventory_product.group_id')
+              ->leftJoin('oms_product_photography as pp', 'pp.product_group_id', '=', 'ipg.id')
+              ->where('po.order_status_id', '>=', 2)
+              ->where('oms_inventory_product.listing', 0)
+              ->where($whereClause)
+              ->orderBy('oms_inventory_product.update_at','DESC')
+              ->OrderBy('oms_inventory_product.group_id')
+              ->get();
+    $new_arrivals_data = [];
+    foreach($new_arrivals as $val) {
+      $new_arrivals_data[$val->confirm_data][] = [];
+      $ba_exist = ProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
+      // $df_exist = DFProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
+    }
   }
 }

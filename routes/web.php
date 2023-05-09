@@ -414,7 +414,6 @@ Route::prefix('productgroup')->middleware('auth')->group(function() {
 
 Route::prefix('performance')->middleware('auth')->group(function() {
     Route::controller(MarketingPerformanceController::class)->group(function() {
-        Route::any('/marketing/save/add/chat/{action}/{id?}', 'saveChat')->name('performance.marketing.save.add.chat');
         Route::get('/get/out/stock/paid/ad/detail/{group}', 'getOutStockPaidAdsDetails')->name('out.stock.paid.ads.detail');
         Route::post('/create/paid/ads/campaign', 'CreateCampaign')->name('create.paid.ads.campaign');
         Route::get('/get/group/for/selected/category/for/marketing/{group_type}/{type}/{cate}/{duration?}/{sub_cate?}', 'getGroupListForSelectedCategory')->name('employee.performance.marketing.get.group.list.for.cate');
@@ -426,6 +425,8 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::any('/employee-performance/operation/commission/report', 'OperationPerformanceController@commissionReport')->name('employee-performance.commission.report');
         Route::post('/save/smart/look/custom/duty', 'saveSmartLookCustomDuty')->name('save.smart.look.duties');
         Route::get('/employee-performance/smart/look/form', 'smartLookForm')->name('employee-performance.smart.look.form');
+        Route::get('/employee-performance/smart/look', 'smartLook')->name('employee-performance.smart.look');
+        Route::get('/employee-performance/marketer/product/listing/{action?}', 'productListing')->name('employee-perfomance.marketer.product.listing');
     });
     
     Route::controller(StockPerformanceController::class)->group(function() {

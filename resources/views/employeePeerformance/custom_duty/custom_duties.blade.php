@@ -668,7 +668,11 @@ a:hover{
                     <div class="modal-body">
                     {{-- <button type="button" class="main-modale-dismiss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> --}}
 
-                        <div class="modal-content-loader"></div>
+                        <div class="modal-content-loader">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                              </div>
+                        </div>
                         <div class="duty-details"></div>
                        
                     <div class="modal-footer">

@@ -29,6 +29,9 @@
   .btn-warning {
     background: #f3c547 !important;
   }
+  .table thead th {
+    border: 1px solid #e1e8ee !important;
+}
 </style>
 <div class="container-fluid relative animatedParent animateOnce my-3">
     <div class="row row-eq-height my-3 mt-3">
