@@ -527,7 +527,7 @@
                                 </li>
 
                                 <li class="@if(strpos(Request::url(), '/performance/marketing/save/add/chat') !== false || strpos(Request::url(), '/marketer/custom/duties/marketer') !== false 
-                                || strpos(Request::url(), '/performance/employee-performance/smart/look') !== false) active @endif">
+                                || strpos(Request::url(), '/performance/employee-performance/smart/look') !== false || strpos(Request::url(), '/performance/employee-performance/marketer/product/listing') !== false) active @endif">
                                     <a href="#">
                                     <i class="icon icon-joomla"></i>Marketting<i class=" icon-angle-left  pull-right"></i>
                                     </a>
@@ -549,7 +549,8 @@
                                         <li class="@if(strpos(Request::url(), '/performance/employee-performance/smart/look') !== false) active @endif">
                                             <a href="{{route('employee-performance.smart.look')}}">Smart Look</a>
                                         </li>
-                                        <li><a href="{{route('employee-perfomance.marketer.product.listing')}}">Product Listing</a>
+                                        <li class="@if(strpos(Request::url(), '/performance/employee-performance/marketer/product/listing') !== false) active @endif">
+                                            <a href="{{route('employee-perfomance.marketer.product.listing')}}">Product Listing</a>
                                         </li>
                                         <li><a href="#">Ads Updates<i
                                             class=" icon-angle-left  pull-right"></i></a>

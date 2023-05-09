@@ -24,15 +24,23 @@ use App\Models\Oms\EmployeeCustomeDutiesModel;
 use App\Models\Oms\OmsUserGroupModel;
 use App\Models\Oms\SmartLookModel;
 use App\Models\OpenCart\Products\ProductsModel;
+use App\Models\DressFairOpenCart\Products\ProductsModel AS DFProductsModel;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Request as Input;
+use DB;
 
 class MarketingPerformanceController extends Controller
 {
     const PER_PAGE = 20;
     const VIEW_DIR = 'employeePeerformance';
-    
+    private $DB_BAOPENCART_DATABASE = '';
+    private $DB_DFOPENCART_DATABASE = '';
+    function __construct(){
+      $this->DB_BAOPENCART_DATABASE = env('DB_BAOPENCART_DATABASE');
+      $this->DB_DFOPENCART_DATABASE = env('DB_DFOPENCART_DATABASE');
+    }
    
     public function calculate_week_Days($today, $action) {
 
@@ -366,39 +374,172 @@ class MarketingPerformanceController extends Controller
   }
 
   public function productListing($action = null) {
+    //  dd($action);
     $whereClause = [];
     $active_tab = '';
     if(!$action || $action == 'pending' || $action == '') {
       array_push($whereClause, ['oms_inventory_product.product_list', 0]);
     }
-    if($action && $action == 'image') {
-      array_push($whereClause, ['oms_inventory_product.product_list', 1]);
-      array_push($whereClause, ['oms_inventory_product.product_image', 0]);
-    }
-    if($action && $action == 'enable') {
+     if($action && $action == 'image') {
+       array_push($whereClause, ['oms_inventory_product.product_list', 1]);
+       array_push($whereClause, ['oms_inventory_product.product_image', 0]);
+     }
+     if($action && $action == 'enable') {
       array_push($whereClause, ['oms_inventory_product.product_list', 1]);
       array_push($whereClause, ['oms_inventory_product.product_image', 1]);
       array_push($whereClause, ['oms_inventory_product.enable_product', 0]);
-    }
-    if(!$action) {
+     }
+     if(!$action) {
       $active_tab = 'current';
     }
-    $new_arrivals = OmsInventoryProductModel::select('oms_inventory_product.*','pop.model','pop.order_id','po.order_status_id','po.order_id','po.total','ipg.id as group_id','ipg.name as group_name','pp.id as photo_shoot_id','pp.photo_shoot','listing_checked','upload_image_checked')
-              ->leftJoin('oms_purchase_order_product as pop', 'pop.model', '=', 'oms_inventory_product.sku')
-              ->leftJoin('oms_purchase_order as po', 'po.order_id', '=', 'pop.order_id')
-              ->leftJoin('oms_inventory_product_group as ipg', 'ipg.id', '=', 'oms_inventory_product.group_id')
-              ->leftJoin('oms_product_photography as pp', 'pp.product_group_id', '=', 'ipg.id')
-              ->where('po.order_status_id', '>=', 2)
-              ->where('oms_inventory_product.listing', 0)
-              ->where($whereClause)
-              ->orderBy('oms_inventory_product.update_at','DESC')
-              ->OrderBy('oms_inventory_product.group_id')
-              ->get();
-    $new_arrivals_data = [];
-    foreach($new_arrivals as $val) {
-      $new_arrivals_data[$val->confirm_data][] = [];
-      $ba_exist = ProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
-      // $df_exist = DFProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
+      $new_arrivals = OmsInventoryProductModel::select('oms_inventory_product.*','pop.model','pop.order_id','po.order_status_id','po.order_id','po.total','ipg.id as group_id','ipg.name as group_name','pp.id as photo_shoot_id','pp.photo_shoot','listing_checked','upload_image_checked')
+                      ->leftJoin('oms_purchase_order_product as pop', 'pop.model', '=', 'oms_inventory_product.sku')
+                      ->leftJoin('oms_purchase_order as po', 'po.order_id', '=', 'pop.order_id')
+                      ->leftJoin('oms_inventory_product_groups as ipg', 'ipg.id', '=', 'oms_inventory_product.group_id')
+                      ->leftJoin('oms_product_photography as pp', 'pp.product_group_id', '=', 'ipg.id')
+                      ->where('po.order_status_id', '>=', 2)
+                      ->where('oms_inventory_product.listing', 0)
+                      ->where($whereClause)
+                      ->orderBy('oms_inventory_product.updated_at','DESC')
+                      ->groupBy('oms_inventory_product.group_id')
+                      ->get();
+        // dd($new_arrivals->toArray());
+        $new_arrivals_data = [];
+  
+      foreach($new_arrivals as $val) {
+        // dd($val)
+        $new_arrivals_data[$val->confirm_date][] = $val;
+        // $whereClause[] = ['pop.model', 'REGEXP', Input::get('product_sku') . "[A-Z]"];
+  
+        // check listing in opencart 
+        $ba_exist = ProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
+        $df_exist = DFProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->first();
+        
+        if($ba_exist && $df_exist) {
+          $ba_price = ProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->where('price', '<', 1)->get();
+          if(count($ba_price) > 0) {
+            $val['ba_price'] = 0;
+          }else {
+            $val['ba_price'] = 1;
+          }
+          $df_price = DFProductsModel::select('sku','price')->where('sku', 'REGEXP', $val->group_name)->where('price', '<', 1)->get();
+          if(count($df_price) > 0) {
+            $val['df_price'] = 0;
+          }else {
+            $val['df_price'] = 1;
+          }
+        }else {
+          $val['ba_price'] = 0;
+          $val['df_price'] = 0;
+        }
+        
+      }
+      if(count(Input::all()) > 0) {
+        if(Input::get('current')) {
+          $today = date('Y-m-01');
+          $list_date = date('Y-m-d', strtotime("+1 day"));
+          $active_tab = Input::get('current');
+        }else {
+          $today = Input::get('previous_month');
+          $list_date = Input::get('current_month');
+          $active_tab = Input::get('previous');
+        }
+      }else{
+        $today = date('Y-m-01');
+          $list_date = date('Y-m-d', strtotime("+1 day"));
+      }
+      
+      $days = $this->calculate_week_Days_for_listing($today, $list_date);
+      $row_num = 0;
+      foreach($new_arrivals_data as $val) {
+        if(count($val) > $row_num) {
+          $row_num = count($val);
+        }
+        
+      }
+      $previousMonths = [];
+      $previousMonthName = [];
+      for ($i = 0; $i <= 5; $i++) {
+        if(date('Y-m-01', strtotime(-$i . 'month')) != date('Y-m-01')) {
+          $m = [
+            'name' => date('M-Y', strtotime(-$i . 'month')),
+            'month' => date('Y-m-01', strtotime(-$i . 'month'))
+          ];
+          array_push($previousMonths, $m);
+        }
+        
+      }
+      // dd($days);
+    // dd($new_arrivals_data);
+      $currentMonth = date('Y-m-d');
+      $previousMonth = date('Y-m-01', strtotime('-1 month', time()));
+      // dd(date('Y-m-01', strtotime($previousMonth.' +1 month', time())));
+      return view(self::VIEW_DIR.'.marketting.new_product_listing', compact('new_arrivals','days','new_arrivals_data','row_num','currentMonth','previousMonth','previousMonths','active_tab','action'));
+  
+   }
+
+   public function detailOfNewArrivalProductList($group = null) {
+    $products = OmsInventoryProductModel::with(['omsOptions', 'ProductsSizes.omsOptionDetails'])->where('group_id', $group)->get();
+    $cat_info = ProductGroupModel::where('id', $group)->first();
+    $cate_error = ( $cat_info && ($cat_info->category_id > 0 && $cat_info->sub_category_id > 0) ) ? "" : "please assign Category or Sub category for photography.";
+    return response()->json([
+      'status' => true,
+      'products' => $products,
+      'cate_error' => $cate_error
+    ]);
+   }
+
+   public function listingNewArrivalProduct($id, $action, $button) {
+    $products = OmsInventoryProductModel::where('group_id', $id)->pluck('sku');
+    $ba_flag = true;
+    $df_flag = true;
+    $bamissing_products = [];
+    $dfmissing_products = [];
+    if($action == 'enable_product') {
+      foreach($products as $pr) {
+        $ba_listed_product = DB::table($this->DB_BAOPENCART_DATABASE.'.oc_product')
+                            ->where('sku', $pr)->first();
+           
+        if(!$ba_listed_product) {
+          array_push($bamissing_products,$pr);
+          $ba_flag = false;
+        }
+        $df_listed_product = DB::table($this->DB_DFOPENCART_DATABASE.'.oc_product')
+                            ->where('sku', $pr)->first();
+        if(!$df_listed_product) {
+          array_push($dfmissing_products,$pr);
+          // $df_flag = true;
+          $df_flag = false;
+        }
+      }
+      if($ba_flag && $df_flag) {
+        OmsInventoryProductModel::where('group_id', $id)->update(['listing' => 1]);
+      }
     }
-  }
+   }
+
+  public function calculate_week_Days_for_listing($today, $list_date = null) {
+    // dd(strtotime("+5 days", strtotime($today)));  
+    $list_date = null;
+    if($list_date) {
+      $oneweekfromnow = strtotime($list_date);
+    }else {
+      // $oneweekfromnow = strtotime("+5 days", strtotime($today));
+      $oneweekfromnow = strtotime(date('Y-m-t', strtotime($today)));
+    }
+    
+    $oneweekfromnow = date('Y-m-d', $oneweekfromnow);
+    $today = new DateTime($today);
+    $oneweekfromnow = new DateTime($oneweekfromnow);
+    $days = [];
+    for($date = $today; $date <= $oneweekfromnow; $date->modify('+1 day')) {
+        $dates = [
+            'display_date' => $date->format('D-d-F'),
+            'hiddn_date'   => $date->format('Y-m-d')
+        ];
+        array_push($days, $dates);
+    }
+    // dd($days);
+    return $days;
+  } 
 }

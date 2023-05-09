@@ -422,11 +422,13 @@ Route::prefix('performance')->middleware('auth')->group(function() {
         Route::post('/marketing/save/paid/ad/chat/', 'savePaidAdChat')->name('marketing.save.ad.chat');
         Route::post('/save/paid/post/remark/', 'saveRemark')->name('save.paid.post.remark');
         Route::get('/change/status/paid/ad/setting/{setting}/{status}', 'changePaidAdsSettingStatus')->name('change.status.paid.ad.setting');
-        Route::any('/employee-performance/operation/commission/report', 'OperationPerformanceController@commissionReport')->name('employee-performance.commission.report');
+        Route::any('/employee-performance/operation/commission/report', 'commissionReport')->name('employee-performance.commission.report');
         Route::post('/save/smart/look/custom/duty', 'saveSmartLookCustomDuty')->name('save.smart.look.duties');
         Route::get('/employee-performance/smart/look/form', 'smartLookForm')->name('employee-performance.smart.look.form');
         Route::get('/employee-performance/smart/look', 'smartLook')->name('employee-performance.smart.look');
         Route::get('/employee-performance/marketer/product/listing/{action?}', 'productListing')->name('employee-perfomance.marketer.product.listing');
+        Route::get('/new/arrival/product/list/detail/{group_id}', 'detailOfNewArrivalProductList')->name('new.new.arrival.product.list.detail');
+        Route::get('/employee-performance/marketer/listing/new/product/{id}/{action}/{button}', 'listingNewArrivalProduct')->name('employee-performance.marketer.listing.new.arrival.product');
     });
     
     Route::controller(StockPerformanceController::class)->group(function() {
