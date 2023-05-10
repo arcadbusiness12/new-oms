@@ -344,7 +344,7 @@
                                                               @endif
                                                               @if($action == 'enable') 
                                                               <div class="done-actions">
-                                                                <div class="col-4" style="padding-right: 32px;padding-left: 0px;">
+                                                                <div class="col-4" style="padding-left: 0px; max-with:100%">
                                                                   <strong>Listing</strong>
                                                                 </div>
                                                                 <div class="last-action-section listing_checked-{{$scheduled_id}}">
@@ -367,7 +367,7 @@
                                                              </div>
   
                                                             <div class="done-actions">
-                                                              <div class="col-4" style="padding-left: 0px;">
+                                                              <div class="col-4" style="padding-left: 0px; max-with:100%">
                                                                 <strong>Image</strong>
                                                               </div>
                                                               <div class="last-action-section upload_image_checked-{{$scheduled_id}}">
