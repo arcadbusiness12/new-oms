@@ -95,6 +95,9 @@
     float: left;
     margin-right: 5px;
 }
+/* .col-4 {
+  min-width: 
+} */
   @keyframes blink { 50% { border-color:#fff ; }  }
   </style>
   <section class="content">
@@ -344,7 +347,7 @@
                                                               @endif
                                                               @if($action == 'enable') 
                                                               <div class="done-actions">
-                                                                <div class="col-4" style="padding-left: 0px; max-with:77% !important;">
+                                                                <div class="" style="padding-left: 0px; min-with:77% !important;">
                                                                   <strong>Listing</strong>
                                                                 </div>
                                                                 <div class="last-action-section listing_checked-{{$scheduled_id}}">
@@ -367,20 +370,21 @@
                                                              </div>
    
                                                             <div class="done-actions">
-                                                              <div class="col-4" style="padding-left: 0px; max-with:77% !important">
+                                                              <br><br>
+                                                              <div class="col-12" style="padding-left: 0px; min-with:77% !important">
                                                                 <strong>Image</strong>
                                                               </div>
                                                               <div class="last-action-section upload_image_checked-{{$scheduled_id}}">
                                                               @if($upload_image_checked == 1)
                                                               <i class="fa fa-check" aria-hidden="true" style="font-size: 14px;"></i>
                                                               @else 
-                                                              <div class="col-sm-3" style="padding-right: 16px;padding-left: 9px;">
+                                                              <div class="col-sm-3 col-grid" style="padding-right: 16px;padding-left: 9px;">
                                                                 
                                                                 <a href="javascript:;" onclick="listNewProduct('{{$scheduled_id}}','{{$group_name}}','upload_image_checked','Checked')" style="margin-bottom: 12px" class="btn btn-xs btn-success btn-designed btn-upload_image_checked{{$scheduled_id}}" style="padding: 0px 5px;">
                                                                   <i class="fa fa-check" aria-hidden="true" style="font-size: 14px;"></i>
                                                                 </a>
                                                               </div>
-                                                              <div class="col-sm-3 final-action" style="padding-right: 0px;padding-left: 9px;">
+                                                              <div class="col-sm-3 col-grid final-action" style="padding-right: 0px;padding-left: 9px;">
                                                                 <a href="javascript:;" onclick="listClose('{{$scheduled_id}}','{{$group_name}}','upload_image_checked','image')" style="margin-bottom: 12px" class="btn btn-xs btn-danger btn-designed btn-image-close{{$scheduled_id}}" style="padding: 0px 4px;">
                                                                   <i class="fa fa-close" style="font-size:14px"></i>
                                                                 </a>
