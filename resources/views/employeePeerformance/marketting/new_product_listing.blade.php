@@ -365,7 +365,7 @@
                                                                   @endif
                                                                </div>
                                                              </div>
-  
+   
                                                             <div class="done-actions">
                                                               <div class="col-4" style="padding-left: 0px; max-with:77% !important">
                                                                 <strong>Image</strong>
