@@ -500,4 +500,4 @@ Route::get('/web/developer/custom/duties/{arg}', [App\Http\Controllers\Settings\
 Route::get('/app/developer/custom/duties/{arg}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'employeeCustomDuties'])->name('assigned.custom.duties.a_developer');
 Route::get('/get/group/users/{user_group}', [App\Http\Controllers\Settings\CustomDutiesController::class, 'getGroupUsers'])->name('get.group.users');
 Route::get('/admin/approve/request/response/{id}/{status}/{user}/{action}', [App\Http\Controllers\performance\ItController::class, 'adminApproveRequestResponse'])->name('admin.approve.request.response');
-Route::get('/employee-performance/marketer/ba/paid/ads/work/{setting}/{store}/{post_type}/{action}', [App\Http\Controllers\Productgroup\PromotionScheduleSettingController::class, 'getPaidWorkReports'])->name('employee-performance.marketer.ba.paid.ads.work');
+Route::get('/employee-performance/marketer/ba/paid/ads/work/{setting}/{store}/{post_type}/{action}', [App\Http\Controllers\productgroup\PromotionScheduleSettingController::class, 'getPaidWorkReports'])->name('employee-performance.marketer.ba.paid.ads.work');
