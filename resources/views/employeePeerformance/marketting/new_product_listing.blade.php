@@ -394,6 +394,7 @@
                                                             </div>
   
                                                             <div class="done-actions">
+                                                              <br><br>
                                                               @if($ba_price == 1 && $df_price == 1)
                                                               <div class="col-sm-4" style="padding-right: 32px;padding-left: 0px;">
                                                                 <strong>Price</strong>
@@ -537,7 +538,6 @@ $(document).ready(function() {
   });
 
 function viewProductDetails(group, name) {
-  console.log(group+" "+name);
   $('#new_product_detail_modal').modal('toggle');
   $('.loader-tag').css('display', 'block');
   if(group) {
@@ -622,8 +622,6 @@ function viewProductDetails(group, name) {
         type: "GET",
         cache: false,
         success: function(resp) {
-          console.log(resp);
-          // return;
           if(resp.status) {
             if(resp.button == 'Checked') {
               $('.'+action+'-'+id).html('<i class="fa fa-check" aria-hidden="true" style="font-size: 14px;"></i>');
