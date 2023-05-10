@@ -555,10 +555,17 @@
                                         <li><a href="#">Ads Updates<i
                                             class=" icon-angle-left  pull-right"></i></a>
                                         <ul class="treeview-menu">
-                                            <li><a href="panel-page-users.html">Conversion Funnel</a>
-                                            </li>
-                                            <li><a href="panel-page-users.html">Conversion Funnel 2</a>
-                                            </li>
+                                            <?php $dfList = json_decode(session('df_paid_main_setting_list'));
+                                            foreach ($dfList as $key => $li) {
+                                                $path = "employee-performance/marketer/ba/paid/ads/work/".$li->id."/".$li->store_id."/2/current";
+                                                ?>
+                                                <li class="<?php if(Request::path() == $path) { ?> active <?php } ?>">
+                                                    <a href="{{route('employee-performance.marketer.ba.paid.ads.work', [$li->id, $li->store_id, 2, 'current'])}}">
+                                                        {{$li->setting_name}}
+                                                    </a>
+                                                </li>
+                                           <?php } ?>
+                                            
                                         </ul>
                                         </li>
                                     </ul>

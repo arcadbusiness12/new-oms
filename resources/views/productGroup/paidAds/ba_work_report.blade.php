@@ -321,10 +321,10 @@ input:checked + .slider:before {
               
                           <div class="col-sm-1 col-md-1 list-inner col-grid">
                               {{--  <i class="material-icons" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">keyboard_arrow_down</i>  --}}
-                              <a href="{{ route('performance.marketing.save.add.chat', ['current',$id]) }}" class=""> <button class="btn btn-outline-secondary btn-sm {{($action == 'current') ? 'btn-active' : ''}}" style="background: greenyellow;font-weight:bold;">Current</button> </a>
+                              <a href="" class=""> <button class="btn btn-outline-secondary btn-sm {{($action == 'current') ? 'btn-active' : ''}}" style="background: greenyellow;font-weight:bold;">Current</button> </a>
                           </div>
                           <div class="col-sm-1 col-md-1 list-inner col-grid">
-                            <a href="{{ route('performance.marketing.save.add.chat', ['comming',$id]) }}"> <button class="btn btn-outline-secondary btn-sm {{($action == 'comming') ? 'btn-active' : ''}}" style="background: #fefe0a;font-weight:bold;">Comming</button> </a>
+                            <a href=""> <button class="btn btn-outline-secondary btn-sm {{($action == 'comming') ? 'btn-active' : ''}}" style="background: #fefe0a;font-weight:bold;">Comming</button> </a>
                         </div>
                         
             </div>
@@ -341,7 +341,7 @@ input:checked + .slider:before {
                                 <a href="javascript:void()"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{{  $ad_type->name }} <i class="icon icon-keyboard_arrow_down"></i></a>
                                   <ul class="dropdown-menu pull-right" style="margin-top:1px !important">
                                       @forelse($ad_type->paidAdsSettings as $key=>$paid_ads_setting)
-                                      <li><a href="{{ route('performance.marketing.save.add.chat', [$action,$paid_ads_setting->id]) }}" class="{!! $id == $paid_ads_setting->id ? 'select-setting' : '' !!}">{{ $paid_ads_setting->setting_name }} {!! $id == $paid_ads_setting->id ? '<i class="icon icon-check" style="color:green;"></i>' : ""  !!} </a></li>
+                                      <li><a href="">{{ $paid_ads_setting->setting_name }} {!! $id == $paid_ads_setting->id ? '<i class="icon icon-check" style="color:green;"></i>' : ""  !!} </a></li>
                                       @empty
                                       @endforelse
                                   </ul>
@@ -378,11 +378,11 @@ input:checked + .slider:before {
                                 {{--  <i class="material-icons" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">keyboard_arrow_down</i>  --}}
                               <a href="javascript:void()"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Current Campaign History <i class="icon icon-keyboard_arrow_down"></i></a>
                                 <ul class="dropdown-menu pull-right" style="margin-top:1px !important">
-                                    @foreach ($current_campaign_history as $campaign)
+                                    {{-- @foreach ($current_campaign_history as $campaign)
                                      <li style="border-bottom: 1px solid gainsboro !important;margin-bottom: 5px;padding-bottom: 5px;">
                                          <a href=""> {{$campaign->campaign_name}} <i class="icon icon-check"></i> </a>
                                     </li>
-                                    @endforeach
+                                    @endforeach --}}
                                     
                                 </ul>
                               </div>
@@ -774,10 +774,10 @@ input:checked + .slider:before {
                                       <td align="center">
                                         <br>
                                         User {{($chat_user != '') ? '('.$chat_user.')' : ''}}<br>
-                                        <select name="user_id">
+                                        {{-- <select name="user_id">
                                           @foreach($users as $u) 
                                             <option value="{{$u->user_id}}" {{($u->user_id == @$templates->user_id) ? 'selected' : ''}}>{{$u->username}}</option>
-                                          @endforeach
+                                          @endforeach --}}
                                         </select>
                                       </td>
                                       <td align="center">

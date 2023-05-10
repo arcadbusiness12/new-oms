@@ -198,58 +198,7 @@ class DressFairPlaceOrderController extends Controller
                 // echo "<pre>";print_r($customer_data);echo "</pre>";die;
                 $ba_customer_data = $this->baOrdersHistory($name,$number,$email);
                 $registered_customer = CustomersModel::where('telephone', 'LIKE', "%" . $number . "%")->first();
-                if($customer_data OR $ba_customer_data OR $registered_customer){
-                    // $address_data = DB::table(env("DB_DFOPENCART_DATABASE").'.oc_address')->select('*')->where('address_id', $customer_data->address_id)->first();
-                    $address_street_building = "";
-                    $address_villa_flate = "";
-                    // echo "<pre>"; print_r($customer_data->toArray()); die;
-                    if(isset($customer_data[0]) && $customer_data[0]->shipping_address_2 != "" ){
-                        $address_2 = explode(",-",$customer_data[0]->shipping_address_2);
-                        if(is_array($address_2) && count($address_2) > 0){
-                            $address_street_building = $address_2[0];
-                            $address_villa_flate    = $address_2[1];
-                        }
-                    }
-                    if($customer_data && $customer_data->count() > 0){
-                      $customer = array(
-                          'customer_id' => isset($registered_customer) ? $registered_customer->customer_id : "",
-                          'customer_group_id' => isset($customer_data[0]) ? $customer_data[0]->customer_group_id : "",
-                          'firstname' => isset($customer_data[0]) ? $customer_data[0]->firstname : "",
-                          'lastname' => isset($customer_data[0]) ? $customer_data[0]->lastname : "",
-                          'email' => isset($customer_data[0]) ? $customer_data[0]->email : "",
-                          'telephone' => isset($customer_data[0]) ? $customer_data[0]->telephone : "",
-                          'alternate_phone' => isset($customer_data[0]) ? $customer_data[0]->alternate_number : "",
-                          'gmap_link'=> isset($customer_data[0]) ? $customer_data[0]->google_map_link : "",
-                          'fax' => isset($customer_data[0]) ? $customer_data[0]->fax : "",
-                          'address_1' => isset($customer_data[0]) ? $customer_data[0]->shipping_address_1 : "",
-                          'address_street_building' => $address_street_building,
-                          'address_villa_flate' => $address_villa_flate,
-                          'city' => isset($customer_data[0]) ? $customer_data[0]->shipping_city : "",
-                          'area' => isset($customer_data[0]) ? $customer_data[0]->shipping_area : "",
-                          'country_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_country_id : 0,
-                          'zone_id' => isset($customer_data[0]) ? $customer_data[0]->shipping_zone_id : 0,
-                      );
-                    }else{
-                      $customer = array(
-                        'customer_id' => isset($registered_customer) ? $registered_customer->customer_id : "",
-                        'customer_group_id' => isset($registered_customer) ? $registered_customer->customer_group_id : "",
-                        'firstname' => isset($registered_customer) ? $registered_customer->firstname : "",
-                        'lastname' => isset($registered_customer) ? $registered_customer->lastname : "",
-                        'email' => isset($registered_customer) ? $registered_customer->email : "",
-                        'telephone' => isset($registered_customer) ? $registered_customer->telephone : "",
-                        'alternate_phone' => "",
-                        'gmap_link'=> "",
-                        'fax' => '',
-                        'address_1' => '',
-                        'address_street_building' => '',
-                        'address_villa_flate' => '',
-                        'city' => '',
-                        'area' => '',
-                        'country_id' => '',
-                        'zone_id' => '',
-                      );
-                    }
-                }
+               
                 if($customer_data){
                   $customer_data = $customer_data->merge($ba_customer_data);
                 }else{
@@ -261,7 +210,7 @@ class DressFairPlaceOrderController extends Controller
                     // $voucher_total = OrderVoucherModel::select(DB::Raw('COUNT(*) AS total'))->where('order_id', $order['order_id'])->first();
                     // $user = OmsPlaceOrderModel::select('ou.username')->join($this->DB_BAOMS_DATABASE . '.oms_user as ou', 'ou.user_id', '=', 'oms_place_order.user_id')->where('oms_place_order.order_id', $order['order_id'])->first();
                     $user = OmsPlaceOrderModel::select('ou.username','store')->join('oms_user as ou', 'ou.user_id', '=', 'oms_place_order.user_id')
-                            ->where('oms_place_order.order_id', $order['order_id'])->first();
+                            ->where('oms_place_order.order_idd', $order['order_id'])->first();
                     if($user){
                       if( $user->store == 1 ){
                         $store_name = "BA";
@@ -393,8 +342,8 @@ class DressFairPlaceOrderController extends Controller
         }
         if($post_data['product']){
             $cart_add_item = array(
-                'product_id' => $post_data['product']['product_id'],
-                'quantity' => $post_data['product']['qty'],
+                'product' => $post_data['product']['product_id'],
+                'quantities' => $post_data['product']['qty'],
             );
             if(isset($post_data['product']['option'])){
                 foreach ($post_data['product']['option'] as $key => $value) {
@@ -410,10 +359,10 @@ class DressFairPlaceOrderController extends Controller
         if (count(Input::all()) > 0){
             $post_data = Input::all();
         }
-        if(isset($post_data['products']) && is_array($post_data['products'])){
-            foreach ($post_data['products'] as $product) {
+        if(isset($post_data['product']) && is_array($post_data['products'])){
+            foreach ($post_data['product'] as $product) {
                 $option = array();
-                if(isset($product['option'])){
+                if(isset($product['options'])){
                     foreach ($product['option'] as $value) {
                         $option[] = array(
                             'product_option_id'         =>  $value['product_option_id'],
@@ -570,17 +519,17 @@ class DressFairPlaceOrderController extends Controller
         if(isset($post_data['e_wallet_balance'])){
           $e_wallet_balance = $post_data['e_wallet_balance'];
         }
-        if(isset($post_data['payment_method'])){
-            $payment_method = $post_data['payment_method'];
+        if(isset($post_data['payment_methods'])){
+            $payment_method = $post_data['payment_methods'];
         }
-        if(isset($post_data['shipping_method'])){
-            $shipping_method = $post_data['shipping_method'];
+        if(isset($post_data['shipping_methods'])){
+            $shipping_method = $post_data['shipping_methods'];
         }
-        if(isset($post_data['payment_methods']) && is_array($post_data['payment_methods'])){
-            $payment_methods = $post_data['payment_methods'];
+        if(isset($post_data['payment_method']) && is_array($post_data['payment_methods'])){
+            $payment_methods = $post_data['payment_method'];
         }
-        if(isset($post_data['shipping_methods']) && is_array($post_data['shipping_methods'])){
-            $shipping_methods = $post_data['shipping_methods'];
+        if(isset($post_data['shipping_method']) && is_array($post_data['shipping_methods'])){
+            $shipping_methods = $post_data['shipping_method'];
         }
         return view(self::VIEW_DIR . '.paymentshippingview', ['payment_method' => $payment_method, 'payment_methods' => $payment_methods, 'shipping_method' => $shipping_method, 'shipping_methods' => $shipping_methods, 'totals' => $totals,'e_wallet_balance'=>$e_wallet_balance]);
     }

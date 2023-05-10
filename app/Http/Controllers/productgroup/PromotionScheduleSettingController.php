@@ -1189,13 +1189,9 @@ class PromotionScheduleSettingController extends Controller
         // dd($product_pro_postts->toArray());
         $new_p_p = [];
         $today = date('Y-m-d');
-        // $counter = 1;
-        // dd($store);
         $history_blocks = null;
         $next_date = strtotime("+7 days", strtotime($today));
         $next_seven_day = date('Y-m-d',$next_date);
-        // $this->createReportSchedules($id, $store, $post_type, $socials);
-        // $this->createPaidReportSchedules($id, $store, $post_type);
         $templates = PromotionScheduleSettingMainModel::find($id);
         $template_socials = explode(',', $templates->social_ids);
         $whereClause = [];
@@ -1205,10 +1201,6 @@ class PromotionScheduleSettingController extends Controller
         $subcWhereClause = [];
         if($action == 'current') {
             $whereClause[] = array('is_deleted', 0);
-            // array_push($whereClause1, ['date', '<=', date('Y-m-d')]);
-            // array_push($whereClause1, ['last_date', '>=', date('Y-m-d')]);
-            // array_push($orWhereClause, ['date', '>', date('Y-m-d')]);
-            // array_push($orWhereClause, ['last_date', '>=', date('Y-m-d')]);
             array_push($whereClause1, ['post_duration', 1]);
             array_push($orWhereClause, ['post_duration', 2]);
         }else {
@@ -1218,41 +1210,31 @@ class PromotionScheduleSettingController extends Controller
         }
             if($cate) {
                 $category = ProductGroupModel::find($cate);
-                // dd($category->category_name);
                 $catWhereClause[] = array('category', 'LIKE', '%'.$category->category_name.'%');
-                    // if($category->sub_category_id) {
-                    //     $subcWhereClause[] = array('sub_category_id', $category->sub_category_id);
-                    // }
-                
             }
             $product_pro_posts = PromotionScheduleSettingModel::with('type','subCategory')
-                                                              ->where('main_setting_id', $id)
-                                                              ->where('posting_type', $post_type)
-                                                              ->where($whereClause)
-                                                              ->where($catWhereClause)
-                                                              ->where($subcWhereClause)
-                                                              ->get();
-    
-    //    dd($whereClause1);
+             ->where('main_setting_id', $id)
+             ->where('posting_type', $post_type)
+             ->where($whereClause)
+             ->where($catWhereClause)
+             ->where($subcWhereClause)
+             ->get();
+             
         $socials = SocialModel::where('status', 1)->get();
-        $pro_posts = PromotionProductPostModel::with('group','chatHistories')->where('store_id', $store)
-                                              ->where('main_setting_id', $id)
-                                              ->where('posting_type', $post_type)
-                                              ->where($whereClause1)
-                                              ->orWhere($orWhereClause)
-                                              ->get();
-        
-        // dd($pro_posts->toArray());
+        $pro_posts = PromotionProductPostModel::with('group', 'chatHistories')->where('store_id', $store)
+        ->where('main_setting_id', $id)
+        ->where('posting_type', $post_type)
+        ->where($whereClause1)
+        ->orWhere($orWhereClause)
+        ->get();
         $ba_paid_ads_promotion_main_setting = PromotionScheduleSettingMainModel::where('posting_type', 2)->where('is_deleted', 0)->orderBy('id', 'DESC')->get();
-       
         $campaign_current = PaidAdsCampaign::with(['chatResults' => function($q) {
             $q->orderBy('date','DESC')->first();
           },'chatResults.user'])->where('main_setting_id', $id)->where('status', 1)->first();
         $campaign_next = PaidAdsCampaign::with(['chatResults' => function($q) {
             $q->orderBy('date','DESC')->first();
-          },'chatResults.user'])->where('main_setting_id', $id)->where('status', 2)->first();  
-        
-        Session::put('df_paid_main_setting_list', json_encode($ba_paid_ads_promotion_main_setting));
+          },'chatResults.user'])->where('main_setting_id', $id)->where('status', 2)->first(); 
+          Session::put('df_paid_main_setting_list', json_encode($ba_paid_ads_promotion_main_setting));
         if($cate) {
             $product_pro_posts = $this->transformPaidPosting($product_pro_posts, $pro_posts, $id);
             $schedule_date = [
@@ -1278,17 +1260,26 @@ class PromotionScheduleSettingController extends Controller
                 // dd($product_pro_posts);
                 $directory = '.paidAds';
             }
-            // dd($pro_posts);
+            // dd($directory);
             $ad_types = AdsTypeModel::with(['paidAdsSettings'=>function($query){
                 $query->where('is_deleted',0);
               }])->whereHas('paidAdsSettings')->get();
               // dd($ad_types->toArray());
             return  view('productGroup'. $directory.'.ba_work_report')->with(compact('product_pro_posts', 'pro_posts', 'socials', 'templates', 'template_socials', 'store', 'id','next_seven_day', 'action', 'post_type', 'history_blocks','ad_types', 'campaign_current', 'campaign_next'));
         }
-        // dd($directory);
+        
         
     }
 
+    public function getHistoryBlocks($id, $store, $post_type, $whereClause1) {
+        // dd($whereClause1);
+        $history_blocks = PromotionProductPostModel::with('group')->where('store_id', $store)
+                                                    ->where('main_setting_id', $id)
+                                                    ->where('posting_type', $post_type)->where($whereClause1)
+                                                    ->groupBy('date')->orderBy('date','ASC')
+                                                    ->get();
+        return $history_blocks;
+    }
     public function transformPaidPosting($product_pro_posts, $pro_posts, $id) {
         // dd($pro_posts->toArray());
         foreach($product_pro_posts as $product_pro_post) {
