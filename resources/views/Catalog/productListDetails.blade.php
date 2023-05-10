@@ -1069,7 +1069,7 @@
                 }
             }
 
-      var $saveBase64 = $('#saveBase64');
+      var $saveBase64 = $('#saveBase64'); 
       var $cropFilter = $('#crop-filter');
         const downloadBtn = document.getElementById("download-btn");
         const uploadFile = document.getElementById("upload-file");
